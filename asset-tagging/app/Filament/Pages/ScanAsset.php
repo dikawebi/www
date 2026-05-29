@@ -13,12 +13,11 @@ class ScanAsset extends Page
     protected static ?string $navigationLabel = 'Scan QR Asset';
     protected static ?string $title = 'Scanner Kamera Aset';
 
-    // PERBAIKAN: Hapus kata 'static' di sini
+    // Mendaftarkan halaman kamera agar aktif baik di panel admin maupun panel user
+    protected static array $panels = ['admin', 'user'];
+
     protected string $view = 'filament.pages.scan-asset';
 
-    /**
-     * Fungsi untuk memproses teks hasil scan dari JavaScript
-     */
     public function checkAsset($scannedText)
     {
         $lines = explode("\n", $scannedText);
@@ -34,15 +33,30 @@ class ScanAsset extends Page
 
         if ($asset) {
             Notification::make()
-                ->title('Aset Ditemukan')
+                ->title('Aset Berhasil Terdeteksi!')
+                ->body("Membuka data: {$asset->name}")
                 ->success()
                 ->send();
 
-            return redirect()->to('/admin/assets/' . $asset->id . '/edit');
+            // Membaca kondisi panel yang sedang aktif diakses saat ini
+            $currentPanel = filament()->getCurrentPanel()->getId();
+
+            if ($currentPanel === 'user') {
+                // UPDATE: Jika diakses dari panel user, lempar ke rute UserViewResource kustom
+                return redirect()->to(
+                    \App\Filament\User\Resources\UserViewResource::getUrl('view', ['record' => $asset->id])
+                );
+            }
+
+            // Jika diakses dari panel admin, biarkan masuk ke detail administrator asli Anda
+            return redirect()->to(
+                \App\Filament\Resources\Assets\AssetResource::getUrl('view', ['record' => $asset->id])
+            );
+
         } else {
             Notification::make()
                 ->title('Aset Tidak Terdaftar')
-                ->description("ID Aset ({$assetId}) tidak ditemukan di sistem database.")
+                ->body("ID Aset ({$assetId}) gagal ditemukan dalam sistem database.")
                 ->danger()
                 ->send();
         }
