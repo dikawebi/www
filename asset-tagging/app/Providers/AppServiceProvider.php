@@ -15,6 +15,10 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         //
+        // Trik wajib InfinityFree agar mengenali folder root publik baru
+        $this->app->bind('path.public', function() {
+            return base_path('../htdocs');
+        });
     }
 
     /**
