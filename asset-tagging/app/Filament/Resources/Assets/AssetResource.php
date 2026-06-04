@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\Assets;
 
+
 use Filament\Forms\Components\ViewField;
 use App\Filament\Resources\Assets\Pages\CreateAsset;
 use App\Filament\Resources\Assets\Pages\EditAsset;
@@ -46,18 +47,34 @@ class AssetResource extends Resource
                     Section::make('Informasi Utama')
                         ->schema([
                             TextInput::make('asset_id')
-                                ->label('ID Aset')
-                                ->required()
-                                ->unique(ignoreRecord: true),
+                                ->label('ID Aset (Otomatis Berdasar Kategori)')
+                                ->disabled() // Kunci agar admin tidak mengetik manual
+                                ->dehydrated(false) // Jangan kirim data kosong, karena digenerate di sisi server (CreateAsset)
+                                ->placeholder(function ($get) {
+                                    $categoryId = $get('category_id');
+                                    if (! $categoryId) {
+                                        return 'Silakan pilih kategori terlebih dahulu...';
+                                    }
+
+                                    $setting = \App\Models\AssetSequence::where('category_id', $categoryId)->first();
+                                    $prefix = $setting ? $setting->prefix : 'AST';
+                                    $nextValue = $setting ? $setting->next_value : 1;
+                                    $padding = $setting ? $setting->padding : 4;
+                                    $format = $setting ? $setting->format : '{prefix}-{year}-{sequence}';
+
+                                    $sequenceString = str_pad($nextValue, $padding, '0', STR_PAD_LEFT);
+                                    return str_replace(['{prefix}', '{year}', '{sequence}'], [$prefix, date('Y'), $sequenceString], $format);
+                                }),
                             TextInput::make('name')
                                 ->label('Nama Barang')
                                 ->required(),
                             Select::make('category_id')
-                                ->label('Kategori')
                                 ->relationship('category', 'name')
+                                ->label('Kategori')
+                                ->required()
                                 ->searchable()
                                 ->preload()
-                                ->required(),
+                                ->live(), // !!! WAJIB AKTIF: Agar form admin reaktif me-refresh placeholder ID Aset
                             Select::make('status')
                                 ->options([
                                     'In use' => 'In use',

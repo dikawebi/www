@@ -9,6 +9,8 @@ use Filament\Pages;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\View\PanelsRenderHook; // !!! WAJIB UNTUK RENDER HOOK TOMBOL ATAS !!!
+use Filament\Widgets;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken;
@@ -22,10 +24,10 @@ class UserViewPanelProvider extends PanelProvider
     public function panel(Panel $panel): Panel
     {
         return $panel
+            ->default()
             ->id('user')
-            ->path('user') // URL akses: domain.com/user
-            ->login()
-            ->topNavigation() // Menghilangkan sidebar samping kaku agar tidak mirip admin
+            ->path('user')
+            ->login() // Mengaktifkan halaman login bawaan untuk panel user
             ->colors([
                 'primary' => Color::Blue,
             ])
@@ -35,7 +37,10 @@ class UserViewPanelProvider extends PanelProvider
                 Pages\Dashboard::class,
             ])
             ->discoverWidgets(in: app_path('Filament/User/Widgets'), for: 'App\\Filament\\User\\Widgets')
-            ->widgets($this->getUserWidgets())
+            ->widgets([
+                Widgets\AccountWidget::class,
+                Widgets\FilamentInfoWidget::class,
+            ])
             ->middleware([
                 EncryptCookies::class,
                 AddQueuedCookiesToResponse::class,
@@ -49,17 +54,12 @@ class UserViewPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ]);
-    }
+            ])
 
-    protected function getUserWidgets(): array
-    {
-        $widgets = [];
-
-        if (class_exists(\App\Filament\User\Widgets\UserMenuShortcut::class)) {
-            $widgets[] = \App\Filament\User\Widgets\UserMenuShortcut::class; // Memanggil widget menu besar kustom
-        }
-
-        return $widgets;
+            // 🚀 KODE UTAMA: Menyisipkan tombol "Panel Admin" tepat di sebelah kiri Menu User / Profil
+            ->renderHook(
+                PanelsRenderHook::USER_MENU_BEFORE,
+                fn (): string => view('filament.user.admin-button')->render(),
+            );
     }
 }

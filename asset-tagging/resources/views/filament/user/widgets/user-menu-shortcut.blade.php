@@ -1,24 +1,37 @@
-<div class="grid grid-cols-1 md:grid-cols-2 gap-6 max-w-4xl mx-auto my-4 p-2">
+<div style="font-family: sans-serif; max-width: 650px; margin: 5px 0; padding: 0 5px;">
 
-    <a href="/user/scan-asset" class="flex flex-col items-center justify-center p-8 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-2xl shadow-lg hover:scale-105 transition-transform text-white group">
-        <div class="p-4 bg-white/20 rounded-full mb-4">
-            <svg class="w-12 h-12 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 3.75 9.375v-4.5ZM3.75 14.625c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5a1.125 1.125 0 0 1-1.125-1.125v-4.5ZM13.5 4.875c0-.621.504-1.125 1.125-1.125h4.5c.621 0 1.125.504 1.125 1.125v4.5c0 .621-.504 1.125-1.125 1.125h-4.5A1.125 1.125 0 0 1 13.5 9.375v-4.5Z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M16.875 12h.75m-.75 2.25h.75M12 16.875v.75m2.25-.75h-.75m3-3h.75m-.75 3h.75m-3 1.5h.75m-.75 1.5h.75M12 13.5h.75m-3 0h.75m3 3h.75m3-3h.75" />
+    <div style="margin-bottom: 12px;">
+        <h3 style="font-size: 15px; font-weight: 600; color: #111827; margin: 0; padding: 0;">
+            Halo, <span style="color: #2563eb;">{{ auth()->user()->name }}</span> 👋
+        </h3>
+        <p style="font-size: 11px; color: #6b7280; margin: 2px 0 0 0; padding: 0;">
+            Silakan pilih menu ringkas di bawah untuk mulai bekerja:
+        </p>
+    </div>
+
+    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+
+        <a href="/user/scan-asset" style="display: inline-flex; align-items: center; gap: 8px; background-color: #2563eb; color: white; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05); height: 38px; box-sizing: border-box;">
+            <svg style="width: 16px; height: 16px; min-width: 16px; display: block;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6.827 6.175A2.31 2.31 0 0 1 5.186 7.23c-.38.054-.757.112-1.134.175C2.999 7.58 2.25 8.507 2.25 9.574V18a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9.574c0-1.067-.75-1.994-1.802-2.169a47.865 47.865 0 0 0-1.134-.175 2.31 2.31 0 0 1-1.64-1.055l-.822-1.316a2.192 2.192 0 0 0-1.736-1.039 48.774 48.774 0 0 0-5.232 0 2.192 2.192 0 0 0-1.736 1.039l-.821 1.316Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M16.5 12.75a4.5 4.5 0 1 1-9 0 4.5 4.5 0 0 1 9 0ZM18.75 10.5h.008v.008h-.008V10.5Z" />
             </svg>
-        </div>
-        <span class="text-xl font-bold">Mulai Scan QR Code</span>
-        <span class="text-xs text-blue-100 mt-1">Gunakan kamera HP untuk cek detail aset</span>
-    </a>
+            <span>Scan Kamera QR</span>
+        </a>
 
-    <a href="/user/user-views" class="flex flex-col items-center justify-center p-8 bg-white border border-gray-200 rounded-2xl shadow-md hover:scale-105 transition-transform text-gray-800 dark:bg-gray-900 dark:border-gray-800 dark:text-white">
-        <div class="p-4 bg-gray-100 dark:bg-gray-800 rounded-full mb-4">
-            <svg class="w-12 h-12 text-blue-600" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M20.25 7.5l-.625 10.632a2.25 2.25 0 0 1-2.247 2.118H6.622a2.25 2.25 0 0 1-2.247-2.118L3.75 7.5M10 11.25h4M3.375 7.5h17.25c.621 0 1.125-.504 1.125-1.125v-1.5c0-.621-.504-1.125-1.125-1.125H3.375c-.621 0-1.125.504-1.125 1.125v1.5c0 .621.504 1.125 1.125 1.125z" />
+        <a href="/user/user-views" style="display: inline-flex; align-items: center; gap: 8px; background-color: white; color: #1f2937; border: 1px solid #e5e7eb; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05); height: 38px; box-sizing: border-box;">
+            <svg style="width: 16px; height: 16px; min-width: 16px; color: #4b5563; display: block;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 12h16.5m-16.5 3.75h16.5M3.75 19.5h16.5M5.625 4.5h12.75c.621 0 1.125.504 1.125 1.125v1.125c0 .621-.504 1.125-1.125 1.125H5.625A1.125 1.125 0 0 1 4.5 6.75V5.625c0-.621.504-1.125 1.125-1.125Z" />
             </svg>
-        </div>
-        <span class="text-xl font-bold">Daftar Semua Aset</span>
-        <span class="text-xs text-gray-400 mt-1">Lihat dan cari data seluruh barang</span>
-    </a>
+            <span>Daftar Semua Aset</span>
+        </a>
 
+        <a href="/user/user-views/create" style="display: inline-flex; align-items: center; gap: 8px; background-color: #10b981; color: white; padding: 8px 14px; border-radius: 8px; text-decoration: none; font-size: 13px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05); height: 38px; box-sizing: border-box;">
+            <svg style="width: 16px; height: 16px; min-width: 16px; display: block;" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
+            <span>Daftar Aset Baru</span>
+        </a>
+
+    </div>
 </div>
