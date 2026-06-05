@@ -15,5 +15,9 @@
             "src": "/(.*)",
             "dest": "api/index.php"
         }
-    ]
+    ],
+    "env": {
+        "VIEW_COMPILED_PATH": "/tmp",
+        "LOG_CHANNEL": "stderr"
+    }
 }
