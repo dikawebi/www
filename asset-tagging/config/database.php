@@ -97,6 +97,10 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => 'require',//env('DB_SSLMODE', 'prefer'),
+            'options' => [
+                PDO::PGSQL_ATTR_DISABLE_PREPARES => true,
+                '--endpoint=ep-aged-shape-ao3aminj',
+            ],
         ],
 
         'sqlsrv' => [
