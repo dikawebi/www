@@ -6,7 +6,7 @@ use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Blade;
 use Illuminate\Support\ServiceProvider;
-
+use Illuminate\Support\Facades\URL;
 class AppServiceProvider extends ServiceProvider
 {
     /**
@@ -26,6 +26,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        URL::forceScheme('https'); // Pastikan semua URL menggunakan HTTPS
+
         //Mendaftarkan tombol tepat DI SETELAH kolom Global Search (Sebelum Profile)
     FilamentView::registerRenderHook(
         PanelsRenderHook::GLOBAL_SEARCH_AFTER,
