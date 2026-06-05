@@ -1,5 +1,6 @@
 {
     "version": 2,
+    "framework": "null",
     "outputDirectory": "public",
     "functions": {
         "api/index.php": {
@@ -18,6 +19,12 @@
         "CACHE_STORE": "array",
         "VIEW_COMPILED_PATH": "/tmp",
         "LOG_CHANNEL": "stderr",
-        "VERCEL_PHP_EXTENSIONS": "pgsql,pdo_pgsql"
+        "VERCEL_PHP_EXTENSIONS": "pgsql,pdo_pgsql",
+        "APP_CONFIG_CACHE": "/tmp/config.php",
+        "APP_EVENTS_CACHE": "/tmp/events.php",
+        "APP_PACKAGES_CACHE": "/tmp/packages.php",
+        "APP_ROUTES_CACHE": "/tmp/routes.php",
+        "APP_SERVICES_CACHE": "/tmp/services.php",
+        "VIEW_COMPILED_PATH": "/tmp"
     }
 }
