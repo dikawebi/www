@@ -48,16 +48,15 @@ class AssetResource extends Resource
                         ->compact()
                         ->schema([
                             // 1. ID Aset ditaruh paling atas (Full Width) sebagai indikator kode utama
-                            TextInput::make('asset_id')
+                    TextInput::make('asset_id')
     ->label('ID Aset (Otomatis Berdasar Kategori)')
-    ->required() // Pastikan form memvalidasi bahwa id tidak boleh kosong
-    ->readonly() // Ganti ->disabled() menjadi ->readonly() agar nilainya bisa dikirim saat submit
-    ->dehydrated() // UBAH INI: Pastikan bernilai true (bawaan) agar data dikirim ke database Supabase
+    ->required()
+    ->readonly() // Menjaga agar admin tidak bisa edit manual, tapi data tetap terkirim saat disave
     ->placeholder('ID Aset akan muncul otomatis setelah kategori dipilih...')
 
-    // 💡 LIVE GENERATOR SYSTEM FOR FILAMENT V4:
-    // Setiap kali form mendeteksi perubahan kategori, fungsi ini akan langsung mengisi nilai asli asset_id secara real-time
-    ->value(function ($get) {
+    // 💡 REAKTIVITAS FILAMENT V4:
+    // Mengubah isi data text input secara live setiap kali ada perubahan pada 'category_id'
+    ->formatStateUsing(function ($get) {
         $categoryId = $get('category_id');
         if (! $categoryId) {
             return null;
