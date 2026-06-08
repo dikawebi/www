@@ -49,25 +49,29 @@ class AssetResource extends Resource
                         ->schema([
                             // 1. ID Aset ditaruh paling atas (Full Width) sebagai indikator kode utama
                             TextInput::make('asset_id')
-                                ->label('ID Aset (Otomatis Berdasar Kategori)')
-                                ->disabled()
-                                ->dehydrated(false)
-                                ->placeholder(function ($get) {
-                                    $categoryId = $get('category_id');
-                                    if (! $categoryId) {
-                                        return 'Silakan pilih kategori terlebih dahulu...';
-                                    }
+    ->label('ID Aset (Otomatis Berdasar Kategori)')
+    ->required() // Pastikan form memvalidasi bahwa id tidak boleh kosong
+    ->readonly() // Ganti ->disabled() menjadi ->readonly() agar nilainya bisa dikirim saat submit
+    ->dehydrated() // UBAH INI: Pastikan bernilai true (bawaan) agar data dikirim ke database Supabase
+    ->placeholder('ID Aset akan muncul otomatis setelah kategori dipilih...')
 
-                                    $setting = \App\Models\AssetSequence::where('category_id', $categoryId)->first();
-                                    $prefix = $setting ? $setting->prefix : 'AST';
-                                    $nextValue = $setting ? $setting->next_value : 1;
-                                    $padding = $setting ? $setting->padding : 4;
-                                    $format = $setting ? $setting->format : '{prefix}-{year}-{sequence}';
+    // 💡 LIVE GENERATOR SYSTEM FOR FILAMENT V4:
+    // Setiap kali form mendeteksi perubahan kategori, fungsi ini akan langsung mengisi nilai asli asset_id secara real-time
+    ->value(function ($get) {
+        $categoryId = $get('category_id');
+        if (! $categoryId) {
+            return null;
+        }
 
-                                    $sequenceString = str_pad($nextValue, $padding, '0', STR_PAD_LEFT);
-                                    return str_replace(['{prefix}', '{year}', '{sequence}'], [$prefix, date('Y'), $sequenceString], $format);
-                                })
-                                ->columnSpanFull(),
+        $setting = \App\Models\AssetSequence::where('category_id', $categoryId)->first();
+        $prefix = $setting ? $setting->prefix : 'AST';
+        $nextValue = $setting ? $setting->next_value : 1;
+        $padding = $setting ? $setting->padding : 4;
+        $format = $setting ? $setting->format : '{prefix}-{year}-{sequence}';
+
+        $sequenceString = str_pad($nextValue, $padding, '0', STR_PAD_LEFT);
+        return str_replace(['{prefix}', '{year}', '{sequence}'], [$prefix, date('Y'), $sequenceString], $format);
+    }),
 
                             // 2. Kategori Aset dipindah ke atas (Full Width) tepat di bawah ID Aset agar memicu reaktivitas secara instan
                             Select::make('category_id')
