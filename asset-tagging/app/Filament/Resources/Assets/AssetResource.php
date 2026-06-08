@@ -15,9 +15,8 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\FileUpload;
-// 💡 KUNCI UTAMA V4: Cukup import class utamanya saja
-use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Grid;
 use Filament\Resources\Resource;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
@@ -35,141 +34,148 @@ class AssetResource extends Resource
     protected static ?string $recordTitleAttribute = 'Asset';
 
     public static function form(Schema $schema): Schema
-    {
-        return $schema
-            ->schema([
+{
+    return $schema
+        ->schema([
 
-                // --- SISI KIRI (KOLOM 2/3): TABS FORM INPUT UTAMA ---
-                Tabs::make('Asset Form Management')
-                    ->tabs([
+            // --- SISI KIRI (MEMAKAN RUANG 2/3 LAYAR): BLOK INPUT DATA ---
+            Section::make()
+                ->schema([
 
-                        // 💡 SOLUSI EROR V4: Menulis sub-komponen tab langsung menggunakan array key 'schema' inside Tab::make()
-                        Tabs\Tab::make('Informasi Utama')
-                            ->icon('heroicon-m-identification')
-                            ->schema([
-                                TextInput::make('asset_id')
-                                    ->label('ID Aset (Otomatis Berdasar Kategori)')
-                                    ->disabled()
-                                    ->dehydrated(false)
-                                    ->placeholder(function ($get) {
-                                        $categoryId = $get('category_id');
-                                        if (! $categoryId) {
-                                            return 'Silakan pilih kategori terlebih dahulu...';
-                                        }
+                    // KELOMPOK 1: IDENTITAS UTAMA ASET
+                    Section::make('Informasi Utama Aset')
+                        ->icon('heroicon-m-identification')
+                        ->compact()
+                        ->schema([
+                            // 1. ID Aset ditaruh paling atas (Full Width) sebagai indikator kode utama
+                            TextInput::make('asset_id')
+                                ->label('ID Aset (Otomatis Berdasar Kategori)')
+                                ->disabled()
+                                ->dehydrated(false)
+                                ->placeholder(function ($get) {
+                                    $categoryId = $get('category_id');
+                                    if (! $categoryId) {
+                                        return 'Silakan pilih kategori terlebih dahulu...';
+                                    }
 
-                                        $setting = \App\Models\AssetSequence::where('category_id', $categoryId)->first();
-                                        $prefix = $setting ? $setting->prefix : 'AST';
-                                        $nextValue = $setting ? $setting->next_value : 1;
-                                        $padding = $setting ? $setting->padding : 4;
-                                        $format = $setting ? $setting->format : '{prefix}-{year}-{sequence}';
+                                    $setting = \App\Models\AssetSequence::where('category_id', $categoryId)->first();
+                                    $prefix = $setting ? $setting->prefix : 'AST';
+                                    $nextValue = $setting ? $setting->next_value : 1;
+                                    $padding = $setting ? $setting->padding : 4;
+                                    $format = $setting ? $setting->format : '{prefix}-{year}-{sequence}';
 
-                                        $sequenceString = str_pad($nextValue, $padding, '0', STR_PAD_LEFT);
-                                        return str_replace(['{prefix}', '{year}', '{sequence}'], [$prefix, date('Y'), $sequenceString], $format);
-                                    })
-                                    ->columnSpanFull(),
+                                    $sequenceString = str_pad($nextValue, $padding, '0', STR_PAD_LEFT);
+                                    return str_replace(['{prefix}', '{year}', '{sequence}'], [$prefix, date('Y'), $sequenceString], $format);
+                                })
+                                ->columnSpanFull(),
 
-                                TextInput::make('name')
-                                    ->label('Nama Barang')
-                                    ->placeholder('Contoh: Laptop MacBook Pro M3')
-                                    ->required(),
+                            // 2. Kategori Aset dipindah ke atas (Full Width) tepat di bawah ID Aset agar memicu reaktivitas secara instan
+                            Select::make('category_id')
+                                ->relationship('category', 'name')
+                                ->label('Kategori Aset')
+                                ->required()
+                                ->searchable()
+                                ->preload()
+                                ->live()
+                                ->columnSpanFull(),
 
-                                Select::make('status')
-                                    ->label('Status Kontrol')
-                                    ->options([
-                                        'In use' => 'In use (Aktif Digunakan)',
-                                        'Idle' => 'Idle (Tersedia di Gudang)',
-                                        'Broke' => 'Broke (Rusak / Butuh Perbaikan)',
-                                    ])
-                                    ->native(false)
-                                    ->required(),
+                            // 3. Nama Barang dan Status Kontrol berdampingan di baris berikutnya setelah kategori ditentukan
+                            TextInput::make('name')
+                                ->label('Nama Barang')
+                                ->placeholder('Contoh: Laptop MacBook Pro M3')
+                                ->required(),
 
-                                Select::make('category_id')
-                                    ->relationship('category', 'name')
-                                    ->label('Kategori Aset')
-                                    ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->live()
-                                    ->columnSpanFull(),
-                            ])->columns(2),
+                            Select::make('status')
+                                ->label('Status Kontrol')
+                                ->options([
+                                    'In use' => 'In use (Aktif Digunakan)',
+                                    'Idle' => 'Idle (Tersedia di Gudang)',
+                                    'Broke' => 'Broke (Rusak / Butuh Perbaikan)',
+                                ])
+                                ->native(false)
+                                ->required(),
+                        ])->columns(2),
 
-                        // TAB 2: LOGISTIK & PENEMPATAN
-                        Tabs\Tab::make('Penempatan & Finansial')
-                            ->icon('heroicon-m-map-pin')
-                            ->schema([
-                                Section::make('Referensi Dokumen Pembelian')
-                                    ->description('Informasi administrasi pengadaan aset.')
-                                    ->compact()
-                                    ->schema([
-                                        TextInput::make('pr_number')
-                                            ->label('Nomor PR (Purchase Request)')
-                                            ->placeholder('PR-XXXXXX'),
-                                        TextInput::make('po_number')
-                                            ->label('Nomor PO (Purchase Order)')
-                                            ->placeholder('PO-XXXXXX'),
-                                    ])->columns(2),
+                    // KELOMPOK 2: LOGISTIK & ADMINISTRASI PENEMPATAN
+                    Section::make('Lokasi, Departemen & Pengadaan')
+                        ->icon('heroicon-m-map-pin')
+                        ->compact()
+                        ->schema([
+                            Grid::make(2)
+                                ->schema([
+                                    TextInput::make('pr_number')
+                                        ->label('Nomor PR (Purchase Request)')
+                                        ->placeholder('PR-XXXXXX'),
+                                    TextInput::make('po_number')
+                                        ->label('Nomor PO (Purchase Order)')
+                                        ->placeholder('PO-XXXXXX'),
+                                ]),
 
-                                Section::make('Lokasi & Penanggung Jawab')
-                                    ->description('Informasi posisi fisik aset saat ini.')
-                                    ->compact()
-                                    ->schema([
+                            Grid::make(2)
+                                ->schema([
                                         Select::make('location_id')
-                                            ->label('Lokasi Penempatan')
-                                            ->relationship('location', 'name')
-                                            ->searchable()
-                                            ->preload()
-                                            ->required(),
+                                        ->label('Lokasi Penempatan')
+                                        ->relationship('location', 'name')
+                                        ->searchable()
+                                        ->preload()
+                                        ->required(),
 
-                                        Select::make('department_id')
-                                            ->label('Departemen Pemilik')
-                                            ->relationship('department', 'name')
-                                            ->searchable()
-                                            ->preload()
-                                            ->required(),
+                                    Select::make('department_id')
+                                        ->label('Departemen Pemilik')
+                                        ->relationship('department', 'name')
+                                        ->searchable()
+                                        ->preload()
+                                        ->required(),
+                                ]),
 
-                                        TextInput::make('user_name')
-                                            ->label('Nama Pengguna / Pemegang Aset')
-                                            ->placeholder('Masukkan nama personil penanggung jawab')
-                                            ->columnSpanFull(),
-                                    ])->columns(2),
-                            ]),
-                    ])
-                    ->columnSpan(2),
+                            TextInput::make('user_name')
+                                ->label('Nama Pengguna / Pemegang Aset')
+                                ->placeholder('Masukkan nama personil penanggung jawab')
+                                ->columnSpanFull(),
+                        ]),
+                ])
+                ->columnSpan(2),
 
-                // --- SISI KANAN (KOLOM 1/3): QR CODE & INTEGRASI MEDIA KAMERA ---
-                Section::make()
-                    ->schema([
-                        Section::make('Live Label QR Code')
-                            ->compact()
-                            ->schema([
-                                ViewField::make('qr_preview')
-                                    ->view('filament.forms.components.qr-preview')
-                                    ->columnSpanFull(),
-                            ]),
+            // --- SISI KANAN (MEMAKAN RUANG 1/3 LAYAR): PREVIEW QR & AKSES MEDIA ---
+            Section::make()
+                ->schema([
 
-                        Section::make('Visual Foto Fisik Produk')
-                            ->description('Unggah atau ambil gambar langsung lewat kamera.')
-                            ->compact()
-                            ->schema([
-                                FileUpload::make('images')
-                                    ->label('Gambar Produk (Maksimal 4 Foto)')
-                                    ->multiple()
-                                    ->image()
-                                    ->maxFiles(4)
-                                    ->maxSize(2048)
-                                    ->directory('asset-images')
-                                    ->columnSpanFull()
-                                    ->live()
-                                    ->uploadingMessage('Sedang mengunggah foto ke server, mohon tunggu...')
-                                    ->keepFiles()
-                                    ->downloadable()
-                                    ->openable()
-                                    ->capture('environment'),
-                            ]),
-                    ])
-                    ->columnSpan(1),
+                    // PREVIEW QR CODE
+                    Section::make('Live Label QR Code')
+                        ->compact()
+                        ->schema([
+                            ViewField::make('qr_preview')
+                                ->view('filament.forms.components.qr-preview')
+                                ->columnSpanFull(),
+                        ]),
 
-            ])->columns(3);
+                    // PENGATURAN INTEGRASI FOTO
+                    Section::make('Visual Foto Fisik Produk')
+                        ->description('Klik area di bawah untuk mengunggah file. Jika diakses via HP/Tablet, kamera belakang otomatis menyala.')
+                        ->compact()
+                        ->schema([
+                            FileUpload::make('images')
+                                ->label('Gambar Produk (Maksimal 4 Foto)')
+                                ->multiple()
+                                ->image()
+                                ->maxFiles(4)
+                                ->maxSize(2048)
+                                ->directory('asset-images')
+                                ->columnSpanFull()
+                                ->live()
+                                ->uploadingMessage('Sedang mengunggah foto ke server, mohon tunggu...')
+                                ->downloadable()
+                                ->openable()
+                                ->extraInputAttributes([
+                                    'accept' => 'image/*',
+                                    'capture' => 'environment'
+                                ]),
+                        ]),
+                ])
+                ->columnSpan(1),
+
+        ])->columns(3);
+
     }
 
     public static function infolist(Schema $schema): Schema
