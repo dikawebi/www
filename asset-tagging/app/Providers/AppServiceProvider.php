@@ -26,7 +26,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        URL::forceScheme('https'); // Pastikan semua URL menggunakan HTTPS
+        if (config('app.env') === 'production')
+        {
+            URL::forceScheme('https');
+        }
+        //URL::forceScheme('https'); // Pastikan semua URL menggunakan HTTPS
 
         //Mendaftarkan tombol tepat DI SETELAH kolom Global Search (Sebelum Profile)
     FilamentView::registerRenderHook(
