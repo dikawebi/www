@@ -86,22 +86,24 @@ return [
 
         'pgsql' => [
             'driver' => 'pgsql',
+
+            // Otomatis membaca string koneksi penuh Supabase saat di Vercel
             'url' => env('DATABASE_URL'),
-            'host' => env('DB_HOST', '127.0.0.1'),
-            'port' => env('DB_PORT', '5432'),
-            'database' => env('DB_DATABASE', 'asset_tagging'),
-            'username' => env('DB_USERNAME', 'postgres'),
-            'password' => env('DB_PASSWORD', 'admin'),
+
+            // Konfigurasi host dan kredensial untuk localhost (Laragon)
+            'host' => env('DATABASE_URL') ? null : env('DB_HOST', '127.0.0.1'),
+            'port' => env('DATABASE_URL') ? null : env('DB_PORT', '5432'),
+            'database' => env('DATABASE_URL') ? null : env('DB_DATABASE', 'asset_tagging'),
+            'username' => env('DATABASE_URL') ? null : env('DB_USERNAME', 'postgres'),
+            'password' => env('DATABASE_URL') ? null : env('DB_PASSWORD', 'admin'),
+
             'charset' => env('DB_CHARSET', 'utf8'),
             'prefix' => '',
             'prefix_indexes' => true,
             'search_path' => 'public',
-            'sslmode' => env('DB_SSLMODE', 'prefer'),
 
-            // 💡 SOLUSI MUTLAK: Bebas garis merah & memaksa mematikan SSL di localhost
-            'options' => env('DATABASE_URL') ? [] : [
-                'sslmode' => 'disable',
-            ],
+            // Mencegah SSL paksaan di localhost, dan mengizinkannya di cloud Vercel
+            'sslmode' => env('DATABASE_URL') ? 'require' : 'disable',
         ],
 
         'sqlsrv' => [
