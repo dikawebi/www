@@ -151,26 +151,29 @@ class AssetResource extends Resource
 
                     // PENGATURAN INTEGRASI FOTO
                     Section::make('Visual Foto Fisik Produk')
-                        ->description('Klik area di bawah untuk mengunggah file. Jika diakses via HP/Tablet, kamera belakang otomatis menyala.')
-                        ->compact()
-                        ->schema([
-                            FileUpload::make('images')
-                                ->label('Gambar Produk (Maksimal 4 Foto)')
-                                ->multiple()
-                                ->image()
-                                ->maxFiles(4)
-                                ->maxSize(2048)
-                                ->directory('asset-images')
-                                ->columnSpanFull()
-                                ->live()
-                                ->uploadingMessage('Sedang mengunggah foto ke server, mohon tunggu...')
-                                ->downloadable()
-                                ->openable()
-                                ->extraInputAttributes([
-                                    'accept' => 'image/*',
-                                    'capture' => 'environment'
-                                ]),
-                        ]),
+    ->description('Ambil foto langsung melalui kamera HP Anda untuk dokumentasi aset.')
+    ->compact()
+    ->schema([
+        FileUpload::make('images')
+            ->label('Ambil Foto Aset (Gunakan Kamera HP)')
+            ->image()
+            ->maxSize(2048)
+            ->directory('asset-images')
+            ->columnSpanFull()
+            ->live()
+            ->uploadingMessage('Sedang memproses gambar, mohon tunggu...')
+            ->downloadable()
+            ->openable()
+
+            // 💡 TRIK UI/UX MUTLAK UNTUK HP:
+            // 1. Hilangkan ->multiple() karena kamera HP tidak bisa menjepret beberapa foto sekaligus dalam satu klik.
+            // 2. Gunakan pembatasan tipe mime murni untuk memicu modul kamera internal OS.
+            ->acceptedFileTypes(['image/jpeg', 'image/png'])
+            ->extraInputAttributes([
+                'accept' => 'image/*',
+                'capture' => 'camera' // Menggunakan 'camera' sebagai fallback universal jika 'environment' diblokir OS
+            ]),
+    ]),
                 ])
                 ->columnSpan(1),
 
