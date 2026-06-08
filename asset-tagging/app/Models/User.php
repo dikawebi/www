@@ -30,16 +30,18 @@ class User extends Authenticatable
     public function canAccessPanel(Panel $panel): bool
     {
         // Panel admin hanya boleh dimasuki oleh user ber-role 'admin'
-        if ($panel->getId() === 'admin') {
-            return $this->role === 'admin';
-        }
+      //  if ($panel->getId() === 'admin') {
+      //      return $this->role === 'admin';
+      //  }
+//
+      //  // Panel user boleh dimasuki oleh semua user (admin ataupun staff biasa)
+      //  if ($panel->getId() === 'user') {
+      //      return true;
+      //  }
+//
+      //  return false;
 
-        // Panel user boleh dimasuki oleh semua user (admin ataupun staff biasa)
-        if ($panel->getId() === 'user') {
-            return true;
-        }
-
-        return false;
+      return true;
     }
     protected function casts(): array
     {
