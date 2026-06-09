@@ -11,14 +11,15 @@ class Asset extends Model
 
 use HasFactory;
     protected $fillable = [
-        'name',
+        'asset_id', // <--- PASTIKAN BARIS INI ADA DAN TERTULIS DENGAN BENAR
         'category_id',
-        'location_id',
-        'department_id',
+        'name',
+        'status',
         'pr_number',
         'po_number',
+        'location_id',
+        'department_id',
         'user_name',
-        'status',
         'images',
     ];
 

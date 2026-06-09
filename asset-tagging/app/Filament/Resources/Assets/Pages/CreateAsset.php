@@ -3,70 +3,46 @@
 namespace App\Filament\Resources\Assets\Pages;
 
 use App\Filament\Resources\Assets\AssetResource;
-use App\Models\AssetSequence;
 use Filament\Resources\Pages\CreateRecord;
-use Illuminate\Support\Facades\DB;
+use App\Models\AssetSequence;
 
 class CreateAsset extends CreateRecord
 {
     protected static string $resource = AssetResource::class;
 
-    /**
-     * Menyuntikkan nomor sequence otomatis tepat sebelum data
-     * disimpan ke database oleh Administrator.
-     */
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        // Ambil ID Kategori yang dipilih admin dari form
-        $selectedCategoryId = $data['category_id'] ?? null;
+        $categoryId = $data['category_id'] ?? null;
 
-        // Gunakan DB Transaction untuk mengunci baris antrean agar tidak terjadi nomor ganda
-        DB::transaction(function () use (&$data, $selectedCategoryId) {
-            $setting = AssetSequence::where('category_id', $selectedCategoryId)
-                ->lockForUpdate()
-                ->first();
+        if (! $categoryId) {
+            throw new \Exception('Proses gagal: Kategori wajib dipilih terlebih dahulu.');
+        }
 
-            // Skenario Cadangan: Jika Admin belum sempat membuat aturan di Pengaturan Sequence
-            if (! $setting) {
-                $categoryName = \App\Models\Category::find($selectedCategoryId)?->name ?? 'AST';
-                $generatedPrefix = strtoupper(substr(str_replace(' ', '', $categoryName), 0, 3));
+        // 💡 FORCE INJECTION SYSTEM:
+        // Mengunci baris SQL sequence dan menggenerasi kode asli secara paksa
+        // tepat 1 milidetik sebelum perintah INSERT PostgreSQL dieksekusi.
+        $setting = AssetSequence::where('category_id', $categoryId)->lockForUpdate()->first();
 
-                $setting = AssetSequence::create([
-                    'category_id' => $selectedCategoryId,
-                    'prefix' => $generatedPrefix,
-                    'format' => '{prefix}-{year}-{sequence}',
-                    'next_value' => 1,
-                    'padding' => 4,
-                ]);
-            }
+        $prefix = $setting ? $setting->prefix : 'AST';
+        $nextValue = $setting ? $setting->next_value : 1;
+        $padding = $setting ? $setting->padding : 4;
+        $format = $setting ? $setting->format : '{prefix}-{year}-{sequence}';
 
-            $tahun = date('Y');
+        $sequenceString = str_pad($nextValue, $padding, '0', STR_PAD_LEFT);
 
-            // Generate string urutan angka sesuai dengan jumlah padding (misal: 0001)
-            $sequenceString = str_pad($setting->next_value, $setting->padding, '0', STR_PAD_LEFT);
+        // MENYUNTIKKAN DATA PASTI KE ARRAY DATABASE
+        $data['asset_id'] = str_replace(
+            ['{prefix}', '{year}', '{sequence}'],
+            [$prefix, date('Y'), $sequenceString],
+            $format
+        );
 
-            // Susun format kode final berdasarkan setting (Contoh: LAP-2026-0001)
-            $finalId = str_replace(
-                ['{prefix}', '{year}', '{sequence}'],
-                [$setting->prefix, $tahun, $sequenceString],
-                $setting->format
-            );
-
-            // Suntikkan ID hasil generate ke dalam data array penyimpanan
-            $data['asset_id'] = $finalId;
-
-            // Naikkan nilai urutan berikutnya +1 di database untuk aset selanjutnya
-            $setting->increment('next_value');
-        });
+        // Update nilai counter berikutnya di database
+        if ($setting) {
+            $setting->next_value = $nextValue + 1;
+            $setting->save();
+        }
 
         return $data;
-    }
-
-    /**
-     * Redirect kembali ke halaman tabel daftar aset setelah berhasil menyimpan
-     */
-    protected function getRedirectUrl(): string
-    {
-        return $this->getResource()::getUrl('index');
     }
 }
