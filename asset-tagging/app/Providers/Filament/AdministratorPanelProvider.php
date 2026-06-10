@@ -54,9 +54,6 @@ class AdministratorPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
-            ])
-            ->canAccessPanel(fn (\App\Models\User $user) => true)
-            ;
-
+            ]);
     }
 }
