@@ -2,17 +2,27 @@
 
 namespace App\Models;
 
+use Filament\Models\Contracts\FilamentUser; // 💡 Import ini
+use Filament\Panel; // 💡 Import ini
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Permission\Traits\HasRoles; // 💡 1. Import trait Spatie
+use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class User extends Authenticatable implements FilamentUser // 💡 Tambahkan implements
 {
-    use Notifiable, HasRoles; // 💡 2. Pasang trait di sini
+    use Notifiable, HasRoles;
 
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
+
+    // 💡 TAMBAHKAN FUNGSI INI
+    public function canAccessPanel(Panel $panel): bool
+    {
+        // Untuk testing, izinkan semua user login.
+        // Nanti bisa diganti dengan: return $this->hasRole('Super Admin');
+        return true;
+    }
 }
