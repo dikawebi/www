@@ -23,6 +23,6 @@ class User extends Authenticatable implements FilamentUser // 💡 Tambahkan imp
     {
         // Untuk testing, izinkan semua user login.
         // Nanti bisa diganti dengan: return $this->hasRole('Super Admin');
-        return $this->hasAnyRole(['Super Admin', 'Manager']); // Contoh: hanya Super Admin dan Manager yang bisa akses panel
+        return true;
     }
 }
