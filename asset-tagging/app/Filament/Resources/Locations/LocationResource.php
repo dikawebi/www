@@ -20,6 +20,9 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
 
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+
 class LocationResource extends Resource
 {
     protected static ?string $model = Location::class;
@@ -64,6 +67,11 @@ class LocationResource extends Resource
             //
         ];
     }
+
+    public static function canViewAny(): bool { /** @var \App\Models\User|null $user */ $user = Auth::user(); return $user?->can('view_locations') ?? false; }
+    public static function canCreate(): bool { /** @var \App\Models\User|null $user */ $user = Auth::user(); return $user?->can('create_locations') ?? false; }
+    public static function canEdit(Model $record): bool { /** @var \App\Models\User|null $user */ $user = Auth::user(); return $user?->can('edit_locations') ?? false; }
+    public static function canDelete(Model $record): bool { /** @var \App\Models\User|null $user */ $user = Auth::user(); return $user?->can('delete_locations') ?? false; }
 
     public static function getPages(): array
     {

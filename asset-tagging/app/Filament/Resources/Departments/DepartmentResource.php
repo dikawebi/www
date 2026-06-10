@@ -19,7 +19,8 @@ use Filament\Forms\Components\TextInput;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\EditAction;
 use Filament\Actions\DeleteAction;
-
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 class DepartmentResource extends Resource
 {
     protected static ?string $model = Department::class;
@@ -64,6 +65,11 @@ class DepartmentResource extends Resource
             //
         ];
     }
+
+    public static function canViewAny(): bool { /** @var \App\Models\User|null $user */ $user = Auth::user(); return $user?->can('view_departments') ?? false; }
+    public static function canCreate(): bool { /** @var \App\Models\User|null $user */ $user = Auth::user(); return $user?->can('create_departments') ?? false; }
+    public static function canEdit(Model $record): bool { /** @var \App\Models\User|null $user */ $user = Auth::user(); return $user?->can('edit_departments') ?? false; }
+    public static function canDelete(Model $record): bool { /** @var \App\Models\User|null $user */ $user = Auth::user(); return $user?->can('delete_departments') ?? false; }
 
     public static function getPages(): array
     {

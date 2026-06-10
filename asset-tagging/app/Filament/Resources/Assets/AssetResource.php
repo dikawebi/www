@@ -11,6 +11,8 @@ use App\Models\Asset;
 use Filament\Schemas\Schema;
 use BackedEnum;
 use Filament\Support\Icons\Heroicon;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
 
 // Komponen Input Utama Khusus Form (Create & Edit)
 use Filament\Forms\Components\TextInput;
@@ -301,6 +303,43 @@ class AssetResource extends Resource
         return [
             //
         ];
+    }
+
+    // 1. Gembok Menu Navigasi (Hanya yang punya izin view_assets yang bisa lihat menu ini)
+    // 1. Gembok Menu Navigasi
+    public static function canViewAny(): bool
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        return $user ? $user->can('view_assets') : false;
+    }
+
+    // 2. Gembok Tombol "Create"
+    public static function canCreate(): bool
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        return $user ? $user->can('create_assets') : false;
+    }
+
+    // 3. Gembok Tombol "Edit"
+    public static function canEdit(Model $record): bool
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        return $user ? $user->can('edit_assets') : false;
+    }
+
+    // 4. Gembok Tombol "Delete"
+    public static function canDelete(Model $record): bool
+    {
+        /** @var \App\Models\User $user */
+        $user = Auth::user();
+
+        return $user ? $user->can('delete_assets') : false;
     }
 
     public static function getPages(): array
