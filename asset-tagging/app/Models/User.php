@@ -18,6 +18,11 @@ class User extends Authenticatable implements FilamentUser // 💡 Tambahkan imp
         'password',
     ];
 
+    protected $hidden = [
+        'password',
+        'remember_token',
+    ];
+
     // 💡 TAMBAHKAN FUNGSI INI
     public function canAccessPanel(Panel $panel): bool
     {

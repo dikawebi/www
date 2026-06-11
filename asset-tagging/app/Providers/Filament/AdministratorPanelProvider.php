@@ -26,8 +26,10 @@ class AdministratorPanelProvider extends PanelProvider
         return $panel
             ->default()
             ->id('administrator')
-            ->path('administrator')
+            ->path('asset-tagging')
+            ->brandName('Borneo Prima - Assets Tagging')
             ->login()
+            ->profile()
             ->colors([
                 'primary' => Color::Amber,
             ])
