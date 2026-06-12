@@ -840,7 +840,6 @@ class ComposerStaticInit36793882908b6cbdd344b5a4840231db
         'App\\Models\\User' => __DIR__ . '/../..' . '/app/Models/User.php',
         'App\\Providers\\AppServiceProvider' => __DIR__ . '/../..' . '/app/Providers/AppServiceProvider.php',
         'App\\Providers\\Filament\\AdministratorPanelProvider' => __DIR__ . '/../..' . '/app/Providers/Filament/AdministratorPanelProvider.php',
-        'App\\Providers\\Filament\\UserViewPanelProvider' => __DIR__ . '/../..' . '/app/Providers/Filament/UserViewPanelProvider.php',
         'Attribute' => __DIR__ . '/..' . '/symfony/polyfill-php80/Resources/stubs/Attribute.php',
         'BaconQrCode\\Common\\BitArray' => __DIR__ . '/..' . '/bacon/bacon-qr-code/src/Common/BitArray.php',
         'BaconQrCode\\Common\\BitMatrix' => __DIR__ . '/..' . '/bacon/bacon-qr-code/src/Common/BitMatrix.php',
