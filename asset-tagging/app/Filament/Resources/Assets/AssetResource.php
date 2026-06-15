@@ -85,10 +85,30 @@ class AssetResource extends Resource
                                     ->live()
                                     ->columnSpanFull(),
 
+                                // ... di dalam section 'Informasi Utama Aset' ...
+
+                                // 1. Tambahkan Select Brand di atas Nama Barang
+                                Select::make('brand_id')
+                                    ->label('Brand / Merek')
+                                    ->relationship('brand', 'name')
+                                    ->searchable()
+                                    ->preload()
+                                    ->required()
+                                    ->columnSpanFull(),
+
+                                // 2. Ubah TextInput 'name' menjadi 'Tipe / Seri'
                                 TextInput::make('name')
-                                    ->label('Nama Barang')
-                                    ->placeholder('Contoh: Laptop MacBook Pro M3')
+                                    ->label('Tipe / Seri')
+                                    ->placeholder('Contoh: MacBook Pro M3')
                                     ->required(),
+
+                                // 3. Tambahkan Serial Number di bawahnya
+                                TextInput::make('serial_number')
+                                    ->label('Serial Number')
+                                    ->placeholder('Masukkan nomor seri fisik aset')
+                                    ->required(),
+
+                                // ... pastikan grid tetap (2) agar kolom Tipe dan SN berjajar rapi ...
 
                                 Select::make('status')
                                     ->label('Status Kontrol')
@@ -302,6 +322,7 @@ class AssetResource extends Resource
     {
         return [
             //
+            \App\Filament\Resources\Assets\RelationManagers\HistoriesRelationManager::class,
         ];
     }
 
@@ -351,4 +372,5 @@ class AssetResource extends Resource
             'edit' => EditAsset::route('/{record}/edit'),
         ];
     }
+
 }

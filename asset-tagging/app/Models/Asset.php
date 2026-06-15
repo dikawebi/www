@@ -13,7 +13,9 @@ use HasFactory;
     protected $fillable = [
         'asset_id', // <--- PASTIKAN BARIS INI ADA DAN TERTULIS DENGAN BENAR
         'category_id',
+        'brand_id',
         'name',
+        'serial_number',
         'status',
         'pr_number',
         'po_number',
@@ -41,5 +43,14 @@ use HasFactory;
     {
         return $this->belongsTo(Department::class, 'department_id');
     }
+
+    public function brand(): BelongsTo
+    {
+        return $this->belongsTo(Brand::class);
+    }
+
+    public function histories() {
+    return $this->hasMany(AssetHistory::class)->latest();
+}
     //
 }
