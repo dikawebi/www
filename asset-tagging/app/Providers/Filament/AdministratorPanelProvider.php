@@ -30,6 +30,7 @@ class AdministratorPanelProvider extends PanelProvider
             ->brandName('Borneo Prima - Assets Tagging')
             ->login()
             ->profile()
+            ->spa()
             ->colors([
                 'primary' => Color::Amber,
             ])
@@ -41,7 +42,8 @@ class AdministratorPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-                FilamentInfoWidget::class,
+               // FilamentInfoWidget::class,
+                \App\Filament\Resources\Assets\Widgets\AssetDistributionChart::class,
             ])
             ->middleware([
                 EncryptCookies::class,

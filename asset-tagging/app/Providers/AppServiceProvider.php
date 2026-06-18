@@ -2,6 +2,9 @@
 
 namespace App\Providers;
 
+
+use App\Models\Asset;
+use App\Observers\AssetObserver;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
 use Illuminate\Support\Facades\Blade;
@@ -26,6 +29,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        Asset::observe(AssetObserver::class);
+
         if (config('app.env') === 'production' || isset($_SERVER['HTTP_X_VERCEL_ID'])) {
             URL::forceScheme('https');
         }

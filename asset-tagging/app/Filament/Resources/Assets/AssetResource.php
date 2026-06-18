@@ -2,375 +2,200 @@
 
 namespace App\Filament\Resources\Assets;
 
-use Filament\Forms\Components\ViewField;
-use App\Filament\Resources\Assets\Pages\CreateAsset;
-use App\Filament\Resources\Assets\Pages\EditAsset;
-use App\Filament\Resources\Assets\Pages\ListAssets;
-use App\Filament\Resources\Assets\Pages\ViewAsset;
-use App\Models\Asset;
+use App\Filament\Resources\Assets\Pages\{CreateAsset, EditAsset, ListAssets, ViewAsset};
+use App\Models\{Asset, AssetSequence};
 use Filament\Schemas\Schema;
-use BackedEnum;
+use Filament\Schemas\Components\{Section, Grid};
+use Filament\Forms\Components\{TextInput, Select, FileUpload, ViewField};
+use Filament\Resources\Resource;
+use Filament\Tables\{Table, Tables};
+use Filament\Tables\Columns\TextColumn;
+use Filament\Actions\{ViewAction, EditAction, DeleteAction, ButtonAction};
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
-
-// Komponen Input Utama Khusus Form (Create & Edit)
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\FileUpload;
+use BackedEnum;
 use Filament\Forms\Components\Placeholder;
+// Tambahkan tanda '\' di depan semua import Filament
 
-// Komponen Tata Letak Layouting Filament v4
-use Filament\Schemas\Components\Section;
-use Filament\Schemas\Components\Grid;
-
-use Filament\Resources\Resource;
-use Filament\Tables\Table;
-use Filament\Tables\Columns\TextColumn;
-use Filament\Tables;
-use Filament\Actions\EditAction;
-use Filament\Actions\DeleteAction;
-use Filament\Actions\ButtonAction;
+use \Filament\Forms\Components\Repeater;
+use \Filament\Forms\Components\DatePicker;
 
 class AssetResource extends Resource
 {
     protected static ?string $model = Asset::class;
-
-    protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedRectangleStack;
-
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-rectangle-stack';
     protected static ?string $recordTitleAttribute = 'Asset';
 
     /**
-     * 1. SKEMA FORM (UNTUK HALAMAN CREATE & EDIT)
+     * 1. SKEMA FORM (CREATE & EDIT)
      */
     public static function form(Schema $schema): Schema
     {
-        return $schema
-            ->schema([
+        return $schema->schema([
+            Section::make('Informasi Utama')
+                ->columns(2)
+                ->schema([
+                    TextInput::make('asset_id')
+                        ->label('ID Aset')
+                        ->default(function () {
+                            $user = Auth::user();
+                            $setting = AssetSequence::where('department_id', $user->department_id)->first();
 
-                // --- SISI KIRI (2/3 LAYAR): INPUT DATA ---
-                Section::make()
-                    ->schema([
+                            if (!$setting) return 'Menunggu pengaturan...';
 
-                        Section::make('Informasi Utama Aset')
-                            ->icon('heroicon-m-identification')
-                            ->compact()
-                            ->schema([
+                            // Logika untuk menampilkan format (sama dengan preview)
+                            $sequenceString = str_pad($setting->next_value, $setting->padding, '0', STR_PAD_LEFT);
+                            return str_replace(['{prefix}', '{year}', '{sequence}'], [$setting->prefix, date('Y'), $sequenceString], $setting->format);
+                        })
+                        ->disabled() // User tidak boleh ganti manual
+                        ->dehydrated(true), // Tetap kirim ke database
+                    Placeholder::make('sequence_warning')
+                        ->label('')
+                        ->content(fn () => AssetSequence::where('department_id', Auth::user()->department_id)->exists()
+                            ? '✅ Sequence siap.' : '⚠️ Perhatian: Sequence belum diatur.')
+                        ->columnSpanFull(),
 
-                                Placeholder::make('asset_id_preview')
-                                    ->label('Pratinjau ID Aset Baru')
-                                    ->content(function ($get) {
-                                        $categoryId = $get('category_id');
-                                        if (! $categoryId) {
-                                            return 'Silakan pilih kategori terlebih dahulu...';
-                                        }
+                    Select::make('category_id')
+                        ->relationship('category', 'name')
+                        ->required()
+                        ->label('Kategori Aset'),
 
-                                        $setting = \App\Models\AssetSequence::where('category_id', $categoryId)->first();
-                                        $prefix = $setting ? $setting->prefix : 'AST';
-                                        $nextValue = $setting ? $setting->next_value : 1;
-                                        $padding = $setting ? $setting->padding : 4;
-                                        $format = $setting ? $setting->format : '{prefix}-{year}-{sequence}';
+                    Select::make('brand_id')
+                        ->relationship('brand', 'name')
+                        ->required()
+                        ->label('Brand'),
 
-                                        $sequenceString = str_pad($nextValue, $padding, '0', STR_PAD_LEFT);
-                                        return str_replace(['{prefix}', '{year}', '{sequence}'], [$prefix, date('Y'), $sequenceString], $format);
-                                    })
-                                    ->columnSpanFull(),
+                    TextInput::make('name')
+                        ->required()
+                        ->label('Tipe / Seri'),
 
-                                Select::make('category_id')
-                                    ->relationship('category', 'name')
-                                    ->label('Kategori Aset')
-                                    ->required()
-                                    ->searchable()
-                                    ->preload()
-                                    ->live()
-                                    ->columnSpanFull(),
+                    TextInput::make('serial_number')
+                        ->required()
+                        ->label('Serial Number'),
 
-                                // ... di dalam section 'Informasi Utama Aset' ...
+                    Select::make('status')
+                        ->options(['In use' => 'In use', 'Idle' => 'Idle', 'Broke' => 'Broke'])
+                        ->required(),
+                ]),
 
-                                // 1. Tambahkan Select Brand di atas Nama Barang
-                                Select::make('brand_id')
-                                    ->label('Brand / Merek')
-                                    ->relationship('brand', 'name')
-                                    ->searchable()
-                                    ->preload()
-                                    ->required()
-                                    ->columnSpanFull(),
+            Section::make('Lokasi & Kepemilikan')
+                ->columns(2)
+                ->schema([
+                    TextInput::make('pr_number')->label('Nomor PR'),
+                    TextInput::make('po_number')->label('Nomor PO'),
+                    Select::make('location_id')->relationship('location', 'name')->required(),
+                    Select::make('department_id')->relationship('department', 'name')->required(),
+                    TextInput::make('user_name')->label('Pemegang')->columnSpanFull()->required(),
+                ]),
 
-                                // 2. Ubah TextInput 'name' menjadi 'Tipe / Seri'
-                                TextInput::make('name')
-                                    ->label('Tipe / Seri')
-                                    ->placeholder('Contoh: MacBook Pro M3')
-                                    ->required(),
-
-                                // 3. Tambahkan Serial Number di bawahnya
-                                TextInput::make('serial_number')
-                                    ->label('Serial Number')
-                                    ->placeholder('Masukkan nomor seri fisik aset')
-                                    ->required(),
-
-                                // ... pastikan grid tetap (2) agar kolom Tipe dan SN berjajar rapi ...
-
-                                Select::make('status')
-                                    ->label('Status Kontrol')
-                                    ->options([
-                                        'In use' => 'In use (Aktif Digunakan)',
-                                        'Idle' => 'Idle (Tersedia di Gudang)',
-                                        'Broke' => 'Broke (Rusak / Butuh Perbaikan)',
-                                    ])
-                                    ->native(false)
-                                    ->required(),
-                            ])->columns(2),
-
-                        Section::make('Lokasi, Departemen & Pengadaan')
-                            ->icon('heroicon-m-map-pin')
-                            ->compact()
-                            ->schema([
-                                Grid::make(2)
-                                    ->schema([
-                                        TextInput::make('pr_number')
-                                            ->label('Nomor PR (Purchase Request)')
-                                            ->placeholder('PR-XXXXXX'),
-                                        TextInput::make('po_number')
-                                            ->label('Nomor PO (Purchase Order)')
-                                            ->placeholder('PO-XXXXXX'),
-                                    ]),
-
-                                Grid::make(2)
-                                    ->schema([
-                                        Select::make('location_id')
-                                            ->label('Lokasi Penempatan')
-                                            ->relationship('location', 'name')
-                                            ->searchable()
-                                            ->preload()
-                                            ->required(),
-
-                                        Select::make('department_id')
-                                            ->label('Departemen Pemilik')
-                                            ->relationship('department', 'name')
-                                            ->searchable()
-                                            ->preload()
-                                            ->required(),
-                                    ]),
-
-                                TextInput::make('user_name')
-                                    ->label('Nama Pengguna / Pemegang Aset')
-                                    ->placeholder('Masukkan nama personil penanggung jawab')
-                                    ->columnSpanFull(),
-                            ]),
-                    ])
-                    ->columnSpan(2),
-
-                // --- SISI KANAN (1/3 LAYAR): QR CODE & CAMERA HP ---
-                Section::make()
-                    ->schema([
-
-                        Section::make('Live Label QR Code')
-                            ->compact()
-                            ->schema([
-                                ViewField::make('qr_preview')
-                                    ->view('filament.forms.components.qr-preview')
-                                    ->columnSpanFull(),
-                            ]),
-
-                        Section::make('Visual Foto Fisik Produk')
-                            ->description('Klik area di bawah untuk memicu kamera belakang HP Anda.')
-                            ->compact()
-                            ->schema([
-                                FileUpload::make('images')
-                                    ->label('Foto Fisik Aset')
-                                    ->image()
-                                    ->maxSize(2048)
-                                    ->directory('asset-images')
-                                    ->columnSpanFull()
-                                    ->live()
-                                    ->acceptedFileTypes(['image/jpeg', 'image/png'])
-                                    ->extraInputAttributes([
-                                        'accept' => 'image/*',
-                                        'capture' => 'camera'
-                                    ]),
-                            ]),
-                    ])
-                    ->columnSpan(1),
-
-            ])->columns(3);
+            Section::make('Media')
+                ->schema([
+                    FileUpload::make('images')->image()->directory('assets'),
+                ]),
+        ]);
     }
 
     /**
-     * 2. SKEMA INFOLIST (UNTUK HALAMAN VIEW DETAIL / READ-ONLY)
+     * 2. SKEMA INFOLIST (VIEW DETAIL)
      */
     public static function infolist(Schema $schema): Schema
     {
-        return $schema
-            ->schema([
-
-                // --- SISI KIRI (2/3 LAYAR): BACA DATA DARI DATABASE ---
-                Section::make()
-                    ->schema([
-
-                        Section::make('Informasi Utama Aset')
-                            ->icon('heroicon-m-identification')
-                            ->compact()
-                            ->schema([
-
-                                \Filament\Infolists\Components\TextEntry::make('asset_id')
-                                    ->label('ID Aset')
-                                    ->weight('bold')
-                                    ->columnSpanFull(),
-
-                                \Filament\Infolists\Components\TextEntry::make('category.name')
-                                    ->label('Kategori Aset')
-                                    ->columnSpanFull(),
-
-                                \Filament\Infolists\Components\TextEntry::make('name')
-                                    ->label('Nama Barang'),
-
-                                \Filament\Infolists\Components\TextEntry::make('status')
-                                    ->label('Status Kontrol')
-                                    ->badge()
-                                    ->color(fn (string $state): string => match ($state) {
-                                        'In use' => 'success',
-                                        'Idle' => 'warning',
-                                        'Broke' => 'danger',
-                                    }),
-                            ])->columns(2),
-
-                        Section::make('Lokasi, Departemen & Pengadaan')
-                            ->icon('heroicon-m-map-pin')
-                            ->compact()
-                            ->schema([
-                                Grid::make(2)
-                                    ->schema([
-                                        \Filament\Infolists\Components\TextEntry::make('pr_number')->label('Nomor PR')->placeholder('-'),
-                                        \Filament\Infolists\Components\TextEntry::make('po_number')->label('Nomor PO')->placeholder('-'),
-                                    ]),
-
-                                Grid::make(2)
-                                    ->schema([
-                                        \Filament\Infolists\Components\TextEntry::make('location.name')->label('Lokasi Penempatan'),
-                                        \Filament\Infolists\Components\TextEntry::make('department.name')->label('Departemen Pemilik'),
-                                    ]),
-
-                                \Filament\Infolists\Components\TextEntry::make('user_name')
-                                    ->label('Nama Pengguna / Pemegang Aset')
-                                    ->placeholder('Tidak ada pemegang (Tersedia di Gudang)')
-                                    ->columnSpanFull(),
+        return $schema->schema([
+            Section::make()
+                ->columns(3)
+                ->schema([
+                    Section::make('Informasi Utama Aset')
+                        ->icon('heroicon-m-identification')
+                        ->columnSpan(2)
+                        ->compact()
+                        ->schema([
+                            \Filament\Infolists\Components\TextEntry::make('asset_id')->label('ID Aset')->weight('bold')->columnSpanFull(),
+                            \Filament\Infolists\Components\TextEntry::make('brand.name')->label('Merek Aset')->columnSpanFull(),
+                            \Filament\Infolists\Components\TextEntry::make('name')->label('Nama Barang'),
+                            \Filament\Infolists\Components\TextEntry::make('status')->label('Status Kontrol')->badge(),
+                            Grid::make(2)->schema([
+                                \Filament\Infolists\Components\TextEntry::make('pr_number')->label('Nomor PR')->placeholder('-'),
+                                \Filament\Infolists\Components\TextEntry::make('po_number')->label('Nomor PO')->placeholder('-'),
+                                \Filament\Infolists\Components\TextEntry::make('location.name')->label('Lokasi Penempatan'),
+                                \Filament\Infolists\Components\TextEntry::make('department.name')->label('Departemen Pemilik'),
                             ]),
-                    ])
-                    ->columnSpan(2),
+                            \Filament\Infolists\Components\TextEntry::make('user_name')->label('Pemegang')->columnSpanFull(),
+                        ]),
 
-                // --- SISI KANAN (1/3 LAYAR): TAMPILAN QR & FOTO ---
-                Section::make()
-                    ->schema([
+                    Section::make('Label & Foto')
+                        ->columnSpan(1)
+                        ->schema([
+                            ViewField::make('qr_preview')->view('filament.forms.components.qr-preview'),
+                            \Filament\Infolists\Components\ImageEntry::make('images')->label('Foto Fisik'),
+                        ]),
 
-                        Section::make('Label QR Code')
-                            ->compact()
-                            ->schema([
-                                \Filament\Infolists\Components\ViewEntry::make('qr_preview')
-                                    ->view('filament.forms.components.qr-preview')
-                                    ->columnSpanFull(),
-                            ]),
-
-                        Section::make('Visual Foto Fisik Produk')
-                            ->compact()
-                            ->schema([
-                                \Filament\Infolists\Components\ImageEntry::make('images')
-                                    ->label('Foto Fisik Aset')
-                                    ->columnSpanFull()
-                                    ->placeholder('Belum ada foto fisik yang diunggah.'),
-                            ]),
-                    ])
-                    ->columnSpan(1),
-
-            ])->columns(3);
+                        // Tambahkan ini di dalam Schema di AssetResource.php
+                    Section::make('Riwayat Perubahan & Perpindahan')
+                        ->schema([
+                            \Filament\Forms\Components\Repeater::make('histories')
+                                ->relationship('histories') // Pastikan model Asset punya relasi 'histories'
+                                ->schema([
+                                    \Filament\Forms\Components\DatePicker::make('date')->required(),
+                                    \Filament\Forms\Components\TextInput::make('description')->required(),
+                                    \Filament\Forms\Components\TextInput::make('old_location'),
+                                    \Filament\Forms\Components\TextInput::make('new_location'),
+                                ])
+                                ->columns(2)
+                                ->collapsible(),
+                        ]),
+                ]),
+        ]);
     }
 
-    /**
-     * 3. KONFIGURASI TABEL INDEKS DATA
-     */
+
+     // 3. TABLE SCHEMA
+
     public static function table(Table $table): Table
     {
-        return $table
-            ->columns([
-                TextColumn::make('asset_id')->label('ID Aset')->searchable()->sortable(),
-                TextColumn::make('name')->label('Nama')->searchable(),
-                TextColumn::make('category.name')->label('Kategori'),
-                TextColumn::make('location.name')->label('Lokasi'),
-                TextColumn::make('department.name')->label('Dept'),
-                TextColumn::make('user_name')->label('Pengguna'),
-                TextColumn::make('status')
-                    ->badge()
-                    ->color(fn (string $state): string => match ($state) {
-                        'In use' => 'success',
-                        'Idle' => 'warning',
-                        'Broke' => 'danger',
-                    }),
-            ])
-            ->actions([
-                EditAction::make(),
-                DeleteAction::make(),
+        return $table->columns([
 
-                ButtonAction::make('print_qr')
-                    ->label('Print QR')
-                    ->icon('heroicon-o-printer')
-                    ->color('success')
-                    ->url(fn (Asset $record): string => route('asset.print-qr', $record->id))
-                    ->openUrlInNewTab(),
-            ]);
-    }
-
-    public static function getRelations(): array
-    {
-        return [
-            //
-            \App\Filament\Resources\Assets\RelationManagers\HistoriesRelationManager::class,
-        ];
-    }
-
-    // 1. Gembok Menu Navigasi (Hanya yang punya izin view_assets yang bisa lihat menu ini)
-    // 1. Gembok Menu Navigasi
-    public static function canViewAny(): bool
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        return $user ? $user->can('view_assets') : false;
-    }
-
-    // 2. Gembok Tombol "Create"
-    public static function canCreate(): bool
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        return $user ? $user->can('create_assets') : false;
-    }
-
-    // 3. Gembok Tombol "Edit"
-    public static function canEdit(Model $record): bool
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        return $user ? $user->can('edit_assets') : false;
-    }
-
-    // 4. Gembok Tombol "Delete"
-    public static function canDelete(Model $record): bool
-    {
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        return $user ? $user->can('delete_assets') : false;
-    }
+            TextColumn::make('asset_id')->label('ID Aset')->searchable()->sortable(),
+            TextColumn::make('brand.name')->label('Brand / Merek')->searchable(),
+            TextColumn::make('name')->label('Nama')->searchable(),
+            TextColumn::make('category.name')->label('Kategori'),
+            TextColumn::make('location.name')->label('Lokasi'),
+            TextColumn::make('department.name')->label('Dept'),
+            TextColumn::make('user_name')->label('Pengguna'),
+            TextColumn::make('status')
+              ->badge()
+              ->color(fn (string $state): string => match ($state) {
+                'In use' => 'success',
+                'Idle' => 'warning',
+                'Broke' => 'danger',
+              }),
+                  ])
+                  ->actions([
+            EditAction::make(),
+            DeleteAction::make(),
+            ButtonAction::make('print_qr')
+              ->label('Print QR')
+              ->icon('heroicon-o-printer')
+              ->color('success')
+              ->url(fn (Asset $record): string => route('asset.print-qr', $record->id))
+              ->openUrlInNewTab(),
+                  ]);
+                }
 
     public static function getPages(): array
     {
         return [
-            'index' => ListAssets::route('/'),
+            'index'  => ListAssets::route('/'),
             'create' => CreateAsset::route('/create'),
-            'view' => ViewAsset::route('/{record}'),
-            'edit' => EditAsset::route('/{record}/edit'),
+            'edit'   => EditAsset::route('/{record}/edit'),
+            'view'   => ViewAsset::route('/{record}'),
         ];
     }
 
+    public static function getRelations(): array
+    {
+    return [
+        \App\Filament\Resources\Assets\RelationManagers\HistoriesRelationManager::class,
+    ];
+    }
 }

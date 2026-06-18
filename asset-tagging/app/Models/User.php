@@ -16,6 +16,7 @@ class User extends Authenticatable implements FilamentUser // 💡 Tambahkan imp
         'name',
         'email',
         'password',
+        'department_id', // 💡 Pastikan ini ada
     ];
 
     protected $hidden = [
@@ -29,5 +30,10 @@ class User extends Authenticatable implements FilamentUser // 💡 Tambahkan imp
         // Untuk testing, izinkan semua user login.
         // Nanti bisa diganti dengan: return $this->hasRole('Super Admin');
         return true;
+    }
+
+    public function department()
+    {
+        return $this->belongsTo(\App\Models\Department::class);
     }
 }

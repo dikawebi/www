@@ -30,6 +30,9 @@ class RolePermissionSeeder extends Seeder
 
             // Hak Akses Rahasia (Hanya untuk Admin)
             'view_users', 'create_users', 'edit_users', 'delete_users', 'manage_roles_permissions',
+
+            // Hak Akses Brand (Jika ada fitur Brand)
+            'view_brands', 'create_brands', 'edit_brands', 'delete_brands',
         ];
 
         // 3. Masukkan semua izin di atas ke dalam tabel database
@@ -40,8 +43,8 @@ class RolePermissionSeeder extends Seeder
         // 4. Buat Role (Jabatan) dan Bagikan Kunci Izinnya
 
         // ROLE A: Super Admin (Berikan SEMUA izin tanpa terkecuali)
-        $superAdmin = Role::firstOrCreate(['name' => 'Super Admin']);
-        $superAdmin->givePermissionTo(Permission::all()); // Ini otomatis mencakup izin baru
+        $admin = Role::firstOrCreate(['name' => 'Admin']);
+        $admin->givePermissionTo(Permission::all()); // Ini otomatis mencakup izin baru
 
         // ROLE B: Manager (Izin menengah: bisa kelola aset, kategori, dan departemen)
         $manager = Role::firstOrCreate(['name' => 'Manager']);
@@ -54,8 +57,8 @@ class RolePermissionSeeder extends Seeder
         ]);
 
         // ROLE C: Staff Lapangan (Izin sangat terbatas: cuma bisa lihat aset dan scan QR)
-        $staffLapangan = Role::firstOrCreate(['name' => 'Staff Lapangan']);
-        $staffLapangan->givePermissionTo([
+        $staff = Role::firstOrCreate(['name' => 'Staff']);
+        $staff->givePermissionTo([
             'view_assets',
             'scan_qr_assets',
         ]);

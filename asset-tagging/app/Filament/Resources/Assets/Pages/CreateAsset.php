@@ -3,8 +3,9 @@
 namespace App\Filament\Resources\Assets\Pages;
 
 use App\Filament\Resources\Assets\AssetResource;
-use Filament\Resources\Pages\CreateRecord;
 use App\Models\AssetSequence;
+use Filament\Resources\Pages\CreateRecord;
+use Illuminate\Support\Facades\Auth;
 
 class CreateAsset extends CreateRecord
 {
@@ -12,37 +13,33 @@ class CreateAsset extends CreateRecord
 
     protected function mutateFormDataBeforeCreate(array $data): array
     {
-        $categoryId = $data['category_id'] ?? null;
+        $user = Auth::user();
+        $setting = AssetSequence::where('department_id', $user->department_id)->first();
 
-        if (! $categoryId) {
-            throw new \Exception('Proses gagal: Kategori wajib dipilih terlebih dahulu.');
-        }
-
-        // 💡 FORCE INJECTION SYSTEM:
-        // Mengunci baris SQL sequence dan menggenerasi kode asli secara paksa
-        // tepat 1 milidetik sebelum perintah INSERT PostgreSQL dieksekusi.
-        $setting = AssetSequence::where('category_id', $categoryId)->lockForUpdate()->first();
-
-        $prefix = $setting ? $setting->prefix : 'AST';
-        $nextValue = $setting ? $setting->next_value : 1;
-        $padding = $setting ? $setting->padding : 4;
-        $format = $setting ? $setting->format : '{prefix}-{year}-{sequence}';
-
-        $sequenceString = str_pad($nextValue, $padding, '0', STR_PAD_LEFT);
-
-        // MENYUNTIKKAN DATA PASTI KE ARRAY DATABASE
-        $data['asset_id'] = str_replace(
-            ['{prefix}', '{year}', '{sequence}'],
-            [$prefix, date('Y'), $sequenceString],
-            $format
-        );
-
-        // Update nilai counter berikutnya di database
         if ($setting) {
-            $setting->next_value = $nextValue + 1;
-            $setting->save();
+            // Generate format ID
+            $sequenceString = str_pad($setting->next_value, $setting->padding, '0', STR_PAD_LEFT);
+            $data['asset_id'] = str_replace(
+                ['{prefix}', '{year}', '{sequence}'],
+                [$setting->prefix, date('Y'), $sequenceString],
+                $setting->format
+            );
+
+            // Update sequence di database agar tidak bentrok
+            $setting->increment('next_value');
         }
 
         return $data;
+    }
+
+    protected function getRedirectUrl(): string
+    {
+        // Ini akan mengarahkan kembali ke halaman 'index' (ListAssets)
+        return $this->getResource()::getUrl('index');
+    }
+
+    protected function getSavedNotificationMessage(): ?string
+    {
+        return 'Data aset berhasil disimpan!';
     }
 }
