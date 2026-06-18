@@ -10,10 +10,11 @@ use Filament\Forms\Components\{TextInput, Select, FileUpload, ViewField};
 use Filament\Resources\Resource;
 use Filament\Tables\{Table, Tables};
 use Filament\Tables\Columns\TextColumn;
-use Filament\Actions\{ViewAction, EditAction, DeleteAction, ButtonAction};
+use Filament\Actions\{ViewAction, EditAction, DeleteAction, ButtonAction, BulkAction, DeleteBulkAction};
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Collection;
 use BackedEnum;
 use Filament\Forms\Components\Placeholder;
 // Tambahkan tanda '\' di depan semua import Filament
@@ -171,16 +172,28 @@ class AssetResource extends Resource
               }),
                   ])
                   ->actions([
-            EditAction::make(),
-            DeleteAction::make(),
-            ButtonAction::make('print_qr')
-              ->label('Print QR')
-              ->icon('heroicon-o-printer')
-              ->color('success')
-              ->url(fn (Asset $record): string => route('asset.print-qr', $record->id))
-              ->openUrlInNewTab(),
+                            EditAction::make(),
+                            DeleteAction::make(),
+                            ButtonAction::make('print_qr')
+                            ->label('Print QR')
+                            ->icon('heroicon-o-printer')
+                            ->color('success')
+                            ->url(fn (Asset $record): string => route('asset.print-qr', $record->id))
+                            ->openUrlInNewTab(),
+                  ])
+                  ->bulkActions([
+                            BulkAction::make('print_qr_bulk')
+                                ->label('Cetak QR Terpilih')
+                                ->icon('heroicon-o-printer')
+                                ->color('success')
+                                ->action(function (Collection $records) {
+                                    $ids = $records->pluck('id')->implode(',');
+                                    // Pastikan nama rute di sini SAMA dengan yang di web.php
+                                    return redirect()->route('asset.print-qr-bulk', ['ids' => $ids]);
+                                }),
+                            DeleteBulkAction::make(),
                   ]);
-                }
+    }
 
     public static function getPages(): array
     {

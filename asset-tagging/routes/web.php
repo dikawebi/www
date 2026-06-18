@@ -6,6 +6,18 @@ use App\Models\Asset;
 use Illuminate\Http\Request;
 
 // 🚀 TEMPORARY DEPLOYMENT TRIGGER ROUTE:
+
+Route::get('/assets/print-qr/{ids}', function ($ids) {
+    // Ubah string ID (contoh: "1,2,3") menjadi array [1, 2, 3]
+    $assetIds = explode(',', $ids);
+
+    // Ambil data aset berdasarkan array ID tersebut
+    $assets = Asset::whereIn('id', $assetIds)->get();
+
+    // Tampilkan view cetak
+    return view('filament.forms.components.qr-print-page', compact('assets'));
+})->name('asset.print-qr-bulk');
+
 Route::get('/run-migration-safely', function () {
     try {
         \Illuminate\Support\Facades\Artisan::call('migrate --force');
@@ -40,4 +52,6 @@ Route::get('/api/get-asset-id-by-code', function (Request $request) {
 
 Route::get('/', function () {
     return view('welcome');
+
+
 });
