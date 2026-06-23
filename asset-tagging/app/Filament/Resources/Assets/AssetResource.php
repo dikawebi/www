@@ -92,7 +92,10 @@ class AssetResource extends Resource
 
             Section::make('Media')
                 ->schema([
-                    FileUpload::make('images')->image()->directory('assets'),
+                    FileUpload::make('images')
+                        ->image()
+                        ->directory('assets')
+                        ->camera(), // Tambahkan baris ini agar bisa langsung foto via kamera HP!
                 ]),
         ]);
     }
