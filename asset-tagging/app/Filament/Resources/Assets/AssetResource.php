@@ -96,8 +96,8 @@ class AssetResource extends Resource
             ->image()
             ->directory('assets')
             ->extraAttributes([
-                'accept' => 'image/*',
-                'capture' => 'environment',
+                'accept' => 'image/*', // Membuka filter agar hanya file gambar yang bisa dipilih
+                'type' => 'file',      // Memastikan elemen dirender sebagai pengunggah file standar
             ]),
     ]),
         ]);
