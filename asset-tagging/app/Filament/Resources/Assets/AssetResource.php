@@ -89,15 +89,28 @@ class AssetResource extends Resource
                     Select::make('department_id')->relationship('department', 'name')->required(),
                     TextInput::make('user_name')->label('Pemegang')->columnSpanFull()->required(),
                 ]),
-
-            Section::make('Media')
+                Section::make('Foto Aset (Maksimal 4)')
+    ->description('Unggah atau ambil foto aset dari kamera. Pastikan gambar terunggah sempurna sebelum menyimpan data.')
     ->schema([
-        ViewField::make('images')
-            ->view('filament.forms.components.custom-mobile-camera')
-            ->label('Foto Aset'),
+        FileUpload::make('images')
+            ->image()
+            ->multiple()
+            ->maxFiles(4)
+            ->directory('assets')
+            ->reorderable()
+            ->panelLayout('grid') // Menata kotak-kotak preview agar lebih rapi dan menarik di HP
+            ->extraAttributes([
+                'accept' => 'image/*',
+                'capture' => 'environment', // Memaksa langsung membuka kamera belakang di HP
+            ])
+            ->helperText('Ketuk ikon + atau area kotak untuk membuka kamera / galeri HP Anda.')
+            ->columnSpan('full'),
     ]),
         ]);
     }
+
+
+
 
     /**
      * 2. SKEMA INFOLIST (VIEW DETAIL)
