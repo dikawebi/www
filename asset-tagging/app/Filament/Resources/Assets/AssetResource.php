@@ -89,21 +89,11 @@ class AssetResource extends Resource
                     Select::make('department_id')->relationship('department', 'name')->required(),
                     TextInput::make('user_name')->label('Pemegang')->columnSpanFull()->required(),
                 ]),
-                Section::make('Foto Aset (Maksimal 4)')
-    ->description('Unggah atau ambil foto aset dari kamera. Pastikan gambar terunggah sempurna sebelum menyimpan data.')
+                Section::make('Dokumentasi Foto Aset')
+    ->description('Ambil hingga 4 foto untuk mendokumentasikan kondisi fisik aset saat ini.')
     ->schema([
-        FileUpload::make('images')
-            ->image()
-            ->multiple()
-            ->maxFiles(4)
-            ->directory('assets')
-            ->reorderable()
-            ->panelLayout('grid') // Menata kotak-kotak preview agar lebih rapi dan menarik di HP
-            ->extraAttributes([
-                'accept' => 'image/*',
-                'capture' => 'environment', // Memaksa langsung membuka kamera belakang di HP
-            ])
-            ->helperText('Ketuk ikon + atau area kotak untuk membuka kamera / galeri HP Anda.')
+        ViewField::make('images')
+            ->view('filament.forms.components.mobile-camera-upload')
             ->columnSpan('full'),
     ]),
         ]);
