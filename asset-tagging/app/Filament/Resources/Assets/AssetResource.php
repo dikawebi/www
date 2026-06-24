@@ -92,14 +92,9 @@ class AssetResource extends Resource
 
             Section::make('Media')
     ->schema([
-        FileUpload::make('images')
-            ->image()
-            ->directory('assets')
-            ->extraAttributes([
-                'capture' => 'environment',
-                'accept' => 'image/*'
-            ])
-            ->disk('public'),
+        ViewField::make('images')
+            ->view('filament.forms.components.custom-mobile-camera')
+            ->label('Foto Aset'),
     ]),
         ]);
     }
