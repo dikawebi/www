@@ -93,7 +93,7 @@ class AssetResource extends Resource
     ->description('Ambil hingga 4 foto untuk mendokumentasikan kondisi fisik aset saat ini.')
     ->schema([
         ViewField::make('images')
-            ->view('filament.forms.components.mobile-camera-upload')
+            ->view('filament.forms.components.custom-mobile-camera')
             ->columnSpan('full'),
     ]),
         ]);
