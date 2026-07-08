@@ -162,13 +162,15 @@ Section::make('Dokumentasi Foto Aset')
         return $table->columns([
 
             TextColumn::make('asset_id')->label('ID Aset')->searchable()->sortable(),
-            TextColumn::make('brand.name')->label('Brand / Merek')->searchable(),
-            TextColumn::make('name')->label('Nama')->searchable(),
-            TextColumn::make('category.name')->label('Kategori'),
-            TextColumn::make('location.name')->label('Lokasi'),
-            TextColumn::make('department.name')->label('Dept'),
-            TextColumn::make('user_name')->label('Pengguna'),
+            TextColumn::make('brand.name')->label('Brand / Merek')->searchable()->sortable(),
+            TextColumn::make('name')->label('Nama')->searchable()->sortable(),
+            TextColumn::make('category.name')->label('Kategori')->searchable()->sortable(),
+            TextColumn::make('location.name')->label('Lokasi')->searchable()->sortable(),
+            TextColumn::make('department.name')->label('Dept')->searchable()->sortable(),
+            TextColumn::make('user_name')->label('Pengguna')->searchable()->sortable(),
             TextColumn::make('status')
+            ->sortable()
+            ->searchable()
               ->badge()
               ->color(fn (string $state): string => match ($state) {
                 'In use' => 'success',
@@ -216,4 +218,14 @@ Section::make('Dokumentasi Foto Aset')
         \App\Filament\Resources\Assets\RelationManagers\HistoriesRelationManager::class,
     ];
     }
+
+    public static function getEloquentQuery(): \Illuminate\Database\Eloquent\Builder
+{
+    return parent::getEloquentQuery()->with(['department', 'category', 'location']); // Sesuaikan dengan nama relasi Anda
+}
+
+protected function getTableQuery(): \Illuminate\Database\Eloquent\Builder
+{
+    return parent::getTableQuery()->cacheFor(now()->addMinutes(5));
+}
 }

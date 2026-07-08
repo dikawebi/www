@@ -55,6 +55,8 @@ use HasFactory;
         return $this->hasMany(AssetHistory::class)->latest();
     }
 
+
+
     public function getCurrentLocationAttribute()
     {
         // Mengambil lokasi terakhir dari history jika ada,
