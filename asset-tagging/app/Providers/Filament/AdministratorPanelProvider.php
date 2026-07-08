@@ -42,8 +42,11 @@ class AdministratorPanelProvider extends PanelProvider
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-               // FilamentInfoWidget::class,
-                \App\Filament\Resources\Assets\Widgets\AssetDistributionChart::class,
+                // FilamentInfoWidget::class,
+                // \App\Filament\Resources\Assets\Widgets\AssetDistributionChart::class,
+                \App\Filament\Resources\Assets\Widgets\AssetStatusChart::class,
+                \App\Filament\Resources\Assets\Widgets\AssetStatsOverview::class,
+
             ])
             ->middleware([
                 EncryptCookies::class,

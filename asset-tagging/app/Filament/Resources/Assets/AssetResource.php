@@ -76,7 +76,7 @@ class AssetResource extends Resource
                         ->label('Serial Number'),
 
                     Select::make('status')
-                        ->options(['In use' => 'In use', 'Idle' => 'Idle', 'Broke' => 'Broke'])
+                        ->options(['In use' => 'In use', 'Idle' => 'Idle', 'Broke' => 'Broke', 'Repair' => 'Repair', 'Lost' => 'Lost'])
                         ->required(),
                 ]),
 
@@ -89,16 +89,16 @@ class AssetResource extends Resource
                     Select::make('department_id')->relationship('department', 'name')->required(),
                     TextInput::make('user_name')->label('Pemegang')->columnSpanFull()->required(),
                 ]),
-                Section::make('Dokumentasi Foto Aset')
-    ->description('Ambil hingga 4 foto untuk mendokumentasikan kondisi fisik aset saat ini.')
+Section::make('Dokumentasi Foto Aset')
     ->schema([
+        // Gunakan ViewField untuk menyisipkan input murni
         ViewField::make('images')
             ->view('filament.forms.components.custom-mobile-camera')
-            ->columnSpan('full'),
+            ->label('Ambil Foto Aset')
+            ->helperText('Klik tombol di bawah untuk membuka kamera HP.')
     ]),
         ]);
     }
-
 
 
 

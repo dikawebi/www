@@ -1,96 +1,53 @@
 <div x-data="{
     images: @entangle($getStatePath()),
-    uploading: false,
-    editIndex: null,
-    addPhoto(e) {
+    lightboxImg: null,
+    handleFiles(e, index) {
         const file = e.target.files[0];
         if (!file) return;
-
-        this.uploading = true;
         const reader = new FileReader();
-        reader.onload = (readerEvent) => {
-            if (!Array.isArray(this.images)) {
-                this.images = [];
-            }
-
-            if (this.editIndex !== null) {
-                // Timpa foto pada index yang dipilih
-                this.images[this.editIndex] = readerEvent.target.result;
-                this.editIndex = null;
-            } else {
-                // Tambahkan baru jika kurang dari 4
-                if (this.images.length < 4) {
-                    this.images.push(readerEvent.target.result);
-                } else {
-                    alert('Maksimal 4 foto telah tercapai.');
-                }
-            }
-            this.uploading = false;
-            e.target.value = ''; // Reset input agar bisa memilih file yang sama
+        reader.onload = (e) => {
+            if(!Array.isArray(this.images)) this.images = [];
+            this.images[index] = e.target.result;
         };
         reader.readAsDataURL(file);
-    },
-    removePhoto(index) {
-        this.images = this.images.filter((_, i) => i !== index);
-    },
-    triggerReplace(index) {
-        this.editIndex = index;
-        document.getElementById('hidden-camera-input').click();
     }
-}" class="space-y-4">
+}" class="w-full">
 
-    <div x-show="!images || images.length < 4" class="relative">
-        <input
-            type="file"
-            accept="image/*"
-            capture="environment"
-            @change="addPhoto($event)"
-            class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
-        >
-        <button type="button" class="w-full py-4 px-6 bg-gradient-to-r from-primary-600 to-primary-500 hover:from-primary-700 hover:to-primary-600 text-white font-semibold rounded-xl shadow-lg flex items-center justify-center space-x-3 transition duration-200 transform active:scale-95">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M3 9a3 3 0 100-6 3 3 0 000 6z" />
-                <path stroke-linecap="round" stroke-linejoin="round" d="M9 8V6a2 2 0 00-2-2H5a2 2 0 00-2 2v2m2-3h.01" />
-            </svg>
-            <span x-text="images && images.length > 0 ? 'Tambah Foto Lainnya (' + images.length + '/4)' : 'Ambil Foto Aset (Kamera / Galeri)'"></span>
-        </button>
-        <p class="text-xs text-gray-500 text-center mt-2">Pastikan menekan tombol "Simpan" di bawah setelah selesai.</p>
-    </div>
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px;">
+        <template x-for="i in [0, 1, 2, 3]" :key="i">
+            <div style="border: 2px dashed #999; height: 120px; position: relative; background: #f9f9f9; display: flex; align-items: center; justify-content: center;">
 
-    <div x-show="uploading" class="text-center py-2 text-sm text-primary-600 font-medium animate-pulse">
-        Memproses gambar...
-    </div>
+                <template x-if="!images[i]">
+                    <div style="text-align: center; cursor: pointer;">
+                        <span style="font-size: 10px; color: #555;">Klik untuk Foto <span x-text="i+1"></span></span>
+                        <input type="file" accept="image/*" capture="environment"
+                               style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;"
+                               @change="handleFiles($event, i)">
+                    </div>
+                </template>
 
-    <div class="grid grid-cols-2 gap-4 sm:grid-cols-4 mt-4">
-        <template x-if="Array.isArray(images)" x-for="(img, index) in images" :key="index">
-            <div class="relative aspect-square rounded-xl overflow-hidden border border-gray-200 shadow-sm bg-white p-1">
-                <img :src="img" class="w-full h-full object-cover rounded-lg" alt="Foto Aset">
+                <template x-if="images[i]">
+                    <div style="width: 100%; height: 100%; position: relative;">
+                        <img :src="images[i]" @click="lightboxImg = images[i]"
+                             style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;">
 
-                <div class="absolute top-2 right-2 flex space-x-1.5">
-                    <button type="button" @click="triggerReplace(index)" class="bg-gray-900/75 hover:bg-gray-800 text-white rounded-full p-2 shadow" title="Ganti foto">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                        </svg>
-                    </button>
-
-                    <button type="button" @click="removePhoto(index)" class="bg-red-600 hover:bg-red-700 text-white rounded-full p-2 shadow" title="Hapus foto">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                <div class="absolute bottom-3 left-3 bg-gray-900/75 text-white text-xs px-2.5 py-1 rounded-md font-medium" x-text="'Foto ' + (index + 1)"></div>
+                        <div style="position: absolute; top: 5px; right: 5px; background: rgba(0,0,0,0.6); color: white; padding: 2px 8px; font-size: 10px; border-radius: 4px;">
+                            Ganti
+                            <input type="file" accept="image/*" capture="environment"
+                                   style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0;"
+                                   @change="handleFiles($event, i)">
+                        </div>
+                    </div>
+                </template>
             </div>
         </template>
     </div>
 
-    <input
-        type="file"
-        id="hidden-camera-input"
-        accept="image/*"
-        capture="environment"
-        @change="addPhoto($event)"
-        class="hidden"
-    >
+    <template x-if="lightboxImg">
+        <div style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 9999; display: flex; align-items: center; justify-content: center;"
+             @click="lightboxImg = null">
+            <img :src="lightboxImg" style="max-width: 90%; max-height: 80%; border: 2px solid white;">
+            <p style="position: absolute; bottom: 20px; color: white;">Klik gambar untuk tutup</p>
+        </div>
+    </template>
 </div>
