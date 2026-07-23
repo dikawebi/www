@@ -1,13 +1,13 @@
 <?php
 
-namespace App\Filament\Resources\Departments\Pages;
+namespace App\Filament\Resources\Brands\Pages;
 
-use App\Filament\Resources\Departments\DepartmentResource;
+use App\Filament\Resources\Brands\BrandResource;
 use Filament\Resources\Pages\CreateRecord;
 
-class CreateDepartment extends CreateRecord
+class CreateBrand extends CreateRecord
 {
-    protected static string $resource = DepartmentResource::class;
+    protected static string $resource = BrandResource::class;
 
     protected function getRedirectUrl(): string
     {
@@ -20,3 +20,5 @@ class CreateDepartment extends CreateRecord
         return 'Data aset berhasil disimpan!';
     }
 }
+
+

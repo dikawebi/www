@@ -9,9 +9,9 @@ use App\Models\AssetSequence;
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Select;
-use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Section; // Menggunakan komponen standar Filament
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema; // <-- PENTING: Menggunakan core blueprint Schema v4
+use Filament\Schemas\Schema;
 use Filament\Tables\Table;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Actions\EditAction;
@@ -23,33 +23,28 @@ class AssetSequenceResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationLabel = 'Pengaturan Number Sequence Asset';
+    protected static ?string $navigationLabel = 'Pengaturan Sequence Departemen';
 
     protected static \UnitEnum|string|null $navigationGroup = 'Sistem Konfigurasi';
 
     protected static bool $shouldRegisterNavigation = true;
 
-    /**
-     * UBAH KE STRUKTUR SCHEMA V4:
-     * Mengganti form(Form $form) menjadi schema(Schema $schema)
-     */
-
-
-    // 🚀 TAMBAHKAN METHOD INI: Memaksa Filament mengabaikan Policy dan mengizinkan menu diakses
     public static function canViewAny(): bool
     {
         return true;
     }
+
     public static function schema(Schema $schema): Schema
     {
         return $schema
             ->components([
-                Section::make('Aturan Penomoran Per Kategori')
-                    ->description('Tentukan format penomoran unik untuk setiap kategori barang.')
+                Section::make('Aturan Penomoran Per Departemen')
+                    ->description('Tentukan format penomoran unik berdasarkan departemen.')
                     ->schema([
-                        Select::make('category_id')
-                            ->label('Kategori Aset')
-                            ->relationship('category', 'name')
+                        // Perubahan utama di sini: Menggunakan department_id
+                        Select::make('department_id')
+                            ->label('Departemen')
+                            ->relationship('department', 'name')
                             ->required()
                             ->unique(ignoreRecord: true)
                             ->searchable()
@@ -58,7 +53,7 @@ class AssetSequenceResource extends Resource
                         TextInput::make('prefix')
                             ->label('Prefix (Awalan Kode)')
                             ->required()
-                            ->placeholder('Contoh: LAP, FUR'),
+                            ->placeholder('Contoh: IT, HR, FIN'),
 
                         TextInput::make('format')
                             ->label('Format Penomoran')
@@ -89,8 +84,8 @@ class AssetSequenceResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('category.name')
-                    ->label('Kategori Aset')
+                TextColumn::make('department.name')
+                    ->label('Departemen')
                     ->sortable()
                     ->searchable(),
 
@@ -99,7 +94,7 @@ class AssetSequenceResource extends Resource
                     ->badge(),
 
                 TextColumn::make('format')
-                    ->label('Format Grid'),
+                    ->label('Format'),
 
                 TextColumn::make('next_value')
                     ->label('Urutan Berikutnya')
