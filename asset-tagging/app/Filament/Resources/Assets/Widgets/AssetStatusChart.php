@@ -7,7 +7,7 @@ use App\Models\Asset;
 
 class AssetStatusChart extends ChartWidget
 {
-    protected ?string $heading = 'Asset Status Chart';
+    protected ?string $heading = 'Assets Status Chart';
 
  protected function getData(): array
 {
