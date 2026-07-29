@@ -23,7 +23,7 @@ class AssetSequenceResource extends Resource
 
     protected static BackedEnum|string|null $navigationIcon = 'heroicon-o-cog-6-tooth';
 
-    protected static ?string $navigationLabel = 'Pengaturan Sequence Departemen';
+    protected static ?string $navigationLabel = 'Pengaturan Sequence Department';
 
     protected static \UnitEnum|string|null $navigationGroup = 'Sistem Konfigurasi';
 
@@ -38,12 +38,12 @@ class AssetSequenceResource extends Resource
     {
         return $schema
             ->components([
-                Section::make('Aturan Penomoran Per Departemen')
-                    ->description('Tentukan format penomoran unik berdasarkan departemen.')
+                Section::make('Aturan Penomoran Per Department')
+                    ->description('Tentukan format penomoran unik berdasarkan department.')
                     ->schema([
                         // Perubahan utama di sini: Menggunakan department_id
                         Select::make('department_id')
-                            ->label('Departemen')
+                            ->label('Department')
                             ->relationship('department', 'name')
                             ->required()
                             ->unique(ignoreRecord: true)
@@ -85,7 +85,7 @@ class AssetSequenceResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('department.name')
-                    ->label('Departemen')
+                    ->label('Department')
                     ->sortable()
                     ->searchable(),
 
