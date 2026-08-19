@@ -1,0 +1,26 @@
+[
+  {
+    "name": "App One",
+    "description": "Short description of what this app does.",
+    "url": "https://app1.yourdomain.com",
+    "icon": "📦",
+    "logo": "https://cdn.simpleicons.org/laravel/FF2D20",
+    "status": "active"
+  },
+  {
+    "name": "App Two",
+    "description": "Short description of what this app does.",
+    "url": "https://app2.yourdomain.com",
+    "icon": "🗂️",
+    "logo": "https://cdn.simpleicons.org/docker/2496ED",
+    "status": "active"
+  },
+  {
+    "name": "App Three (Maintenance)",
+    "description": "Currently under maintenance, temporarily unavailable.",
+    "url": "https://app3.yourdomain.com",
+    "icon": "🛠️",
+    "logo": "https://cdn.simpleicons.org/trello/0052CC",
+    "status": "maintenance"
+  }
+]

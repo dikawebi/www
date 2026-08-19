@@ -1,0 +1,132 @@
+:root {
+  --bg: #0f172a;
+  --card-bg: #1e293b;
+  --card-hover: #273449;
+  --text: #e2e8f0;
+  --muted: #94a3b8;
+  --accent: #38bdf8;
+  --maintenance: #f59e0b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.portal-header {
+  text-align: center;
+  padding: 48px 20px 24px;
+}
+
+.company-logo {
+  width: 120px;
+  height: auto;
+  display: block;
+  margin: 0 auto 16px;
+  object-fit: contain;
+}
+
+.portal-header h1 {
+  margin: 0 0 8px;
+  font-size: 2rem;
+}
+
+.portal-header p {
+  margin: 0;
+  color: var(--muted);
+}
+
+.app-grid {
+  flex: 1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+  padding: 24px 20px 48px;
+}
+
+.loading {
+  color: var(--muted);
+  text-align: center;
+  grid-column: 1 / -1;
+}
+
+.app-card {
+  background: var(--card-bg);
+  border-radius: 12px;
+  padding: 24px;
+  text-decoration: none;
+  color: var(--text);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.15s ease, background 0.15s ease;
+  border: 1px solid transparent;
+}
+
+.app-card:hover {
+  background: var(--card-hover);
+  transform: translateY(-2px);
+  border-color: var(--accent);
+}
+
+.app-card.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.app-icon {
+  font-size: 2rem;
+}
+
+.app-icon img {
+  width: 40px;
+  height: 40px;
+  object-fit: contain;
+  display: block;
+}
+
+.app-name {
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+.app-desc {
+  font-size: 0.9rem;
+  color: var(--muted);
+}
+
+.app-status {
+  margin-top: 8px;
+  display: inline-block;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  border-radius: 999px;
+  width: fit-content;
+}
+
+.app-status.active {
+  background: rgba(56, 189, 248, 0.15);
+  color: var(--accent);
+}
+
+.app-status.maintenance {
+  background: rgba(245, 158, 11, 0.15);
+  color: var(--maintenance);
+}
+
+.portal-footer {
+  text-align: center;
+  padding: 16px;
+  color: var(--muted);
+  font-size: 0.85rem;
+}
