@@ -33,6 +33,10 @@
         }
     },
     "scripts": {
+        "vercel-build": [
+        "composer install --no-dev --optimize-autoloader",
+        "npm install && npm run build"
+    ],
         "setup": [
             "composer install",
             "@php -r \"file_exists('.env') || copy('.env.example', '.env');\"",
