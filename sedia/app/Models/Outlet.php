@@ -54,4 +54,14 @@ class Outlet extends Model
     {
         return $this->hasMany(StockTransfer::class, 'to_outlet_id');
     }
+
+    public function employeeTransactions(): HasMany
+    {
+        return $this->hasMany(EmployeeTransaction::class);
+    }
+
+    public function payrolls(): HasMany
+    {
+        return $this->hasMany(Payroll::class);
+    }
 }

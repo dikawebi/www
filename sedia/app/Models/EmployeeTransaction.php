@@ -11,7 +11,7 @@ class EmployeeTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'employee_id', 'type', 'amount', 'trans_date', 'status', 'note',
+        'employee_id', 'outlet_id', 'type', 'amount', 'trans_date', 'status', 'note',
     ];
 
     protected $casts = [
@@ -22,5 +22,10 @@ class EmployeeTransaction extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function outlet(): BelongsTo
+    {
+        return $this->belongsTo(Outlet::class);
     }
 }

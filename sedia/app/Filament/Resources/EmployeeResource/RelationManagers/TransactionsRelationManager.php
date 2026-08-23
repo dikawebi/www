@@ -95,7 +95,12 @@ class TransactionsRelationManager extends RelationManager
                     ]),
             ])
             ->headerActions([
-                CreateAction::make(),
+                CreateAction::make()
+                    ->mutateFormDataUsing(function (array $data): array {
+                        $data['outlet_id'] = $this->getOwnerRecord()->outlet_id;
+
+                        return $data;
+                    }),
             ])
             ->recordActions([
                 EditAction::make(),

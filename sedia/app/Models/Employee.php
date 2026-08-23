@@ -36,6 +36,11 @@ class Employee extends Model
         return $this->hasMany(EmployeeTransaction::class);
     }
 
+    public function payrolls(): HasMany
+    {
+        return $this->hasMany(Payroll::class);
+    }
+
     public function salesTransactions(): HasMany
     {
         return $this->hasMany(SalesTransaction::class, 'cashier_id');
