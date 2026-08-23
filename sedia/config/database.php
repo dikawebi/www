@@ -97,6 +97,17 @@ return [
             'prefix_indexes' => true,
             'search_path' => 'public',
             'sslmode' => env('DB_SSLMODE', 'prefer'),
+            // WAJIB kalau DB_PORT mengarah ke Supabase Transaction Pooler (6543,
+            // PgBouncer transaction-mode). Pooler itu bisa melempar tiap transaksi
+            // ke koneksi fisik berbeda-beda, jadi named prepared statement PDO
+            // (dibuat di satu koneksi) bisa "hilang" pas dipakai lagi — muncul
+            // sebagai error "prepared statement ... does not exist". Emulasi
+            // prepare di client (PHP), bukan di server, menghindari masalah ini
+            // sepenuhnya, dengan sedikit trade-off performa yang biasanya nggak
+            // terasa untuk skala aplikasi seperti ini.
+            'options' => [
+                \PDO::ATTR_EMULATE_PREPARES => true,
+            ],
         ],
 
         'sqlsrv' => [
