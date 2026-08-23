@@ -37,12 +37,14 @@ class StockOpnameResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
+        /** @var User $user */
         $user = Auth::user();
         return ($user?->isAdmin() || $record->outlet_id === $user?->outlet_id) && $record->status === 'draft';
     }
 
     public static function canDelete(Model $record): bool
     {
+                /** @var User $user */
         $user = Auth::user();
         return $user?->isAdmin() ?? false;
     }

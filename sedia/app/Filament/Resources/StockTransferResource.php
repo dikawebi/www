@@ -37,6 +37,7 @@ class StockTransferResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
+         /** @var User $user */
         $user = Auth::user();
 
         if ($user?->isAdmin()) {
@@ -48,6 +49,7 @@ class StockTransferResource extends Resource
 
     public static function canDelete(Model $record): bool
     {
+         /** @var User $user */
         $user = Auth::user();
         return $user?->isAdmin() ?? false;
     }
@@ -56,7 +58,7 @@ class StockTransferResource extends Resource
     {
         $query = parent::getEloquentQuery();
         $user = Auth::user();
-
+ /** @var User $user */
         if ($user?->isAdmin()) {
             return $query;
         }
@@ -163,6 +165,7 @@ class StockTransferResource extends Resource
                     ->visible(function (StockTransfer $record) {
                         if ($record->status !== 'draft') return false;
                         if ($record->source === 'purchase') return false;
+                         /** @var User $user */
                         $user = Auth::user();
                         return $user?->isAdmin() || $record->from_outlet_id === $user?->outlet_id;
                     })
@@ -186,6 +189,7 @@ class StockTransferResource extends Resource
                     ->modalHeading('Konfirmasi Penerimaan Barang')
                     ->modalDescription('Stok akan masuk dan ditambahkan ke gudang outlet tujuan.')
                     ->visible(function (StockTransfer $record) {
+                         /** @var User $user */
                         $user = Auth::user();
                         $isAuthorized = $user?->isAdmin() || $record->to_outlet_id === $user?->outlet_id;
                         if (! $isAuthorized) return false;
