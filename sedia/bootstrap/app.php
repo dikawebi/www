@@ -12,7 +12,19 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Vercel meneruskan tiap request lewat proxy edge-nya sendiri. Tanpa
+        // trustProxies, Laravel tidak tahu request asli itu HTTPS, dari host
+        // mana, dan IP asli client-nya — ini bisa bikin CSRF/session ganjil
+        // (cookie secure-flag mismatch, X-Forwarded-Proto diabaikan) yang
+        // gejalanya macam-macam: CSS ke-generate http://, atau request POST
+        // (login, Livewire) ditolak.
+        $middleware->trustProxies(
+            at: '*',
+            headers: Request::HEADER_X_FORWARDED_FOR
+                | Request::HEADER_X_FORWARDED_HOST
+                | Request::HEADER_X_FORWARDED_PORT
+                | Request::HEADER_X_FORWARDED_PROTO,
+        );
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         $exceptions->shouldRenderJsonWhen(
