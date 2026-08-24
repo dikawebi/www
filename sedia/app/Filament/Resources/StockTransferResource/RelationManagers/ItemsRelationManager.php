@@ -4,6 +4,8 @@ namespace App\Filament\Resources\StockTransferResource\RelationManagers;
 
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Schemas\Components\Utilities\Get;
+use App\Models\Stock;
 use Filament\Resources\RelationManagers\RelationManager;
 use Filament\Schemas\Schema;
 use Filament\Actions\CreateAction;
@@ -26,12 +28,23 @@ class ItemsRelationManager extends RelationManager
                 ->relationship('ingredient', 'name')
                 ->searchable()
                 ->preload()
-                ->required(),
+                ->required()
+                ->reactive()
+                ->afterStateUpdated(fn ($state, $set, $livewire) => 
+                    $set('available_stock', Stock::where('ingredient_id', $state)
+                        ->where('outlet_id', $livewire->ownerRecord->from_outlet_id)
+                        ->value('quantity') ?? 0)
+                ),
+            TextInput::make('available_stock')
+                ->label('Stok Tersedia di Outlet Asal')
+                ->disabled()
+                ->numeric(),
             TextInput::make('quantity')
-                ->label('Jumlah')
+                ->label('Jumlah yang akan di-transfer')
                 ->numeric()
                 ->required()
-                ->minValue(0.001),
+                ->minValue(0.001)
+                ->maxValue(fn (Get $get) => $get('available_stock')),
         ]);
     }
 

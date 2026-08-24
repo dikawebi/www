@@ -62,6 +62,11 @@ class OutletContext
 
         return static::selectableOutlets()->pluck('name', 'id')->all();
     }
+    public static function allOutletOptions(): array
+    {
+        return Outlet::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all();
+    }
+
 
     public static function defaultOutletId(): ?int
     {

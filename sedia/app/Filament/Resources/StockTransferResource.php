@@ -8,6 +8,8 @@ use App\Models\StockTransfer;
 use App\Models\User;
 use App\Services\StockService;
 use App\Support\OutletContext;
+use Filament\Schemas\Components\Utilities\Get;
+
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -90,14 +92,14 @@ class StockTransferResource extends Resource
                 ->preload()
                 ->default(fn () => $currentOutletId)
                 ->disabled(! $isAdmin)
-                ->required()
+                ->required(fn (Get $get) => $get('source') === 'transfer')
+                ->hidden(fn (Get $get) => $get('source') === 'purchase')
                 ->dehydrated(true),
             Select::make('to_outlet_id')
                 ->label('Ke Outlet')
-                ->options(OutletContext::selectableOutletOptions())
+                ->options(OutletContext::allOutletOptions())
                 ->searchable()
                 ->preload()
-                ->default(fn () => $currentOutletId)
                 ->required(),
             DateTimePicker::make('transferred_at')
                 ->label('Waktu Pengiriman')
