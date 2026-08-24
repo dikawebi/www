@@ -42,12 +42,13 @@ class DashboardPanelProvider extends PanelProvider
                 NavigationGroup::make('Produk'),
                 NavigationGroup::make('Persediaan'),
                 NavigationGroup::make('Operasional'),
+                NavigationGroup::make('Laporan'),
                 NavigationGroup::make('Pengaturan'),
             ])
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
-               // FilamentInfoWidget::class,
+                FilamentInfoWidget::class,
             ])
             ->middleware([
                 EncryptCookies::class,

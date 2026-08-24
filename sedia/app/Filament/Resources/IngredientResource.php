@@ -70,6 +70,12 @@ class IngredientResource extends Resource
                     'porsi' => 'Porsi',
                 ])
                 ->required(),
+            TextInput::make('cost_per_unit')
+                ->label('Harga beli / unit')
+                ->numeric()
+                ->prefix('Rp')
+                ->default(0)
+                ->helperText('Harga beli per satuan (sama dengan Satuan di atas). Dipakai untuk hitung HPP & margin menu.'),
             TextInput::make('min_stock')
                 ->label('Stock minimum (reorder point)')
                 ->numeric()
@@ -92,6 +98,9 @@ class IngredientResource extends Resource
                 TextColumn::make('unit')
                     ->label('Satuan')
                     ->badge(),
+                TextColumn::make('cost_per_unit')
+                    ->label('Harga beli/unit')
+                    ->money('IDR'),
                 TextColumn::make('min_stock')
                     ->label('Min. stock')
                     ->numeric(3),

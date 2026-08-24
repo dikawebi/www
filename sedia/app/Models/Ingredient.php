@@ -14,9 +14,10 @@ class Ingredient extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'unit', 'min_stock', 'is_active'];
+    protected $fillable = ['name', 'unit', 'cost_per_unit', 'min_stock', 'is_active'];
 
     protected $casts = [
+        'cost_per_unit' => 'decimal:2',
         'min_stock' => 'decimal:3',
         'is_active' => 'boolean',
     ];
