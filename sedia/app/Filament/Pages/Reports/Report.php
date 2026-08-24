@@ -58,4 +58,27 @@ abstract class Report extends Page
     {
         return 'Rp '.number_format((float) $value, 0, ',', '.');
     }
+
+    /**
+     * Preset rentang tanggal cepat, ditampilkan sebagai tombol shortcut di
+     * atas filter. Key => [start, end, label].
+     *
+     * @return array<string, array{0: string, 1: string, 2: string}>
+     */
+    public function quickRanges(): array
+    {
+        $today = now();
+
+        return [
+            'today' => [$today->copy()->toDateString(), $today->copy()->toDateString(), 'Hari Ini'],
+            'this_week' => [$today->copy()->startOfWeek()->toDateString(), $today->copy()->endOfWeek()->toDateString(), 'Minggu Ini'],
+            'this_month' => [$today->copy()->startOfMonth()->toDateString(), $today->copy()->toDateString(), 'Bulan Ini'],
+            'last_month' => [$today->copy()->subMonthNoOverflow()->startOfMonth()->toDateString(), $today->copy()->subMonthNoOverflow()->endOfMonth()->toDateString(), 'Bulan Lalu'],
+        ];
+    }
+
+    public function isActiveQuickRange(string $start, string $end): bool
+    {
+        return $this->startDate === $start && $this->endDate === $end;
+    }
 }

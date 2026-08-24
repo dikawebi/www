@@ -3,8 +3,10 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SalesTransactionResource\Pages;
+use App\Models\Employee;
 use App\Models\MenuItem;
 use App\Models\SalesTransaction;
+use App\Support\OutletContext;
 use BackedEnum;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
@@ -71,15 +73,27 @@ class SalesTransactionResource extends Resource
         return $schema->components([
             Select::make('outlet_id')
                 ->label('Outlet')
-                ->relationship('outlet', 'name')
+                ->options(fn () => OutletContext::selectableOutletOptions())
                 ->searchable()
                 ->preload()
-                ->required(),
+                ->live()
+                ->default(fn () => OutletContext::defaultOutletId())
+                ->required()
+                ->afterStateUpdated(fn ($set) => $set('cashier_id', null)),
             Select::make('cashier_id')
                 ->label('Kasir')
-                ->relationship('cashier', 'name')
+                ->options(function (Get $get) {
+                    $outletId = $get('outlet_id');
+
+                    return Employee::query()
+                        ->when($outletId, fn ($q) => $q->where('outlet_id', $outletId))
+                        ->where('status', 'active')
+                        ->orderBy('name')
+                        ->pluck('name', 'id');
+                })
                 ->searchable()
-                ->preload(),
+                ->preload()
+                ->helperText('Daftar kasir mengikuti outlet yang dipilih di atas.'),
             TextInput::make('invoice_number')
                 ->label('No. Invoice')
                 ->default(fn () => 'INV-'.now()->format('Ymd').'-'.strtoupper(Str::random(5)))

@@ -45,6 +45,14 @@ class DkriukSeeder extends Seeder
         DB::transaction(function () {
             $this->resetOldOutletAndMenuData();
 
+            $admin = User::create([
+            'name' => 'Admin Utama',
+            'email' => 'administrator@sedia.com',
+            'password' => Hash::make('password'),
+            'role' => 'admin',
+            'outlet_id' => null,
+        ]);
+
             // 1. Outlets
             $sempu = Outlet::firstOrCreate(
                 ['name' => 'Sempu'],
@@ -136,6 +144,8 @@ class DkriukSeeder extends Seeder
 
     private function createEmployeeWithLogin(string $name, string $email, Outlet $outlet): Employee
     {
+
+
         $user = User::firstOrCreate(
             ['email' => $email],
             [
@@ -150,5 +160,9 @@ class DkriukSeeder extends Seeder
             ['name' => $name, 'outlet_id' => $outlet->id],
             ['user_id' => $user->id, 'status' => 'active', 'base_salary' => 0],
         );
+
+
     }
+
+
 }
