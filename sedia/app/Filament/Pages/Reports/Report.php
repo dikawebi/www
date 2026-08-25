@@ -2,7 +2,9 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Models\Outlet;
 use App\Support\OutletContext;
+use Carbon\Carbon;
 use Filament\Pages\Page;
 use UnitEnum;
 
@@ -80,5 +82,43 @@ abstract class Report extends Page
     public function isActiveQuickRange(string $start, string $end): bool
     {
         return $this->startDate === $start && $this->endDate === $end;
+    }
+
+    /**
+     * Label periode untuk header cetak, misal "01 Agu 2026 – 25 Agu 2026".
+     */
+    public function periodLabel(): string
+    {
+        $start = Carbon::parse($this->startDate)->translatedFormat('d M Y');
+        $end = Carbon::parse($this->endDate)->translatedFormat('d M Y');
+
+        return $start === $end ? $start : "{$start} – {$end}";
+    }
+
+    /**
+     * Nama outlet aktif untuk header cetak: mengikuti pilihan admin
+     * atau outlet tempat staff ditugaskan.
+     */
+    public function currentOutletName(): string
+    {
+        $outletId = OutletContext::currentOutletId() ?? $this->outletId;
+
+        if (! $outletId) {
+            return 'Semua Outlet';
+        }
+
+        return Outlet::query()->find($outletId)?->name ?? '—';
+    }
+
+    /**
+     * Ringkasan angka kunci yang tampil sebagai KPI cards di atas tabel.
+     * Tiap item: ['label' => string, 'value' => string (sudah terformat)].
+     * Override di tiap report konkret; kosong = KPI grid disembunyikan.
+     *
+     * @return array<int, array{label: string, value: string}>
+     */
+    public function getSummary(): array
+    {
+        return [];
     }
 }

@@ -10,8 +10,11 @@ use Illuminate\Support\Facades\DB;
 class MenuBestSellerReport extends Report
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-fire';
+
     protected static ?string $navigationLabel = 'Menu Terlaris';
+
     protected static ?int $navigationSort = 2;
+
     protected static ?string $title = 'Laporan Menu Terlaris';
 
     protected string $view = 'filament.pages.reports.menu-best-seller-report';
@@ -45,5 +48,19 @@ class MenuBestSellerReport extends Report
             'qty_sold' => (int) $row->qty_sold,
             'total_revenue' => (float) $row->total_revenue,
         ]);
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    public function getSummary(): array
+    {
+        $rows = $this->getRows();
+
+        return [
+            ['label' => 'Total Qty Terjual', 'value' => number_format((int) $rows->sum('qty_sold'))],
+            ['label' => 'Total Omzet', 'value' => $this->formatRupiah((float) $rows->sum('total_revenue'))],
+            ['label' => 'Jumlah Menu Terjual', 'value' => number_format($rows->count())],
+        ];
     }
 }

@@ -11,8 +11,11 @@ use Illuminate\Support\Facades\DB;
 class MenuMarginReport extends Report
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-calculator';
+
     protected static ?string $navigationLabel = 'Laba Kotor per Menu';
+
     protected static ?int $navigationSort = 6;
+
     protected static ?string $title = 'Laporan Laba Kotor per Menu';
 
     protected string $view = 'filament.pages.reports.menu-margin-report';
@@ -77,5 +80,25 @@ class MenuMarginReport extends Report
         })
             ->sortByDesc('gross_margin')
             ->values();
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    public function getSummary(): array
+    {
+        $rows = $this->getRows();
+
+        $revenue = (float) $rows->sum('revenue');
+        $totalHpp = (float) $rows->sum('total_hpp');
+        $grossMargin = (float) $rows->sum('gross_margin');
+        $marginPct = $revenue > 0 ? ($grossMargin / $revenue) * 100 : 0;
+
+        return [
+            ['label' => 'Total Omzet', 'value' => $this->formatRupiah($revenue)],
+            ['label' => 'Total HPP', 'value' => $this->formatRupiah($totalHpp)],
+            ['label' => 'Laba Kotor', 'value' => $this->formatRupiah($grossMargin)],
+            ['label' => 'Margin Rata-rata', 'value' => number_format($marginPct, 1).'%'],
+        ];
     }
 }

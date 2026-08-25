@@ -11,8 +11,11 @@ use Illuminate\Support\Collection;
 class PayrollKasbonReport extends Report
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
+
     protected static ?string $navigationLabel = 'Gaji & Kasbon';
+
     protected static ?int $navigationSort = 5;
+
     protected static ?string $title = 'Laporan Rekap Gaji & Kasbon';
 
     protected string $view = 'filament.pages.reports.payroll-kasbon-report';
@@ -78,5 +81,21 @@ class PayrollKasbonReport extends Report
             ->filter(fn (array $row) => $row['outstanding'] > 0)
             ->sortByDesc('outstanding')
             ->values();
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    public function getSummary(): array
+    {
+        $payrollRows = $this->getPayrollRows();
+        $kasbonRows = $this->getOutstandingKasbonRows();
+
+        return [
+            ['label' => 'Total Gaji Dibayar', 'value' => $this->formatRupiah((float) $payrollRows->sum('total_paid'))],
+            ['label' => 'Total Bonus', 'value' => $this->formatRupiah((float) $payrollRows->sum('total_bonus'))],
+            ['label' => 'Potongan Kasbon', 'value' => $this->formatRupiah((float) $payrollRows->sum('total_kasbon_deduction'))],
+            ['label' => 'Saldo Kasbon Berjalan', 'value' => $this->formatRupiah((float) $kasbonRows->sum('outstanding'))],
+        ];
     }
 }

@@ -11,8 +11,11 @@ use Illuminate\Support\Facades\DB;
 class StockOpnameVarianceReport extends Report
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-scale';
+
     protected static ?string $navigationLabel = 'Selisih Stock Opname';
+
     protected static ?int $navigationSort = 4;
+
     protected static ?string $title = 'Laporan Selisih Stock Opname';
 
     protected string $view = 'filament.pages.reports.stock-opname-variance-report';
@@ -52,5 +55,21 @@ class StockOpnameVarianceReport extends Report
                 'abs_difference' => (float) $row->abs_difference,
             ];
         });
+    }
+
+    /**
+     * @return array<int, array{label: string, value: string}>
+     */
+    public function getSummary(): array
+    {
+        $rows = $this->getRows();
+        $netDifference = (float) $rows->sum('net_difference');
+        $signedNet = ($netDifference > 0 ? '+' : '').number_format($netDifference, 2);
+
+        return [
+            ['label' => 'Item Diopname', 'value' => number_format((int) $rows->sum('opname_count'))],
+            ['label' => 'Bahan dengan Selisih', 'value' => number_format($rows->where('abs_difference', '>', 0)->count())],
+            ['label' => 'Selisih Bersih', 'value' => $signedNet],
+        ];
     }
 }
