@@ -76,7 +76,7 @@ class SalesTransactionResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        $isAdmin = Auth::user()?->isAdmin() ?? false;
+        $isAdmin = OutletContext::user()?->isAdmin() ?? false;
 
         return $schema->components([
             Select::make('outlet_id')

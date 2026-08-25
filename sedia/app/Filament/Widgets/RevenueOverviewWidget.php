@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\SalesTransaction;
+use App\Models\User;
 use Filament\Widgets\StatsOverviewWidget as BaseWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
 use Illuminate\Support\Facades\Auth;
@@ -11,6 +12,7 @@ class RevenueOverviewWidget extends BaseWidget
 {
     protected function getStats(): array
     {
+        /** @var User|null $user */
         $user = Auth::user();
         $query = SalesTransaction::query()->where('status', 'completed');
 

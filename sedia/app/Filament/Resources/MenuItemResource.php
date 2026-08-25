@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MenuItemResource\Pages;
 use App\Filament\Resources\MenuItemResource\RelationManagers\RecipesRelationManager;
 use App\Models\MenuItem;
+use App\Support\OutletContext;
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -15,7 +16,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class MenuItemResource extends Resource
@@ -32,22 +32,22 @@ class MenuItemResource extends Resource
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
     public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
     public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
     public static function canDeleteAny(): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
     public static function form(Schema $schema): Schema

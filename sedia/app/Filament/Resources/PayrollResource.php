@@ -42,7 +42,7 @@ class PayrollResource extends Resource
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
     public static function canEdit(Model $record): bool

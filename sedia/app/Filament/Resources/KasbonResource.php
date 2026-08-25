@@ -129,7 +129,7 @@ class KasbonResource extends Resource
                 ])
                 ->default('pending')
                 ->required()
-                ->disabled(fn (?EmployeeTransaction $record) => $record && $record->status !== 'pending' && ! (Auth::user()?->isAdmin() ?? false))
+                ->disabled(fn (?EmployeeTransaction $record) => $record && $record->status !== 'pending' && ! (OutletContext::user()?->isAdmin() ?? false))
                 ->dehydrated(true),
             Textarea::make('note')
                 ->label('Catatan')

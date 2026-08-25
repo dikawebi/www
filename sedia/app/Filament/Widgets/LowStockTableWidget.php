@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\Stock;
+use App\Models\User;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 use Filament\Widgets\TableWidget;
@@ -14,6 +15,7 @@ class LowStockTableWidget extends TableWidget
 
     public function table(Table $table): Table
     {
+        /** @var User|null $user */
         $user = Auth::user();
         $query = Stock::query()->with(['outlet', 'ingredient'])->whereHas('ingredient', function ($q) {
             $q->whereColumn('stocks.quantity', '<=', 'ingredients.min_stock');

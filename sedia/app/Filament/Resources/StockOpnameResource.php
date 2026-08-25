@@ -55,6 +55,7 @@ class StockOpnameResource extends Resource
 
     public static function canView(Model $record): bool
     {
+        /** @var User|null $user */
         $user = Auth::user();
 
         return $user?->isAdmin() || $record->outlet_id === $user?->outlet_id;

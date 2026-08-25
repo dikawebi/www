@@ -3,6 +3,7 @@
 namespace App\Filament\Widgets;
 
 use App\Models\SalesTransaction;
+use App\Models\User;
 use Filament\Widgets\ChartWidget;
 use Illuminate\Support\Facades\Auth;
 
@@ -12,6 +13,7 @@ class SalesTrendChartWidget extends ChartWidget
 
     protected function getData(): array
     {
+        /** @var User|null $user */
         $user = Auth::user();
         $query = SalesTransaction::query()->where('status', 'completed');
 

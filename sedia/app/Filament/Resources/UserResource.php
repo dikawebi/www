@@ -14,7 +14,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class UserResource extends Resource
@@ -31,29 +31,27 @@ class UserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        $user = Auth::user();
-
-        return $user?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
     public static function canCreate(): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
-    public static function canEdit($record): bool
+    public static function canEdit(Model $record): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
-    public static function canDelete($record): bool
+    public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
     public static function canDeleteAny(): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
     public static function form(Schema $schema): Schema
