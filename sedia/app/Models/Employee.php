@@ -46,12 +46,13 @@ class Employee extends Model
         return $this->hasMany(SalesTransaction::class, 'cashier_id');
     }
 
-    // Saldo kasbon berjalan: total kasbon dikurangi total gaji yang sudah dibayarkan
+    // Saldo kasbon berjalan: total kasbon dikurangi total pelunasan (gaji transaksi + potongan payroll paid)
     public function outstandingKasbon(): float
     {
         $kasbon = $this->transactions()->where('type', 'kasbon')->where('status', 'approved')->sum('amount');
-        $paid = $this->transactions()->whereIn('type', ['gaji'])->where('status', 'approved')->sum('amount');
+        $paidViaTransactions = $this->transactions()->whereIn('type', ['gaji'])->where('status', 'approved')->sum('amount');
+        $paidViaPayroll = $this->payrolls()->where('status', 'paid')->sum('kasbon_deduction');
 
-        return (float) $kasbon - (float) $paid;
+        return (float) $kasbon - (float) $paidViaTransactions - (float) $paidViaPayroll;
     }
 }

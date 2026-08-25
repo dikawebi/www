@@ -14,7 +14,7 @@ class RevenueOverviewWidget extends BaseWidget
         $user = Auth::user();
         $query = SalesTransaction::query()->where('status', 'completed');
 
-        if ($user && !$user->isAdmin() && $user->outlet_id) {
+        if ($user && ! $user->isAdmin() && $user->outlet_id) {
             $query->where('outlet_id', $user->outlet_id);
         }
 
@@ -23,8 +23,8 @@ class RevenueOverviewWidget extends BaseWidget
         $count = (clone $query)->count();
 
         return [
-            Stat::make('Omzet Hari Ini', 'Rp ' . number_format($today, 0, ',', '.')),
-            Stat::make('Omzet Bulan Ini', 'Rp ' . number_format($month, 0, ',', '.')),
+            Stat::make('Omzet Hari Ini', 'Rp '.number_format($today, 0, ',', '.')),
+            Stat::make('Omzet Bulan Ini', 'Rp '.number_format($month, 0, ',', '.')),
             Stat::make('Transaksi Selesai', number_format($count)),
         ];
     }

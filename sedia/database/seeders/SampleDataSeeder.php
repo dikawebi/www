@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\Employee;
-use App\Models\EmployeeTransaction;
 use App\Models\Ingredient;
 use App\Models\MenuItem;
 use App\Models\MenuRecipe;

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\PayrollResource\Pages;
 use App\Models\Employee;
 use App\Models\Payroll;
+use App\Models\User;
 use App\Support\OutletContext;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
@@ -12,8 +13,8 @@ use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Components\Utilities\Get;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -26,26 +27,40 @@ use UnitEnum;
 class PayrollResource extends Resource
 {
     protected static ?string $model = Payroll::class;
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-currency-dollar';
+
     protected static string|UnitEnum|null $navigationGroup = 'Operasional';
+
     protected static ?string $navigationLabel = 'Penggajian';
+
     protected static ?int $navigationSort = 3;
+
     protected static ?string $modelLabel = 'Penggajian';
+
     protected static ?string $pluralModelLabel = 'Penggajian';
 
-    public static function canCreate(): bool { return (bool) Auth::user(); }
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
 
     public static function canEdit(Model $record): bool
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
+        if ($record->status === 'paid') {
+            return false;
+        }
+
         return $user?->isAdmin() || $record->outlet_id === $user?->outlet_id;
     }
 
     public static function canDelete(Model $record): bool
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
+
         return $user?->isAdmin() ?? false;
     }
 
@@ -56,7 +71,7 @@ class PayrollResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
         $isAdmin = $user?->isAdmin() ?? false;
 
@@ -71,6 +86,15 @@ class PayrollResource extends Resource
                 ->required()
                 ->disabled(! $isAdmin)
                 ->dehydrated(true)
+                ->rules([
+                    function () {
+                        return function (string $attribute, $value, \Closure $fail) {
+                            if (filled($value) && ! array_key_exists((int) $value, OutletContext::selectableOutletOptions())) {
+                                $fail('Outlet tidak valid untuk akun Anda.');
+                            }
+                        };
+                    },
+                ])
                 ->afterStateUpdated(fn ($set) => $set('employee_id', null)),
             Select::make('employee_id')
                 ->label('Nama')
@@ -148,7 +172,9 @@ class PayrollResource extends Resource
                     'cancelled' => 'Dibatalkan',
                 ])
                 ->default('draft')
-                ->required(),
+                ->required()
+                ->disabled(fn (?Payroll $record) => $record?->status === 'paid')
+                ->dehydrated(true),
             Textarea::make('note')
                 ->label('Catatan')
                 ->columnSpanFull(),

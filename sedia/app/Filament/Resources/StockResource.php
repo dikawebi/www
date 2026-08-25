@@ -4,7 +4,6 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\StockResource\Pages;
 use App\Models\Stock;
-use App\Models\User;
 use App\Support\OutletContext;
 use BackedEnum;
 use Filament\Resources\Resource;
@@ -19,22 +18,41 @@ use UnitEnum;
 class StockResource extends Resource
 {
     protected static ?string $model = Stock::class;
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-archive-box';
+
     protected static string|UnitEnum|null $navigationGroup = 'Persediaan';
+
     protected static ?string $navigationLabel = 'Saldo Stok';
+
     protected static ?int $navigationSort = 2;
+
     protected static ?string $pluralModelLabel = 'Saldo Stok';
 
-    public static function canCreate(): bool { return false; }
-    public static function canEdit(Model $record): bool { return false; }
-    public static function canDelete(Model $record): bool { return false; }
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return false;
+    }
 
     public static function getEloquentQuery(): Builder
     {
         return OutletContext::visibleQuery(parent::getEloquentQuery());
     }
 
-    public static function form(Schema $schema): Schema { return $schema->components([]); }
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->components([]);
+    }
 
     public static function table(Table $table): Table
     {
@@ -58,5 +76,8 @@ class StockResource extends Resource
             ->poll('30s');
     }
 
-    public static function getPages(): array { return ['index' => Pages\ListStocks::route('/')]; }
+    public static function getPages(): array
+    {
+        return ['index' => Pages\ListStocks::route('/')];
+    }
 }

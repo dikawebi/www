@@ -27,7 +27,7 @@ class StockTransfer extends Model
 
     protected $casts = [
         'transferred_at' => 'datetime',
-        'received_at'    => 'datetime',
+        'received_at' => 'datetime',
     ];
 
     public function fromOutlet(): BelongsTo

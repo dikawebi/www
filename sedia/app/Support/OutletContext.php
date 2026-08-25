@@ -5,6 +5,7 @@ namespace App\Support;
 use App\Models\Outlet;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Session;
 
 class OutletContext
@@ -13,7 +14,8 @@ class OutletContext
 
     public static function user(): ?User
     {
-        $user = \Illuminate\Support\Facades\Auth::user();
+        $user = Auth::user();
+
         return ($user instanceof User) ? $user : null;
     }
 
@@ -62,11 +64,11 @@ class OutletContext
 
         return static::selectableOutlets()->pluck('name', 'id')->all();
     }
+
     public static function allOutletOptions(): array
     {
         return Outlet::query()->where('is_active', true)->orderBy('name')->pluck('name', 'id')->all();
     }
-
 
     public static function defaultOutletId(): ?int
     {
@@ -110,8 +112,19 @@ class OutletContext
 
     public static function visibleQuery(Builder $query, string $column = 'outlet_id'): Builder
     {
+        $user = static::user();
         $outletId = static::currentOutletId();
 
-        return $outletId ? $query->where($column, $outletId) : $query;
+        if ($outletId) {
+            return $query->where($column, $outletId);
+        }
+
+        // Staff tanpa outlet_id yang valid tidak boleh melihat data outlet manapun
+        // (sebelumnya `null` = tanpa filter → semua outlet terlihat).
+        if ($user && ! $user->isAdmin()) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        return $query;
     }
 }

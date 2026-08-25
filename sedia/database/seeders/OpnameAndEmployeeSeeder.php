@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\StockMovementType;
 use App\Models\Employee;
 use App\Models\EmployeeTransaction;
 use App\Models\Ingredient;
@@ -45,7 +46,7 @@ class OpnameAndEmployeeSeeder extends Seeder
         $stockService->recordMovement(
             outlet: $outletSudirman,
             ingredient: $ingKopi,
-            type: \App\Enums\StockMovementType::OpnameAdjustment,
+            type: StockMovementType::OpnameAdjustment,
             quantity: -0.5,
             reference: $opname,
             createdBy: $staffSudirman->id,

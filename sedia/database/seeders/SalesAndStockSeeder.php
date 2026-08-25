@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Enums\StockMovementType;
 use App\Models\Employee;
 use App\Models\Ingredient;
 use App\Models\MenuItem;
@@ -44,30 +45,30 @@ class SalesAndStockSeeder extends Seeder
             $stockService->recordMovement(
                 outlet: $stockist,
                 ingredient: $ing,
-                type: \App\Enums\StockMovementType::Purchase,
+                type: StockMovementType::Purchase,
                 quantity: 500,
                 createdBy: $admin->id,
                 note: 'Stok awal Gudang Pusat'
             );
         }
 
-        $stockService->recordMovement(outlet: $outletSudirman, ingredient: $ingKopi, type: \App\Enums\StockMovementType::Purchase, quantity: 15, createdBy: $admin->id, note: 'Stok awal');
-        $stockService->recordMovement(outlet: $outletSudirman, ingredient: $ingSusu, type: \App\Enums\StockMovementType::Purchase, quantity: 40, createdBy: $admin->id, note: 'Stok awal');
-        $stockService->recordMovement(outlet: $outletSudirman, ingredient: $ingGula, type: \App\Enums\StockMovementType::Purchase, quantity: 20, createdBy: $admin->id, note: 'Stok awal');
-        $stockService->recordMovement(outlet: $outletSudirman, ingredient: $ingCup, type: \App\Enums\StockMovementType::Purchase, quantity: 200, createdBy: $admin->id, note: 'Stok awal');
-        $stockService->recordMovement(outlet: $outletSudirman, ingredient: $ingStraw, type: \App\Enums\StockMovementType::Purchase, quantity: 200, createdBy: $admin->id, note: 'Stok awal');
+        $stockService->recordMovement(outlet: $outletSudirman, ingredient: $ingKopi, type: StockMovementType::Purchase, quantity: 15, createdBy: $admin->id, note: 'Stok awal');
+        $stockService->recordMovement(outlet: $outletSudirman, ingredient: $ingSusu, type: StockMovementType::Purchase, quantity: 40, createdBy: $admin->id, note: 'Stok awal');
+        $stockService->recordMovement(outlet: $outletSudirman, ingredient: $ingGula, type: StockMovementType::Purchase, quantity: 20, createdBy: $admin->id, note: 'Stok awal');
+        $stockService->recordMovement(outlet: $outletSudirman, ingredient: $ingCup, type: StockMovementType::Purchase, quantity: 200, createdBy: $admin->id, note: 'Stok awal');
+        $stockService->recordMovement(outlet: $outletSudirman, ingredient: $ingStraw, type: StockMovementType::Purchase, quantity: 200, createdBy: $admin->id, note: 'Stok awal');
 
-        $stockService->recordMovement(outlet: $outletBandung, ingredient: $ingKopi, type: \App\Enums\StockMovementType::Purchase, quantity: 2, createdBy: $admin->id, note: 'Stok awal rendah');
-        $stockService->recordMovement(outlet: $outletBandung, ingredient: $ingSusu, type: \App\Enums\StockMovementType::Purchase, quantity: 5, createdBy: $admin->id, note: 'Stok awal rendah');
-        $stockService->recordMovement(outlet: $outletBandung, ingredient: $ingGula, type: \App\Enums\StockMovementType::Purchase, quantity: 3, createdBy: $admin->id, note: 'Stok awal');
-        $stockService->recordMovement(outlet: $outletBandung, ingredient: $ingCup, type: \App\Enums\StockMovementType::Purchase, quantity: 30, createdBy: $admin->id, note: 'Stok awal');
-        $stockService->recordMovement(outlet: $outletBandung, ingredient: $ingStraw, type: \App\Enums\StockMovementType::Purchase, quantity: 30, createdBy: $admin->id, note: 'Stok awal');
+        $stockService->recordMovement(outlet: $outletBandung, ingredient: $ingKopi, type: StockMovementType::Purchase, quantity: 2, createdBy: $admin->id, note: 'Stok awal rendah');
+        $stockService->recordMovement(outlet: $outletBandung, ingredient: $ingSusu, type: StockMovementType::Purchase, quantity: 5, createdBy: $admin->id, note: 'Stok awal rendah');
+        $stockService->recordMovement(outlet: $outletBandung, ingredient: $ingGula, type: StockMovementType::Purchase, quantity: 3, createdBy: $admin->id, note: 'Stok awal');
+        $stockService->recordMovement(outlet: $outletBandung, ingredient: $ingCup, type: StockMovementType::Purchase, quantity: 30, createdBy: $admin->id, note: 'Stok awal');
+        $stockService->recordMovement(outlet: $outletBandung, ingredient: $ingStraw, type: StockMovementType::Purchase, quantity: 30, createdBy: $admin->id, note: 'Stok awal');
 
         for ($i = 6; $i >= 0; $i--) {
             $date = now()->subDays($i);
 
             $txS = SalesTransaction::create([
-                'invoice_number' => 'INV-SUD-' . $date->format('Ymd') . '-001',
+                'invoice_number' => 'INV-SUD-'.$date->format('Ymd').'-001',
                 'outlet_id' => $outletSudirman->id,
                 'cashier_id' => $emp2->id,
                 'transaction_date' => $date,
@@ -95,7 +96,7 @@ class SalesAndStockSeeder extends Seeder
             $stockService->deductForSale($txS);
 
             $txB = SalesTransaction::create([
-                'invoice_number' => 'INV-BDG-' . $date->format('Ymd') . '-001',
+                'invoice_number' => 'INV-BDG-'.$date->format('Ymd').'-001',
                 'outlet_id' => $outletBandung->id,
                 'cashier_id' => $emp3->id,
                 'transaction_date' => $date,

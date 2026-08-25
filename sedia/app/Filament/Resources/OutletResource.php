@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OutletResource\Pages;
 use App\Models\Outlet;
+use App\Models\User;
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -31,29 +32,33 @@ class OutletResource extends Resource
 
     public static function canViewAny(): bool
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
+
         return $user?->isAdmin() ?? false;
     }
 
     public static function canCreate(): bool
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
+
         return $user?->isAdmin() ?? false;
     }
 
     public static function canEdit(Model $record): bool
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
+
         return $user?->isAdmin() ?? false;
     }
 
     public static function canDelete(Model $record): bool
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
+
         return $user?->isAdmin() ?? false;
     }
 

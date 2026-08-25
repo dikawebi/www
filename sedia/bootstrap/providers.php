@@ -1,7 +1,11 @@
 <?php
 
+use App\Providers\AppServiceProvider;
+use App\Providers\Filament\DashboardPanelProvider;
+use App\Providers\ObserverServiceProvider;
+
 return [
-    App\Providers\AppServiceProvider::class,
-    App\Providers\Filament\DashboardPanelProvider::class,
-    App\Providers\ObserverServiceProvider::class,
+    AppServiceProvider::class,
+    DashboardPanelProvider::class,
+    ObserverServiceProvider::class,
 ];

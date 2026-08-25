@@ -14,13 +14,29 @@ return new class extends Migration
                 ->constrained()->cascadeOnDelete();
         });
 
-        // Backfill outlet_id dari outlet karyawannya masing-masing.
-        DB::statement('
-            UPDATE employee_transactions
-            SET outlet_id = employees.outlet_id
-            FROM employees
-            WHERE employees.id = employee_transactions.employee_id
-        ');
+        // Backfill outlet_id dari outlet karyawannya (kompatibel SQLite/MySQL/Postgres).
+        $driver = DB::connection()->getDriverName();
+
+        if ($driver === 'pgsql') {
+            DB::statement('
+                UPDATE employee_transactions
+                SET outlet_id = employees.outlet_id
+                FROM employees
+                WHERE employees.id = employee_transactions.employee_id
+            ');
+        } elseif ($driver === 'sqlite') {
+            DB::statement('
+                UPDATE employee_transactions
+                SET outlet_id = (SELECT employees.outlet_id FROM employees WHERE employees.id = employee_transactions.employee_id)
+                WHERE outlet_id IS NULL
+            ');
+        } else {
+            DB::statement('
+                UPDATE employee_transactions
+                JOIN employees ON employees.id = employee_transactions.employee_id
+                SET employee_transactions.outlet_id = employees.outlet_id
+            ');
+        }
     }
 
     public function down(): void

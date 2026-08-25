@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\StockMovementType;
+use App\Exceptions\InsufficientStockException;
 use App\Models\Ingredient;
 use App\Models\Outlet;
 use App\Models\SalesTransaction;
@@ -14,7 +15,6 @@ use App\Models\StockTransfer;
 use App\Models\StockTransferItem;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use App\Exceptions\InsufficientStockException;
 use RuntimeException;
 
 class StockService
@@ -38,6 +38,8 @@ class StockService
                 ['outlet_id' => $outlet->id, 'ingredient_id' => $ingredient->id],
                 ['quantity' => 0],
             );
+            // Kunci baris stock untuk mencegah lost-update pada request bersamaan.
+            $stock = Stock::whereKey($stock->id)->lockForUpdate()->first() ?? $stock;
 
             $newBalance = (float) $stock->quantity + (float) $quantity;
 
@@ -82,7 +84,7 @@ class StockService
                     $this->recordMovement(
                         outlet: $transaction->outlet,
                         ingredient: $recipe->ingredient,
-                        type: \App\Enums\StockMovementType::SaleDeduction,
+                        type: StockMovementType::SaleDeduction,
                         quantity: -$totalUsed,
                         reference: $transaction,
                         note: "Terjual: {$item->menuItem->name} x{$item->quantity}",
@@ -99,13 +101,19 @@ class StockService
     public function shipTransfer(StockTransfer $transfer, ?int $createdBy = null): void
     {
         DB::transaction(function () use ($transfer, $createdBy) {
+            // Lock baris transfer untuk mencegah double-ship akibat double-click/race.
+            $transfer = StockTransfer::whereKey($transfer->id)->lockForUpdate()->first() ?? $transfer;
             $transfer->load('items.ingredient', 'fromOutlet', 'toOutlet');
+
+            if ($transfer->status !== 'draft') {
+                throw new RuntimeException('Transfer sudah diproses (status: '.$transfer->status.').');
+            }
 
             if ($transfer->source === 'purchase') {
                 throw new RuntimeException('Transfer source purchase tidak bisa dikirim dari outlet asal.');
             }
 
-            if (!$transfer->fromOutlet) {
+            if (! $transfer->fromOutlet) {
                 throw new RuntimeException('Outlet asal belum diisi.');
             }
 
@@ -113,7 +121,7 @@ class StockService
                 $this->recordMovement(
                     outlet: $transfer->fromOutlet,
                     ingredient: $item->ingredient,
-                    type: \App\Enums\StockMovementType::TransferOut,
+                    type: StockMovementType::TransferOut,
                     quantity: -$item->quantity,
                     reference: $transfer,
                     createdBy: $createdBy ?? $transfer->created_by,
@@ -135,9 +143,10 @@ class StockService
     public function receiveTransfer(StockTransfer $transfer, ?int $createdBy = null): void
     {
         DB::transaction(function () use ($transfer, $createdBy) {
+            $transfer = StockTransfer::whereKey($transfer->id)->lockForUpdate()->first() ?? $transfer;
             $transfer->load('items.ingredient', 'fromOutlet', 'toOutlet');
 
-            if (!in_array($transfer->status, ['draft', 'sent'], true)) {
+            if (! in_array($transfer->status, ['draft', 'sent'], true)) {
                 throw new RuntimeException('Transfer sudah diproses.');
             }
 
@@ -149,7 +158,7 @@ class StockService
                 $this->recordMovement(
                     outlet: $transfer->toOutlet,
                     ingredient: $item->ingredient,
-                    type: \App\Enums\StockMovementType::TransferIn,
+                    type: StockMovementType::TransferIn,
                     quantity: $item->quantity,
                     reference: $transfer,
                     createdBy: $createdBy ?? $transfer->created_by,
@@ -182,7 +191,7 @@ class StockService
                     $this->recordMovement(
                         outlet: $transfer->fromOutlet,
                         ingredient: $item->ingredient,
-                        type: \App\Enums\StockMovementType::TransferOut,
+                        type: StockMovementType::TransferOut,
                         quantity: -$item->quantity,
                         reference: $transfer,
                         createdBy: $transfer->created_by,
@@ -193,7 +202,7 @@ class StockService
                 $this->recordMovement(
                     outlet: $transfer->toOutlet,
                     ingredient: $item->ingredient,
-                    type: \App\Enums\StockMovementType::TransferIn,
+                    type: StockMovementType::TransferIn,
                     quantity: $item->quantity,
                     reference: $transfer,
                     createdBy: $transfer->created_by,

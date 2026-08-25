@@ -2,21 +2,19 @@
 
 namespace App\Filament\Resources\StockTransferResource\RelationManagers;
 
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Component;
-use Filament\Schemas\Components\Utilities\Get;
-use Filament\Forms\Set;
 use App\Models\Stock;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Schemas\Schema;
-use Filament\Actions\CreateAction;
 use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -36,10 +34,9 @@ class ItemsRelationManager extends RelationManager
                 ->preload()
                 ->required()
                 ->reactive()
-                ->afterStateUpdated(fn ($state, $set, $livewire) => 
-                    $set('available_stock', Stock::where('ingredient_id', $state)
-                        ->where('outlet_id', $livewire->ownerRecord->from_outlet_id)
-                        ->value('quantity') ?? 0)
+                ->afterStateUpdated(fn ($state, $set, $livewire) => $set('available_stock', Stock::where('ingredient_id', $state)
+                    ->where('outlet_id', $livewire->ownerRecord->from_outlet_id)
+                    ->value('quantity') ?? 0)
                 ),
             TextInput::make('available_stock')
                 ->label('Stok Tersedia di Outlet Asal')
@@ -56,33 +53,35 @@ class ItemsRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        $isDraft = fn () => $this->getOwnerRecord()?->status === 'draft';
+
         return $table
             ->recordTitleAttribute('ingredient.name')
             ->headerActions([
-                CreateAction::make(),
-                Action::make('populateAll')
+                CreateAction::make()->visible($isDraft),
+                Action::make('populateAll')->visible($isDraft)
                     ->label('Tarik Semua Item')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->modalHeading('Pilih Item untuk Ditransfer')
                     ->form([
-                        \Filament\Forms\Components\Repeater::make('items_to_transfer')
+                        Repeater::make('items_to_transfer')
                             ->label('Item Tersedia')
                             ->schema([
-                                \Filament\Forms\Components\Hidden::make('ingredient_id'),
-                                \Filament\Forms\Components\TextInput::make('ingredient_name')
+                                Hidden::make('ingredient_id'),
+                                TextInput::make('ingredient_name')
                                     ->label('Bahan Baku')
                                     ->disabled(),
-                                \Filament\Forms\Components\TextInput::make('available_stock')
+                                TextInput::make('available_stock')
                                     ->label('Stok Tersedia')
                                     ->disabled(),
-                                \Filament\Forms\Components\TextInput::make('transfer_qty')
+                                TextInput::make('transfer_qty')
                                     ->label('Qty Transfer')
                                     ->numeric()
                                     ->default(0),
                             ])
                             ->deletable(false)
                             ->addable(false)
-                            ->columns(4)
+                            ->columns(4),
                     ])
                     ->mutateFormDataUsing(function ($data) {
                         return $data;
@@ -103,13 +102,13 @@ class ItemsRelationManager extends RelationManager
                             $items[] = [
                                 'ingredient_id' => $stock->ingredient_id,
                                 'ingredient_name' => $stock->ingredient->name,
-                                'available_stock' => (float)$stock->quantity,
-                                'transfer_qty' => $existingItem ? (float)$existingItem->quantity : 0,
+                                'available_stock' => (float) $stock->quantity,
+                                'transfer_qty' => $existingItem ? (float) $existingItem->quantity : 0,
                             ];
                         }
-                        
+
                         return [
-                            'items_to_transfer' => $items
+                            'items_to_transfer' => $items,
                         ];
                     })
                     ->action(function (array $data, $livewire) {
@@ -130,8 +129,8 @@ class ItemsRelationManager extends RelationManager
                 TextColumn::make('quantity')->label('Jumlah')->numeric(3),
             ])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()->visible($isDraft),
+                DeleteAction::make()->visible($isDraft),
             ]);
     }
 }

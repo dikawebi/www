@@ -19,7 +19,7 @@ class LowStockTableWidget extends TableWidget
             $q->whereColumn('stocks.quantity', '<=', 'ingredients.min_stock');
         });
 
-        if ($user && !$user->isAdmin() && $user->outlet_id) {
+        if ($user && ! $user->isAdmin() && $user->outlet_id) {
             $query->where('outlet_id', $user->outlet_id);
         }
 

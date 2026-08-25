@@ -8,8 +8,6 @@ use App\Models\StockTransfer;
 use App\Models\User;
 use App\Services\StockService;
 use App\Support\OutletContext;
-use Filament\Schemas\Components\Utilities\Get;
-
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -18,6 +16,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -30,16 +29,23 @@ use UnitEnum;
 class StockTransferResource extends Resource
 {
     protected static ?string $model = StockTransfer::class;
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-arrows-right-left';
+
     protected static string|UnitEnum|null $navigationGroup = 'Persediaan';
+
     protected static ?string $navigationLabel = 'Transfer Stok';
+
     protected static ?int $navigationSort = 3;
 
-    public static function canCreate(): bool { return (bool) Auth::user(); }
+    public static function canCreate(): bool
+    {
+        return (bool) Auth::user();
+    }
 
     public static function canEdit(Model $record): bool
     {
-         /** @var User $user */
+        /** @var User $user */
         $user = Auth::user();
 
         if ($user?->isAdmin()) {
@@ -51,8 +57,9 @@ class StockTransferResource extends Resource
 
     public static function canDelete(Model $record): bool
     {
-         /** @var User $user */
+        /** @var User $user */
         $user = Auth::user();
+
         return $user?->isAdmin() ?? false;
     }
 
@@ -60,9 +67,13 @@ class StockTransferResource extends Resource
     {
         $query = parent::getEloquentQuery();
         $user = Auth::user();
- /** @var User $user */
+        /** @var User $user */
         if ($user?->isAdmin()) {
             return $query;
+        }
+
+        if (! $user?->outlet_id) {
+            return $query->whereRaw('1 = 0');
         }
 
         return $query->where(function ($q) use ($user) {
@@ -94,13 +105,37 @@ class StockTransferResource extends Resource
                 ->disabled(! $isAdmin)
                 ->required(fn (Get $get) => $get('source') === 'transfer')
                 ->hidden(fn (Get $get) => $get('source') === 'purchase')
-                ->dehydrated(true),
+                ->dehydrated(true)
+                ->rules([
+                    function (Get $get) {
+                        return function (string $attribute, $value, \Closure $fail) use ($get) {
+                            if ($get('source') !== 'transfer') {
+                                return;
+                            }
+                            if (filled($value) && ! array_key_exists((int) $value, OutletContext::selectableOutletOptions())) {
+                                $fail('Outlet asal tidak valid untuk akun Anda.');
+                            }
+                        };
+                    },
+                ]),
             Select::make('to_outlet_id')
                 ->label('Ke Outlet')
                 ->options(OutletContext::allOutletOptions())
                 ->searchable()
                 ->preload()
-                ->required(),
+                ->required()
+                ->rules([
+                    function (Get $get) {
+                        return function (string $attribute, $value, \Closure $fail) use ($get) {
+                            if (filled($value) && ! array_key_exists((int) $value, OutletContext::allOutletOptions())) {
+                                $fail('Outlet tujuan tidak valid.');
+                            }
+                            if (filled($value) && filled($get('from_outlet_id')) && (int) $value === (int) $get('from_outlet_id')) {
+                                $fail('Outlet tujuan tidak boleh sama dengan asal.');
+                            }
+                        };
+                    },
+                ]),
             DateTimePicker::make('transferred_at')
                 ->label('Waktu Pengiriman')
                 ->required()
@@ -165,15 +200,21 @@ class StockTransferResource extends Resource
                     ->modalHeading('Konfirmasi Pengiriman')
                     ->modalDescription('Stok di outlet asal akan dipotong setelah barang dikirim.')
                     ->visible(function (StockTransfer $record) {
-                        if ($record->status !== 'draft') return false;
-                        if ($record->source === 'purchase') return false;
-                         /** @var User $user */
+                        if ($record->status !== 'draft') {
+                            return false;
+                        }
+                        if ($record->source === 'purchase') {
+                            return false;
+                        }
+                        /** @var User $user */
                         $user = Auth::user();
+
                         return $user?->isAdmin() || $record->from_outlet_id === $user?->outlet_id;
                     })
                     ->action(function (StockTransfer $record) {
                         if ($record->items()->count() === 0) {
                             Notification::make()->title('Item kosong')->body('Tambahkan item transfer dulu.')->danger()->send();
+
                             return;
                         }
                         try {
@@ -191,16 +232,22 @@ class StockTransferResource extends Resource
                     ->modalHeading('Konfirmasi Penerimaan Barang')
                     ->modalDescription('Stok akan masuk dan ditambahkan ke gudang outlet tujuan.')
                     ->visible(function (StockTransfer $record) {
-                         /** @var User $user */
+                        /** @var User $user */
                         $user = Auth::user();
                         $isAuthorized = $user?->isAdmin() || $record->to_outlet_id === $user?->outlet_id;
-                        if (! $isAuthorized) return false;
-                        if ($record->source === 'purchase') return in_array($record->status, ['draft', 'pending', 'sent']);
+                        if (! $isAuthorized) {
+                            return false;
+                        }
+                        if ($record->source === 'purchase') {
+                            return in_array($record->status, ['draft', 'pending', 'sent']);
+                        }
+
                         return $record->status === 'sent';
                     })
                     ->action(function (StockTransfer $record) {
                         if ($record->items()->count() === 0) {
                             Notification::make()->title('Item kosong')->body('Tambahkan item transfer dulu.')->danger()->send();
+
                             return;
                         }
                         try {
@@ -214,7 +261,10 @@ class StockTransferResource extends Resource
             ->defaultSort('transferred_at', 'desc');
     }
 
-    public static function getRelations(): array { return [ItemsRelationManager::class]; }
+    public static function getRelations(): array
+    {
+        return [ItemsRelationManager::class];
+    }
 
     public static function getPages(): array
     {

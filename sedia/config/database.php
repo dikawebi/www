@@ -106,7 +106,7 @@ return [
             // sepenuhnya, dengan sedikit trade-off performa yang biasanya nggak
             // terasa untuk skala aplikasi seperti ini.
             'options' => [
-                \PDO::ATTR_EMULATE_PREPARES => true,
+                PDO::ATTR_EMULATE_PREPARES => true,
             ],
         ],
 

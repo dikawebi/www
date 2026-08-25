@@ -20,15 +20,40 @@ use UnitEnum;
 class UserResource extends Resource
 {
     protected static ?string $model = User::class;
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-user-circle';
+
     protected static string|UnitEnum|null $navigationGroup = 'Pengaturan';
+
     protected static ?string $navigationLabel = 'Pengguna';
+
     protected static ?int $navigationSort = 1;
 
     public static function canViewAny(): bool
     {
         $user = Auth::user();
+
         return $user?->isAdmin() ?? false;
+    }
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canEdit($record): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canDelete($record): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
     }
 
     public static function form(Schema $schema): Schema

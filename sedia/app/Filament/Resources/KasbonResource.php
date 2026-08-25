@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\KasbonResource\Pages;
 use App\Models\Employee;
 use App\Models\EmployeeTransaction;
+use App\Models\User;
 use App\Support\OutletContext;
 use BackedEnum;
 use Filament\Forms\Components\DatePicker;
@@ -25,26 +26,40 @@ use UnitEnum;
 class KasbonResource extends Resource
 {
     protected static ?string $model = EmployeeTransaction::class;
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-banknotes';
+
     protected static string|UnitEnum|null $navigationGroup = 'Operasional';
+
     protected static ?string $navigationLabel = 'Kasbon';
+
     protected static ?int $navigationSort = 2;
+
     protected static ?string $modelLabel = 'Kasbon';
+
     protected static ?string $pluralModelLabel = 'Kasbon';
 
-    public static function canCreate(): bool { return (bool) Auth::user(); }
+    public static function canCreate(): bool
+    {
+        return (bool) Auth::user();
+    }
 
     public static function canEdit(Model $record): bool
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
+        if ($record->status !== 'pending') {
+            return $user?->isAdmin() ?? false;
+        }
+
         return $user?->isAdmin() || $record->outlet_id === $user?->outlet_id;
     }
 
     public static function canDelete(Model $record): bool
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
+
         return $user?->isAdmin() ?? false;
     }
 
@@ -55,7 +70,7 @@ class KasbonResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        /** @var \App\Models\User $user */
+        /** @var User $user */
         $user = Auth::user();
         $isAdmin = $user?->isAdmin() ?? false;
 
@@ -71,6 +86,15 @@ class KasbonResource extends Resource
                 ->required()
                 ->disabled(! $isAdmin)
                 ->dehydrated(true)
+                ->rules([
+                    function () {
+                        return function (string $attribute, $value, \Closure $fail) {
+                            if (filled($value) && ! array_key_exists((int) $value, OutletContext::selectableOutletOptions())) {
+                                $fail('Outlet tidak valid untuk akun Anda.');
+                            }
+                        };
+                    },
+                ])
                 ->afterStateUpdated(fn ($set) => $set('employee_id', null)),
             Select::make('employee_id')
                 ->label('Karyawan')
@@ -90,6 +114,7 @@ class KasbonResource extends Resource
                 ->label('Nominal Kasbon')
                 ->numeric()
                 ->prefix('Rp')
+                ->minValue(0)
                 ->required(),
             DatePicker::make('trans_date')
                 ->label('Tanggal')
@@ -102,8 +127,10 @@ class KasbonResource extends Resource
                     'approved' => 'Disetujui',
                     'rejected' => 'Ditolak',
                 ])
-                ->default('approved')
-                ->required(),
+                ->default('pending')
+                ->required()
+                ->disabled(fn (?EmployeeTransaction $record) => $record && $record->status !== 'pending' && ! (Auth::user()?->isAdmin() ?? false))
+                ->dehydrated(true),
             Textarea::make('note')
                 ->label('Catatan')
                 ->columnSpanFull(),

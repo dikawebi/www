@@ -23,17 +23,25 @@ use UnitEnum;
 class EmployeeResource extends Resource
 {
     protected static ?string $model = Employee::class;
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-users';
+
     protected static string|UnitEnum|null $navigationGroup = 'Operasional';
+
     protected static ?string $navigationLabel = 'Karyawan';
+
     protected static ?int $navigationSort = 1;
 
-    public static function canCreate(): bool { return (bool) Auth::user(); }
+    public static function canCreate(): bool
+    {
+        return (bool) Auth::user();
+    }
 
     public static function canEdit(Model $record): bool
     {
         /** @var User $user */
         $user = Auth::user();
+
         return $user?->isAdmin() || $record->outlet_id === $user?->outlet_id;
     }
 
@@ -41,6 +49,7 @@ class EmployeeResource extends Resource
     {
         /** @var User $user */
         $user = Auth::user();
+
         return $user?->isAdmin() ?? false;
     }
 
@@ -64,11 +73,23 @@ class EmployeeResource extends Resource
                 ->default(fn () => OutletContext::defaultOutletId())
                 ->required()
                 ->disabled(! $isAdmin)
-                ->dehydrated(true),
+                ->dehydrated(true)
+                ->rules([
+                    function () {
+                        return function (string $attribute, $value, \Closure $fail) {
+                            if (filled($value) && ! array_key_exists((int) $value, OutletContext::selectableOutletOptions())) {
+                                $fail('Outlet tidak valid untuk akun Anda.');
+                            }
+                            if (! OutletContext::user()?->isAdmin() && ! OutletContext::currentOutletId()) {
+                                $fail('Akun Anda belum terhubung ke outlet.');
+                            }
+                        };
+                    },
+                ]),
             TextInput::make('name')->label('Nama')->required()->maxLength(255),
             TextInput::make('phone')->label('No. kontak')->tel()->maxLength(20),
             TextInput::make('position')->label('Posisi/jabatan')->maxLength(255),
-            TextInput::make('base_salary')->label('Gaji pokok')->numeric()->prefix('Rp')->default(0),
+            TextInput::make('base_salary')->label('Gaji pokok')->numeric()->prefix('Rp')->default(0)->disabled(! $isAdmin)->dehydrated(true),
             DatePicker::make('join_date')->label('Tanggal bergabung'),
             Select::make('status')
                 ->label('Status')

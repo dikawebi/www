@@ -13,6 +13,7 @@ class CreateStockTransfer extends CreateRecord
     protected function mutateFormDataBeforeCreate(array $data): array
     {
         $data['created_by'] = Auth::id();
+
         return $data;
     }
 }

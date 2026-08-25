@@ -3,20 +3,17 @@
 namespace App\Filament\Resources\StockOpnameResource\RelationManagers;
 
 use App\Models\Stock;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Repeater;
-use Filament\Forms\Components\Hidden;
-use Filament\Forms\Components\Component;
-use Filament\Forms\Get;
-use Filament\Forms\Set;
-use Filament\Resources\RelationManagers\RelationManager;
-use Filament\Schemas\Schema;
-use Filament\Actions\CreateAction;
 use Filament\Actions\Action;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
+use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Repeater;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
+use Filament\Resources\RelationManagers\RelationManager;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
@@ -48,6 +45,8 @@ class ItemsRelationManager extends RelationManager
             TextInput::make('system_qty')
                 ->label('Qty Sistem')
                 ->numeric()
+                ->disabled()
+                ->dehydrated(true)
                 ->default(0),
             TextInput::make('actual_qty')
                 ->label('Qty Aktual (fisik)')
@@ -59,11 +58,13 @@ class ItemsRelationManager extends RelationManager
 
     public function table(Table $table): Table
     {
+        $isDraft = fn () => $this->getOwnerRecord()?->status === 'draft';
+
         return $table
             ->recordTitleAttribute('ingredient.name')
             ->headerActions([
-                CreateAction::make(),
-                Action::make('populateAll')
+                CreateAction::make()->visible($isDraft),
+                Action::make('populateAll')->visible($isDraft)
                     ->label('Tarik Semua Item')
                     ->icon('heroicon-o-arrow-down-tray')
                     ->modalHeading('Pilih Item untuk Opname')
@@ -77,7 +78,7 @@ class ItemsRelationManager extends RelationManager
                                     ->disabled(),
                                 TextInput::make('system_qty')
                                     ->label('Qty Sistem'),
-                                    //->hidden(),
+                                // ->hidden(),
                                 Hidden::make('system_qty'),
                                 TextInput::make('actual_qty')
                                     ->label('Qty Aktual')
@@ -86,7 +87,7 @@ class ItemsRelationManager extends RelationManager
                             ])
                             ->deletable(false)
                             ->addable(false)
-                            ->columns(4)
+                            ->columns(4),
                     ])
                     ->fillForm(function ($livewire) {
                         $outletId = $livewire->ownerRecord->outlet_id;
@@ -103,15 +104,17 @@ class ItemsRelationManager extends RelationManager
                             $items[] = [
                                 'ingredient_id' => $stock->ingredient_id,
                                 'ingredient_name' => $stock->ingredient->name,
-                                'system_qty' => (float)$stock->quantity,
-                                'actual_qty' => $existingItem ? (float)$existingItem->actual_qty : (float)$stock->quantity,
+                                'system_qty' => (float) $stock->quantity,
+                                'actual_qty' => $existingItem ? (float) $existingItem->actual_qty : (float) $stock->quantity,
                             ];
                         }
+
                         return ['items_to_opname' => $items];
                     })
                     ->action(function (array $data, $livewire) {
-                        if (!isset($data['items_to_opname'])) {
+                        if (! isset($data['items_to_opname'])) {
                             Notification::make()->title('Data tidak valid')->danger()->send();
+
                             return;
                         }
                         foreach ($data['items_to_opname'] as $item) {
@@ -136,8 +139,8 @@ class ItemsRelationManager extends RelationManager
             ])
         //    ->headerActions([CreateAction::make()])
             ->recordActions([
-                EditAction::make(),
-                DeleteAction::make(),
+                EditAction::make()->visible($isDraft),
+                DeleteAction::make()->visible($isDraft),
             ]);
     }
 }

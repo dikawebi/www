@@ -11,9 +11,9 @@ class SalesTransactionObserver
 
     public function created(SalesTransaction $transaction): void
     {
-        if ($transaction->status === 'completed') {
-            $this->stockService->deductForSale($transaction);
-        }
+        // Stock dipotong per-item oleh SalesTransactionItemObserver::created,
+        // bukan di sini, untuk menghindari double-deduction dan agar transaksi
+        // yang dibuat sebagai 'void' tidak memotong stok sama sekali.
     }
 
     public function updated(SalesTransaction $transaction): void

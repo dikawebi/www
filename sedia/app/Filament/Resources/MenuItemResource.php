@@ -5,16 +5,18 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\MenuItemResource\Pages;
 use App\Filament\Resources\MenuItemResource\RelationManagers\RecipesRelationManager;
 use App\Models\MenuItem;
+use BackedEnum;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
-use BackedEnum;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use UnitEnum;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use UnitEnum;
 
 class MenuItemResource extends Resource
 {
@@ -27,6 +29,26 @@ class MenuItemResource extends Resource
     protected static ?string $navigationLabel = 'Menu';
 
     protected static ?int $navigationSort = 1;
+
+    public static function canCreate(): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canDelete(Model $record): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return Auth::user()?->isAdmin() ?? false;
+    }
 
     public static function form(Schema $schema): Schema
     {

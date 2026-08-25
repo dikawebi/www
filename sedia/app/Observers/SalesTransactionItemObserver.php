@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Models\MenuItem;
 use App\Models\SalesTransactionItem;
 use App\Services\StockService;
 
@@ -9,16 +10,41 @@ class SalesTransactionItemObserver
 {
     public function __construct(protected StockService $stockService) {}
 
+    public function creating(SalesTransactionItem $item): void
+    {
+        // Harga & subtotal selalu dari master MenuItem, bukan dari input browser
+        // (mencegah tamper via DevTools/Livewire).
+        if ($item->menu_item_id) {
+            $menu = MenuItem::find($item->menu_item_id);
+            if ($menu) {
+                $item->price = (float) $menu->price;
+                $item->subtotal = (float) $menu->price * (int) $item->quantity;
+            }
+        }
+    }
+
+    public function saving(SalesTransactionItem $item): void
+    {
+        // Jaga konsistensi subtotal bila quantity berubah
+        if ($item->isDirty('quantity') || $item->isDirty('price')) {
+            $item->subtotal = (float) $item->price * (int) $item->quantity;
+        }
+    }
+
     /**
      * Item baru ditambahkan (baik lewat Repeater di form utama, RelationManager,
      * atau lewat Tinker/API). Dua hal terjadi, keduanya dijamin oleh Eloquent
      * event, bukan oleh reaktivitas Livewire di browser:
-     *   1. Stock ingredient dipotong sesuai resep menu (StockService).
+     *   1. Stock ingredient dipotong sesuai resep menu (hanya jika transaksi completed).
      *   2. total_amount transaksi dihitung ulang dari total subtotal item.
      */
     public function created(SalesTransactionItem $item): void
     {
-        $this->stockService->deductForSaleItem($item);
+        $item->loadMissing('salesTransaction');
+
+        if ($item->salesTransaction?->status === 'completed') {
+            $this->stockService->deductForSaleItem($item);
+        }
 
         $item->salesTransaction->recalculateTotalAmount();
     }
@@ -37,12 +63,19 @@ class SalesTransactionItemObserver
 
     /**
      * Item dihapus (misal kasir salah pencet menu). Stock yang tadi kepotong
-     * dikembalikan, dan total_amount dihitung ulang.
+     * dikembalikan hanya bila transaksi berstatus completed, dan total_amount dihitung ulang.
      */
     public function deleted(SalesTransactionItem $item): void
     {
-        $this->stockService->restoreForSaleItem($item);
+        $item->loadMissing('salesTransaction');
 
-        $item->salesTransaction->recalculateTotalAmount();
+        if ($item->salesTransaction?->status === 'completed') {
+            $this->stockService->restoreForSaleItem($item);
+        }
+
+        // recalc butuh parent masih ada; jika parent sudah soft-delete skip
+        if ($item->salesTransaction) {
+            $item->salesTransaction->recalculateTotalAmount();
+        }
     }
 }

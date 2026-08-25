@@ -6,6 +6,7 @@ use App\Filament\Resources\SalesTransactionResource\Pages;
 use App\Models\Employee;
 use App\Models\MenuItem;
 use App\Models\SalesTransaction;
+use App\Models\User;
 use App\Support\OutletContext;
 use BackedEnum;
 use Filament\Actions\ViewAction;
@@ -44,7 +45,7 @@ class SalesTransactionResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
 
         return $user?->isAdmin() || $record->outlet_id === $user?->outlet_id;
@@ -52,7 +53,7 @@ class SalesTransactionResource extends Resource
 
     public static function canDelete(Model $record): bool
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
 
         return $user?->isAdmin() ?? false;
@@ -61,8 +62,13 @@ class SalesTransactionResource extends Resource
     public static function getEloquentQuery(): Builder
     {
         $query = parent::getEloquentQuery();
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
+
+        if ($user && ! $user->isAdmin() && ! $user->outlet_id) {
+            return $query->whereRaw('1 = 0');
+        }
+
         $outletId = $user?->accessibleOutletId();
 
         return $outletId ? $query->where('outlet_id', $outletId) : $query;
@@ -70,6 +76,8 @@ class SalesTransactionResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
+        $isAdmin = Auth::user()?->isAdmin() ?? false;
+
         return $schema->components([
             Select::make('outlet_id')
                 ->label('Outlet')
@@ -79,6 +87,17 @@ class SalesTransactionResource extends Resource
                 ->live()
                 ->default(fn () => OutletContext::defaultOutletId())
                 ->required()
+                ->disabled(! $isAdmin)
+                ->dehydrated(true)
+                ->rules([
+                    function () {
+                        return function (string $attribute, $value, \Closure $fail) {
+                            if (filled($value) && ! array_key_exists((int) $value, OutletContext::selectableOutletOptions())) {
+                                $fail('Outlet tidak valid untuk akun Anda.');
+                            }
+                        };
+                    },
+                ])
                 ->afterStateUpdated(fn ($set) => $set('cashier_id', null)),
             Select::make('cashier_id')
                 ->label('Kasir')

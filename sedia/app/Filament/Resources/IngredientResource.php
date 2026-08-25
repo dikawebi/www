@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\IngredientResource\Pages;
 use App\Models\Ingredient;
+use App\Models\User;
 use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -37,18 +38,19 @@ class IngredientResource extends Resource
 
     public static function canCreate(): bool
     {
-        return true;
+        return Auth::user()?->isAdmin() ?? false;
     }
 
     public static function canEdit(Model $record): bool
     {
-        return true;
+        return Auth::user()?->isAdmin() ?? false;
     }
 
     public static function canDelete(Model $record): bool
     {
-        /** @var \App\Models\User|null $user */
+        /** @var User|null $user */
         $user = Auth::user();
+
         return $user?->isAdmin() ?? false;
     }
 
@@ -75,11 +77,15 @@ class IngredientResource extends Resource
                 ->numeric()
                 ->prefix('Rp')
                 ->default(0)
+                ->disabled(! (Auth::user()?->isAdmin() ?? false))
+                ->dehydrated(true)
                 ->helperText('Harga beli per satuan (sama dengan Satuan di atas). Dipakai untuk hitung HPP & margin menu.'),
             TextInput::make('min_stock')
                 ->label('Stock minimum (reorder point)')
                 ->numeric()
                 ->default(0)
+                ->disabled(! (Auth::user()?->isAdmin() ?? false))
+                ->dehydrated(true)
                 ->helperText('Sistem akan tandai stock rendah kalau quantity di bawah angka ini'),
             Toggle::make('is_active')
                 ->label('Aktif')

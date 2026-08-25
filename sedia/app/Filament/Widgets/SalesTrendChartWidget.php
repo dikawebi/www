@@ -15,7 +15,7 @@ class SalesTrendChartWidget extends ChartWidget
         $user = Auth::user();
         $query = SalesTransaction::query()->where('status', 'completed');
 
-        if ($user && !$user->isAdmin() && $user->outlet_id) {
+        if ($user && ! $user->isAdmin() && $user->outlet_id) {
             $query->where('outlet_id', $user->outlet_id);
         }
 
