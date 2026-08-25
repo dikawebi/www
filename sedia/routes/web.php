@@ -32,3 +32,17 @@ Route::middleware('auth')->get('/receipt/{record}', function (SalesTransaction $
 
     return view('receipt', ['transaction' => $record]);
 })->name('receipt.show');
+
+Route::get('/manual', fn () => view('manual'))->name('manual');
+Route::get('/manual/download-doc', function () {
+    $html = view('manual')->render();
+    $doc = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><style>body{font-family:Calibri, sans-serif;}</style></head><body>".$html.'</body></html>';
+
+    return response($doc, 200, [
+        'Content-Type' => 'application/msword',
+        'Content-Disposition' => 'attachment; filename="USER_MANUAL_SEDIA.doc"',
+    ]);
+})->name('manual.doc');
+Route::get('/manual/download-pdf', function () {
+    return redirect('/manual');
+})->name('manual.pdf');

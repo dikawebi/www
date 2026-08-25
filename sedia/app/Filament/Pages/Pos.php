@@ -185,7 +185,7 @@ class Pos extends Page
             $this->cart = [];
             FilamentNotification::make()->title('Transaksi berhasil')->body('Total Rp '.number_format($total, 0, ',', '.'))->success()->send();
             // Optional: redirect to receipt
-            $this->dispatch('pos-checkout-success', invoice: $trx->invoice_number);
+            $this->dispatch('pos-checkout-success', invoice: $trx?->invoice_number ?? '');
         } catch (InsufficientStockException $e) {
             FilamentNotification::make()
                 ->danger()->title('Stok tidak cukup')

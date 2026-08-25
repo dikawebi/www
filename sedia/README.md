@@ -1,58 +1,100 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Sedia — Sistem Manajemen Outlet, Persediaan & Penjualan
 
 <p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
+  <img src="public/manual-screenshots/01-dashboard.svg" width="800" alt="Sedia Dashboard Preview">
 </p>
 
-## About Laravel
+<p align="center">
+  <a href="/manual"><b>📘 User Manual (Baca di Browser)</b></a> •
+  <a href="/USER_MANUAL_SEDIA.pdf">⬇ Download PDF (726 KB)</a> •
+  <a href="/USER_MANUAL_SEDIA.doc">⬇ Download Word (23 KB)</a>
+</p>
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+**Sedia** adalah aplikasi Laravel + Filament untuk mengelola **banyak outlet** dalam satu tempat: POS kasir ringan yang potong stok otomatis, transfer stok antar outlet, stock opname, karyawan/kasbon/gaji, dan 6 laporan siap cetak.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+- **Stack:** Laravel 13 · PHP 8.3 · Filament 5.7 · Tailwind 4 · Vite · SQLite/PostgreSQL
+- **Deploy:** Vercel-ready (`vercel.json`, `api/index.php`)
+- **PWA:** POS dapat di-instal di HP (Chrome → Instal aplikasi)
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+---
 
-## Learning Laravel
+## ✨ Fitur Utama
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+| Grup | Fitur |
+|------|-------|
+| **Penjualan** | POS Kasir (grid kategori, keranjang, potong stok otomatis), Transaksi (void admin, struk 80mm), Tutup Kasir Harian (per kasir & metode bayar) |
+| **Produk** | Bahan Baku (cost/unit, min stock), Menu + Resep (qty per unit) |
+| **Persediaan** | Saldo Stok (read-only), Transfer Stok (Draft→Kirim→Terima/Batal, restore otomatis), Stock Opname (Terapkan → lock), Saran Reorder (30 hari, 7 hari target) |
+| **Operasional** | Karyawan, Kasbon (Pending→Approve/Reject + notifikasi), Penggajian (draft/paid, hitung server) |
+| **Laporan** | 6 laporan (Penjualan/Outlet, Menu Terlaris, Pemakaian Bahan, Selisih Opname, Gaji & Kasbon, Laba/Menu) — KPI + cetak A4 |
+| **Pengaturan** | Pengguna & Outlet (admin), Log Aktivitas (audit), Notifikasi in-app (lonceng) |
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+Semua tabel support **select / select-all + bulk actions** (bulk void, bulk approve, bulk cancel, bulk delete — admin only).
 
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
+---
 
-## Agentic Development
+## 📘 User Manual
 
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+Untuk **user awam**, buka manual lengkap:
+
+- **Browser:** `http://alamat-aplikasi/manual` — ada Daftar Isi, 17 screenshot placeholder, dan tombol **Cetak / Simpan PDF**
+- **File:** `USER_MANUAL.md` (Markdown, di repo) — `USER_MANUAL.pdf` & `USER_MANUAL.doc` di root & `public/` (hasil `chrome --print-to-pdf`)
+
+Isi manual: Login & ganti outlet, Dashboard, POS langkah-demi-langkah, Void, Tutup Kasir, Bahan/Menu, Transfer/Opname/Reorder, Karyawan/Kasbon/Gaji, 6 Laporan, Pengaturan, Notifikasi, Instal PWA, SOP harian, FAQ.
+
+> Ward: Buka `/manual` lalu `Ctrl+P` → *Save as PDF* untuk PDF terbaru kapan pun.
+
+---
+
+## 🚀 Instalasi Cepat
 
 ```bash
-composer require laravel/boost --dev
+# 1. Clone & install
+composer install
+cp .env.example .env && php artisan key:generate
+npm install
 
-php artisan boost:install
+# 2. DB (default sqlite, atau set pgsql di .env)
+touch database/database.sqlite
+php artisan migrate --seed   # seed: DkriukSeeder + SampleData
+
+# 3. Build & run
+npm run build
+php artisan serve  # http://127.0.0.1:8000
+# Login: lihat database/seeders/DkriukSeeder.php untuk akun default (admin/staff)
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+**Vercel:** `vercel.json` sudah ada — `SESSION_DRIVER=cookie`, `LOG_CHANNEL=stderr`. Pastikan `APP_KEY` & `DB_*` di env Vercel.
 
-## Contributing
+---
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## 👥 Peran
 
-## Code of Conduct
+- **Admin:** semua outlet, ganti outlet di topbar, kelola Pengguna/Outlet/Menu/Bahan, Void, Approve Kasbon, Cancel Transfer.
+- **Staff/Kasir:** outlet sendiri terkunci, POS, stok outlet sendiri, ajukan kasbon (Pending), laporan outlet sendiri.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+Validasi outlet di server (`OutletContext::selectableOutletOptions()` + `rules()` di form) cegah tamper.
 
-## Security Vulnerabilities
+---
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+## 🔒 Keamanan & Audit
 
-## License
+- `UserResource` & `Menu/Ingredient` hanya admin (canCreate/Edit/Delete).
+- `StockService` pakai `lockForUpdate` cegah lost-update & double-deduct.
+- `SalesTransactionItemObserver` paksa `price = Menu.price` (anti-tamper).
+- `ActivityLog` otomatis untuk 10 model + custom `voided/approved/cancelled`.
+- `database.sqlite` & `.env` di-`ignore` (git & vercel).
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+---
+
+## 📸 Screenshots
+
+Placeholder SVG di `public/manual-screenshots/` (17 file, 1200×750, browser chrome mockup). Ganti dengan screenshot asli kapan pun — manual HTML akan otomatis pakai yang baru.
+
+---
+
+## 📄 Lisensi
+
+MIT — lihat `LICENSE`.
+
+*Sedia v1.0 — 25 Aug 2026 — Dibuat dengan Filament & Laravel*

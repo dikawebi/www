@@ -48,6 +48,7 @@ class ActivityLog extends Model
         ?string $description = null,
         ?array $properties = null,
     ): static {
+        /** @var User|null $user */
         $user = Auth::user();
         $outletId = null;
 

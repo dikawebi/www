@@ -1,0 +1,334 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><style>body{font-family:Calibri, Arial, sans-serif; font-size:11pt;}</style></head><body><!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>User Manual — Sedia</title>
+<link rel="icon" href="/favicon.ico">
+<style>
+  :root{ --amber:#f59e0b; --amber-dark:#d97706; --ink:#111827; --muted:#6b7280; --line:#e5e7eb; --bg:#f9fafb; }
+  *{ box-sizing:border-box; }
+  html{ scroll-behavior:smooth; }
+  body{ margin:0; font-family: Inter, ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, sans-serif; color:var(--ink); background:var(--bg); line-height:1.6; }
+  a{ color:var(--amber-dark); text-decoration:none; }
+  a:hover{ text-decoration:underline; }
+  .topbar{ position:sticky; top:0; z-index:30; background:#111827; color:#fff; border-bottom:1px solid #1f2937; }
+  .topbar-inner{ max-width:1280px; margin:0 auto; padding:0.9rem 1.25rem; display:flex; align-items:center; justify-content:space-between; gap:1rem; }
+  .brand{ display:flex; align-items:center; gap:0.75rem; font-weight:800; letter-spacing:-0.02em; }
+  .brand-badge{ width:36px; height:36px; border-radius:0.6rem; background:var(--amber); display:grid; place-items:center; color:#111827; font-weight:900; }
+  .btn{ display:inline-flex; align-items:center; gap:0.5rem; padding:0.6rem 0.9rem; border-radius:9999px; border:1px solid var(--line); background:#fff; font-size:0.85rem; font-weight:700; cursor:pointer; }
+  .btn-primary{ background:var(--amber); border-color:var(--amber); color:#111827; }
+  .btn-primary:hover{ background:var(--amber-dark); border-color:var(--amber-dark); color:#fff; }
+  .layout{ max-width:1280px; margin:0 auto; display:grid; grid-template-columns:280px 1fr; gap:1.5rem; padding:1.5rem 1.25rem 3rem; }
+  @media (max-width: 960px){ .layout{ grid-template-columns:1fr; } .toc{ position:static !important; } }
+  .toc{ position:sticky; top:5.5rem; align-self:start; background:#fff; border:1px solid var(--line); border-radius:1rem; padding:1rem; max-height: calc(100vh - 6rem); overflow:auto; }
+  .toc h3{ margin:0 0 0.6rem; font-size:0.8rem; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted); }
+  .toc a{ display:block; padding:0.35rem 0.6rem; border-radius:0.5rem; font-size:0.85rem; color:#374151; }
+  .toc a:hover{ background:#fffbeb; color:#92400e; text-decoration:none; }
+  .toc a.active{ background:#111827; color:#fff; }
+  .content{ min-width:0; }
+  .cover{ background:#fff; border:1px solid var(--line); border-radius:1.25rem; padding:2rem; }
+  .cover h1{ margin:0; font-size:2rem; letter-spacing:-0.03em; line-height:1.1; }
+  .cover p{ color:var(--muted); }
+  .meta{ display:flex; flex-wrap:wrap; gap:0.6rem; margin-top:1rem; }
+  .chip{ display:inline-flex; align-items:center; gap:0.4rem; padding:0.35rem 0.7rem; border-radius:9999px; background:#f3f4f6; border:1px solid var(--line); font-size:0.78rem; font-weight:600; }
+  .chip-amber{ background:#fffbeb; border-color:#fde68a; color:#92400e; }
+  .section{ background:#fff; border:1px solid var(--line); border-radius:1.25rem; padding:1.6rem; margin-top:1.25rem; }
+  .section h2{ margin:0 0 0.5rem; font-size:1.25rem; letter-spacing:-0.02em; }
+  .section h3{ margin:1.2rem 0 0.5rem; font-size:1rem; }
+  .kicker{ font-size:0.75rem; letter-spacing:0.08em; text-transform:uppercase; font-weight:800; color:var(--amber-dark); margin-bottom:0.3rem; }
+  .steps{ counter-reset: step; padding-left:0; list-style:none; }
+  .steps li{ counter-increment: step; position:relative; padding-left:2.4rem; margin:0.7rem 0; }
+  .steps li::before{ content:counter(step); position:absolute; left:0; top:0; width:1.7rem; height:1.7rem; border-radius:9999px; background:#111827; color:#fff; display:grid; place-items:center; font-size:0.8rem; font-weight:800; }
+  .tip{ background:#fffbeb; border:1px solid #fde68a; border-radius:0.85rem; padding:0.85rem 1rem; font-size:0.88rem; }
+  .warn{ background:#fef2f2; border:1px solid #fecaca; border-radius:0.85rem; padding:0.85rem 1rem; font-size:0.88rem; }
+  .shot{ margin:1rem 0 0; border:1px solid var(--line); border-radius:0.9rem; overflow:hidden; background:#fff; }
+  .shot img{ display:block; width:100%; height:auto; }
+  .shot-cap{ padding:0.6rem 0.9rem; font-size:0.78rem; color:var(--muted); background:#f9fafb; border-top:1px solid var(--line); display:flex; justify-content:space-between; gap:1rem; }
+  table{ width:100%; border-collapse:collapse; font-size:0.88rem; margin:0.8rem 0; }
+  th, td{ text-align:left; padding:0.6rem 0.7rem; border-bottom:1px solid var(--line); }
+  th{ font-size:0.75rem; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted); background:#f9fafb; }
+  @media print{
+    .topbar,.toc .btn{ display:none !important; }
+    .layout{ grid-template-columns:1fr; padding:0; }
+    .toc{ display:none; }
+    body{ background:#fff; }
+    .section, .cover{ border:none; box-shadow:none; break-inside:avoid; }
+    .shot{ break-inside:avoid; }
+  }
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="topbar-inner">
+    <div class="brand"><div class="brand-badge">S</div><div>Sedia — User Manual <span style="opacity:.6; font-weight:600;">v1.0 · 25 Aug 2026</span></div></div>
+    <div style="display:flex; gap:0.6rem;">
+      <a href="#daftar-isi" class="btn" style="background:#1f2937; color:#fff; border-color:#1f2937;">Daftar Isi</a>
+      <button onclick="window.print()" class="btn btn-primary">Cetak / Simpan PDF</button>
+    </div>
+  </div>
+</div>
+
+<div class="layout">
+  <nav class="toc" id="daftar-isi">
+    <h3>Daftar Isi</h3>
+    <a href="#tentang">1. Tentang Sedia</a>
+    <a href="#peran">2. Peran Pengguna</a>
+    <a href="#login">3. Login & Ganti Outlet</a>
+    <a href="#dashboard">4. Dashboard</a>
+    <a href="#pos">5. POS Kasir</a>
+    <a href="#transaksi">6. Transaksi & Void</a>
+    <a href="#tutup">7. Tutup Kasir Harian</a>
+    <a href="#produk">8. Bahan Baku & Menu</a>
+    <a href="#stok">9. Persediaan — Stok</a>
+    <a href="#operasional">10. Karyawan • Kasbon • Gaji</a>
+    <a href="#laporan">11. Laporan</a>
+    <a href="#pengaturan">12. Pengaturan & Log</a>
+    <a href="#notifikasi">13. Notifikasi</a>
+    <a href="#pwa">14. Instal di HP (PWA)</a>
+    <a href="#sop">15. SOP Harian</a>
+    <a href="#faq">16. FAQ</a>
+  </nav>
+
+  <main class="content">
+
+    <div class="cover">
+      <div class="kicker">User Manual</div>
+      <h1>Sedia — Sistem Manajemen Outlet, Persediaan & Penjualan</h1>
+      <p>Panduan lengkap untuk <b>user awam</b> (Admin & Staff/Kasir). Ikuti langkah bernomor, lihat screenshot, dan gunakan tombol <b>Cetak / Simpan PDF</b> untuk arsip.</p>
+      <div class="meta">
+        <span class="chip chip-amber">📦 Versi 1.0 — 25 Agustus 2026</span>
+        <span class="chip">👥 Admin & Staff</span>
+        <span class="chip">🖨️ Siap Cetak A4</span>
+        <span class="chip">📱 PWA Ready</span>
+      </div>
+      <div class="tip" style="margin-top:1rem;"><b>Cara pakai:</b> Klik judul di Daftar Isi untuk loncat. Di HP, menu Daftar Isi ada di atas. Untuk simpan PDF: tombol <b>Cetak / Simpan PDF</b> → pilih <i>Save as PDF</i>.</div>
+    </div>
+
+    <div class="section" id="tentang">
+      <div class="kicker">1 — Pendahuluan</div>
+      <h2>Tentang Sedia</h2>
+      <p>Sedia mengelola <b>banyak outlet</b> dalam satu aplikasi: kasir POS yang potong stok otomatis, transfer stok antar outlet, stock opname, karyawan/kasbon/gaji, dan 6 laporan siap cetak.</p>
+      <table>
+        <tr><th>Grup Navigasi</th><th>Isi</th></tr>
+        <tr><td>Penjualan</td><td>POS Kasir, Transaksi, Tutup Kasir</td></tr>
+        <tr><td>Produk</td><td>Menu & Resep</td></tr>
+        <tr><td>Persediaan</td><td>Bahan Baku, Saldo Stok, Transfer, Opname, Saran Reorder</td></tr>
+        <tr><td>Operasional</td><td>Karyawan, Kasbon, Gaji</td></tr>
+        <tr><td>Laporan</td><td>6 laporan + filter tanggal/outlet</td></tr>
+        <tr><td>Pengaturan</td><td>Pengguna, Outlet, Log Aktivitas</td></tr>
+      </table>
+      <figure class="shot"><img src="/manual-screenshots/01-dashboard.svg" alt="Dashboard"><figcaption class="shot-cap"><span>Gambar 1 — Dashboard ringkasan</span><span>dashboard</span></figcaption></figure>
+    </div>
+
+    <div class="section" id="peran">
+      <div class="kicker">2 — Akses</div>
+      <h2>Peran Pengguna</h2>
+      <table>
+        <tr><th>Peran</th><th>Akses</th><th>Contoh</th></tr>
+        <tr><td><b>Admin</b></td><td>Semua outlet, ganti outlet di topbar, kelola Pengguna/Outlet/Menu/Bahan, Void, Approve Kasbon, Cancel Transfer</td><td>Owner, Manager</td></tr>
+        <tr><td><b>Staff/Kasir</b></td><td>Hanya outlet sendiri (terkunci), POS, stok outlet sendiri, ajukan kasbon, laporan outlet sendiri</td><td>Kasir, Crew</td></tr>
+      </table>
+      <div class="warn"><b>Penting:</b> Staff tanpa outlet akan melihat 0 data — minta Admin hubungkan ke outlet di <i>Pengaturan → Pengguna</i>.</div>
+    </div>
+
+    <div class="section" id="login">
+      <div class="kicker">3 — Akses</div>
+      <h2>Login, Logout & Ganti Outlet</h2>
+      <h3>Login</h3>
+      <ol class="steps">
+        <li>Buka alamat aplikasi → halaman <b>Login</b>.</li>
+        <li>Masukkan <b>Email</b> & <b>Password</b> → <b>Masuk</b>.</li>
+        <li>Jika salah, muncul “Email atau password salah”.</li>
+      </ol>
+      <figure class="shot"><img src="/manual-screenshots/02-login.svg" alt="Login"><figcaption class="shot-cap"><span>Gambar 2 — Halaman Login</span><span>/dashboard/login</span></figcaption></figure>
+      <h3>Ganti Outlet (Admin)</h3>
+      <ol class="steps">
+        <li>Di pojok atas klik <b>Outlet: Semua Outlet ▼</b>.</li>
+        <li>Pilih outlet → seluruh halaman terfilter otomatis.</li>
+        <li>Pilih <b>Semua Outlet</b> untuk lihat gabungan.</li>
+      </ol>
+      <figure class="shot"><img src="/manual-screenshots/03-outlet-switcher.svg" alt="Ganti Outlet"><figcaption class="shot-cap"><span>Gambar 3 — Dropdown ganti outlet</span><span>topbar</span></figcaption></figure>
+      <h3>Logout</h3>
+      <p>Klik avatar kanan atas → <b>Keluar</b>.</p>
+    </div>
+
+    <div class="section" id="dashboard">
+      <div class="kicker">4 — Beranda</div>
+      <h2>Mengenal Dashboard</h2>
+      <p><b>/dashboard</b> menampilkan:</p>
+      <ul>
+        <li><b>Omzet Hari Ini / Bulan Ini</b> — total penjualan <i>Selesai</i>.</li>
+        <li><b>Tren 7 Hari</b> — grafik garis omzet harian.</li>
+        <li><b>Stok Kritis</b> — bahan di bawah <i>Min. Stock</i>.</li>
+        <li><b>Lonceng Notifikasi</b> — kanan atas untuk Kasbon baru, dll.</li>
+      </ul>
+      <figure class="shot"><img src="/manual-screenshots/04-dashboard-detail.svg" alt="Dashboard detail"><figcaption class="shot-cap"><span>Gambar 4 — Widget dashboard</span><span>dashboard</span></figcaption></figure>
+      <div class="tip">Admin lihat semua outlet; Staff hanya outlet sendiri.</div>
+    </div>
+
+    <div class="section" id="pos">
+      <div class="kicker">5 — Penjualan</div>
+      <h2>POS Kasir (Paling Sering Dipakai)</h2>
+      <p>Buka <b>Penjualan → POS Kasir</b> (<code>/dashboard/pos</code>). Desain baru: toolbar pill, grid menu 2–4 kolom, keranjang sticky.</p>
+      <figure class="shot"><img src="/manual-screenshots/05-pos.svg" alt="POS"><figcaption class="shot-cap"><span>Gambar 5 — POS Kasir baru</span><span>Penjualan → POS Kasir</span></figcaption></figure>
+      <ol class="steps">
+        <li><b>Outlet</b> (Admin) — pastikan outlet benar; Staff terkunci.</li>
+        <li><b>Metode Bayar</b> — pill <b>Tunai / QRIS / Transfer / Debit</b>.</li>
+        <li><b>Cari & Filter</b> — ketik nama/kategori atau tap pill kategori (Semua, Ayam, Minuman…).</li>
+        <li><b>Tap Kartu Menu</b> — misal “Ayam Original — Rp 25.000” → masuk keranjang; tap lagi tambah qty.</li>
+        <li><b>Atur Keranjang (kanan):</b> <code>−</code> / <code>+</code>, <code>hapus</code>, <code>Kosongkan</code>.</li>
+        <li><b>Cek Total</b> — kotak “Total bayar” (misal Rp 75.000).</li>
+        <li><b>Bayar</b> — status <code>Completed</code>, stok terpotong sesuai resep. Jika stok kurang → notifikasi <b>Stok tidak cukup</b> dan transaksi <b>dibatalkan semua</b>.</li>
+      </ol>
+      <div class="warn"><b>Jangan</b> edit harga manual di POS untuk diskon — sistem paksa harga dari Master Menu di server (anti-tamper).</div>
+    </div>
+
+    <div class="section" id="transaksi">
+      <div class="kicker">6 — Penjualan</div>
+      <h2>Transaksi Penjualan & Void</h2>
+      <p><b>Penjualan → Transaksi Penjualan</b> — daftar: Waktu, Invoice, Outlet, Kasir, Item, Total, Bayar, Status.</p>
+      <figure class="shot"><img src="/manual-screenshots/06-transaksi-list.svg" alt="Transaksi list"><figcaption class="shot-cap"><span>Gambar 6 — Daftar transaksi</span><span>Penjualan → Transaksi</span></figcaption></figure>
+      <h3>Membuat Manual (alternatif POS)</h3>
+      <ol class="steps">
+        <li><b>Tambah</b> → Outlet, Kasir, Invoice (auto), Waktu, Metode, Status <code>Selesai</code>.</li>
+        <li><b>Item Pesanan</b> → tambah baris, pilih Menu, Qty → Harga & Subtotal otomatis.</li>
+        <li><b>Simpan</b> → stok terpotong.</li>
+      </ol>
+      <h3>Membatalkan (Void) — Hanya Admin</h3>
+      <ol class="steps">
+        <li>Cari transaksi <code>Selesai</code> → tombol <b>Batalkan</b> (ikon X merah) hanya muncul untuk Admin.</li>
+        <li>Konfirmasi → stok <b>dikembalikan persis</b> sesuai movement, status jadi <code>Batal</code>.</li>
+        <li>Bulk: centang beberapa baris → <b>Batalkan terpilih</b>.</li>
+      </ol>
+      <figure class="shot"><img src="/manual-screenshots/07-void.svg" alt="Void"><figcaption class="shot-cap"><span>Gambar 7 — Aksi Batalkan</span><span>recordActions</span></figcaption></figure>
+      <h3>Cetak Struk</h3>
+      <p>Tombol <b>Struk</b> (printer) → tab baru 80mm siap thermal → <b>Cetak / Simpan PDF</b>.</p>
+      <figure class="shot"><img src="/manual-screenshots/08-struk.svg" alt="Struk"><figcaption class="shot-cap"><span>Gambar 8 — Struk 80mm</span><span>/receipt/{id}</span></figcaption></figure>
+    </div>
+
+    <div class="section" id="tutup">
+      <div class="kicker">7 — Kasir</div>
+      <h2>Tutup Kasir Harian</h2>
+      <p><b>Penjualan → Tutup Kasir Harian</b></p>
+      <ol class="steps">
+        <li>Pilih <b>Tanggal</b> & <b>Outlet</b> (admin).</li>
+        <li><b>Tampilkan</b> → KPI: Transaksi, Omzet, Tunai, Non-Tunai.</li>
+        <li>Tabel per Kasir: Tunai, Transfer, QRIS, Debit, Total.</li>
+        <li><b>Cetak</b> untuk arsip (A4, header outlet + tanggal + jam cetak).</li>
+      </ol>
+      <figure class="shot"><img src="/manual-screenshots/09-tutup-kasir.svg" alt="Tutup Kasir"><figcaption class="shot-cap"><span>Gambar 9 — Tutup Kasir Harian</span><span>Penjualan → Tutup Kasir</span></figcaption></figure>
+      <div class="tip">Cocokkan uang tunai di laci vs “Tunai” di laporan setiap tutup shift.</div>
+    </div>
+
+    <div class="section" id="produk">
+      <div class="kicker">8 — Produk</div>
+      <h2>Bahan Baku & Menu</h2>
+      <h3>Bahan Baku — Persediaan → Bahan Baku (Admin Only)</h3>
+      <p>Nama, Satuan (kg/gram/liter/ml/pcs/porsi), <b>Harga beli / unit</b> (untuk HPP), <b>Min. Stock</b>, Aktif. Jika Harga beli 0, laba di laporan jadi 0.</p>
+      <figure class="shot"><img src="/manual-screenshots/10-bahan-baku.svg" alt="Bahan Baku"><figcaption class="shot-cap"><span>Gambar 10 — Bahan Baku</span><span>Persediaan → Bahan Baku</span></figcaption></figure>
+      <h3>Menu — Produk → Menu (Admin Only)</h3>
+      <p>Nama, Kategori, Harga Jual, Aktif. <b>Resep:</b> buka menu → tab Resep → tambah bahan + Qty per unit (misal Ayam 0.25 kg). Resep inilah yang potong stok.</p>
+      <figure class="shot"><img src="/manual-screenshots/11-menu-resep.svg" alt="Menu Resep"><figcaption class="shot-cap"><span>Gambar 11 — Menu & Resep</span><span>Produk → Menu → Resep</span></figcaption></figure>
+    </div>
+
+    <div class="section" id="stok">
+      <div class="kicker">9 — Persediaan</div>
+      <h2>Saldo Stok, Transfer, Opname & Reorder</h2>
+      <h3>Saldo Stok — Read-only</h3>
+      <p><b>Persediaan → Saldo Stok</b> — Outlet × Bahan + Quantity. Tidak bisa edit manual.</p>
+      <h3>Transfer Stok</h3>
+      <ol class="steps">
+        <li><b>Transfer antar outlet:</b> Sumber Transfer, Dari Outlet (auto), Ke Outlet (aktif, tidak boleh sama), Item → <b>Kirim</b> (potong asal, sent) → di tujuan <b>Terima</b> (tambah tujuan, received).</li>
+        <li><b>Belanja stockist:</b> Sumber Belanja → tanpa Dari Outlet, langsung <b>Terima</b>.</li>
+        <li><b>Batalkan:</b> Draft/Sent bisa Batalkan → jika Sent, stok dikembalikan. Bulk cancel (admin). </li>
+      </ol>
+      <figure class="shot"><img src="/manual-screenshots/12-transfer.svg" alt="Transfer"><figcaption class="shot-cap"><span>Gambar 12 — Transfer Stok</span><span>Persediaan → Transfer</span></figcaption></figure>
+      <h3>Stock Opname</h3>
+      <ol class="steps">
+        <li>Tambah → Outlet, Tanggal, Petugas → Draft.</li>
+        <li>Item Opname → Qty Sistem auto, isi Qty Aktual fisik (atau Tarik Semua Item massal).</li>
+        <li><b>Terapkan</b> → selisih Aktual-Sistem jadi OpnameAdjustment, status Diterapkan, lalu terkunci.</li>
+      </ol>
+      <figure class="shot"><img src="/manual-screenshots/13-opname.svg" alt="Opname"><figcaption class="shot-cap"><span>Gambar 13 — Stock Opname</span><span>Persediaan → Opname</span></figcaption></figure>
+      <h3>Saran Reorder</h3>
+      <p><b>Persediaan → Saran Reorder</b> — hitung 30 hari (penjualan+rusak+transfer), Target = Min + 7×Rata/hari, Saran = max(0, Target−Stok). Hanya tampil yang perlu.</p>
+      <figure class="shot"><img src="/manual-screenshots/14-reorder.svg" alt="Reorder"><figcaption class="shot-cap"><span>Gambar 14 — Saran Reorder</span><span>Persediaan → Saran Reorder</span></figcaption></figure>
+    </div>
+
+    <div class="section" id="operasional">
+      <div class="kicker">10 — SDM</div>
+      <h2>Karyawan, Kasbon, Gaji</h2>
+      <h3>Karyawan — Operasional → Karyawan</h3>
+      <p>Staff lihat outlet sendiri; <b>Gaji Pokok hanya Admin</b> bisa edit. Outlet terkunci + validasi server.</p>
+      <h3>Kasbon</h3>
+      <ol class="steps">
+        <li>Staff: <b>Ajukan</b> → Outlet auto, pilih Karyawan aktif, Nominal, Tanggal → <b>Pending</b>.</li>
+        <li>Admin: di tabel <b>Setujui</b> (hijau) / <b>Tolak</b> (merah) per baris atau bulk; setelah disetujui/ditolak hanya Admin bisa ubah.</li>
+      </ol>
+      <figure class="shot"><img src="/manual-screenshots/15-kasbon.svg" alt="Kasbon"><figcaption class="shot-cap"><span>Gambar 15 — Kasbon Approve</span><span>Operasional → Kasbon</span></figcaption></figure>
+      <h3>Penggajian — Admin Only buat</h3>
+      <p>Outlet, Karyawan, Tanggal, Periode, Gaji Pokok, Bonus Masuk/Goreng, Kasbon potongan → Preview Total = Pokok+Bonus−Kasbon (final dihitung server). Status Draft/Dibayar/Dibatalkan; jika Dibayar terkunci. Select-all & bulk delete (admin).</p>
+    </div>
+
+    <div class="section" id="laporan">
+      <div class="kicker">11 — Laporan</div>
+      <h2>Laporan (6)</h2>
+      <p>Semua di <b>Laporan</b> dengan filter Tanggal & Outlet (Staff terkunci) + KPI + <b>Cetak</b> A4 header.</p>
+      <table>
+        <tr><th>Laporan</th><th>Isi</th></tr>
+        <tr><td>Penjualan per Outlet</td><td>Jml Transaksi, Omzet, Rata-rata</td></tr>
+        <tr><td>Menu Terlaris</td><td>Ranking qty & omzet</td></tr>
+        <tr><td>Pemakaian Bahan Baku</td><td>Terpakai, Rusak/Expired, Transfer Keluar, Total + Estimasi Nilai</td></tr>
+        <tr><td>Selisih Stock Opname</td><td>Jml Opname, Selisih Bersih ±, Absolut (merah kurang, hijau lebih)</td></tr>
+        <tr><td>Gaji & Kasbon</td><td>Rekap Gaji Dibayar + Saldo Kasbon Berjalan</td></tr>
+        <tr><td>Laba Kotor per Menu</td><td>Harga, HPP/unit, Margin, Qty, Omzet, Laba, Margin %</td></tr>
+      </table>
+      <figure class="shot"><img src="/manual-screenshots/16-laporan.svg" alt="Laporan"><figcaption class="shot-cap"><span>Gambar 16 — Laporan</span><span>Laporan → *</span></figcaption></figure>
+      <div class="tip">HPP = Σ resep qty_per_unit × cost_per_unit. Jika 0, isi Harga Beli di Bahan Baku.</div>
+    </div>
+
+    <div class="section" id="pengaturan">
+      <div class="kicker">12 — Pengaturan</div>
+      <h2>Pengguna, Outlet & Log Aktivitas</h2>
+      <p><b>Pengaturan → Pengguna</b> (Admin): Nama, Email, Password, Role, Outlet (wajib Staff). <b>Outlet</b> (Admin): master outlet. <b>Log Aktivitas</b> (Admin, read-only): jejak created/updated/deleted/voided/approved/cancelled untuk 10 entitas, filter Aksi/Outlet, bulk delete admin.</p>
+    </div>
+
+    <div class="section" id="notifikasi">
+      <div class="kicker">13 — Notifikasi</div>
+      <h2>Notifikasi In-App</h2>
+      <p>Lonceng di topbar kanan. Muncul saat Kasbon Pending baru (ke Admin) & Kasbon Disetujui/Ditolak. Klik untuk tandai sudah dibaca. Polling realtime.</p>
+    </div>
+
+    <div class="section" id="pwa">
+      <div class="kicker">14 — PWA</div>
+      <h2>Instal di HP/Laptop</h2>
+      <ol class="steps">
+        <li>Buka <code>/dashboard/pos</code> di Chrome/Edge HP → menu ⋮ → <b>Instal aplikasi</b> / <b>Tambahkan ke Layar Utama</b>.</li>
+        <li>Ikon <b>Sedia</b> muncul di home screen, buka tanpa address bar (standalone).</li>
+        <li>Di laptop: icon instal di address bar → <b>Instal</b>.</li>
+      </ol>
+      <figure class="shot"><img src="/manual-screenshots/17-pwa.svg" alt="PWA"><figcaption class="shot-cap"><span>Gambar 17 — Instal PWA</span><span>/manifest.json + /sw.js</span></figcaption></figure>
+      <div class="tip">Harus <b>HTTPS</b> (Vercel sudah). Service worker cache <code>/build/*</code> saja, halaman Livewire tetap fresh.</div>
+    </div>
+
+    <div class="section" id="sop">
+      <div class="kicker">15 — SOP</div>
+      <h2>Alur Kerja Harian</h2>
+      <p><b>Pagi (Admin):</b> Cek Saran Reorder → belanja; cek Stok Kritis.<br><b>Shift Kasir:</b> Login → cek Outlet → jual via POS → jika salah minta Admin Void → buat baru; Kasbon via Operasional → Kasbon → Ajukan.<br><b>Tutup Shift:</b> Tutup Kasir Harian → cocokkan Tunai di laci vs Tunai laporan → Cetak.<br><b>Mingguan:</b> Stock Opname → Terapkan; Penggajian → Draft → Dibayar.</p>
+    </div>
+
+    <div class="section" id="faq">
+      <div class="kicker">16 — Bantuan</div>
+      <h2>FAQ & Troubleshooting</h2>
+      <p><b>Staff lihat semua outlet?</b> — Cek User → outlet_id harus terisi; jika kosong lihat 0 data.<br><b>Stok tidak cukup?</b> — Kurangi qty atau tambah stok via Transfer/Purchase/Opname.<br><b>Harga bisa diubah via browser?</b> — Tidak, server paksa <code>price = Menu.price</code>.<br><b>Tidak bisa instal PWA?</b> — Harus HTTPS & Chrome/Edge, bukan Firefox Focus.<br><b>Laporan kosong?</b> — Periksa filter tanggal & outlet.<br><b>Butuh bantuan?</b> — Sertakan waktu, outlet, invoice, screenshot ke Admin.</p>
+      <p style="margin-top:1rem; color:var(--muted); font-size:0.85rem;">© 2026 Sedia — Manual ini: buka <code>/manual</code> → Cetak / Simpan sebagai PDF.</p>
+    </div>
+
+  </main>
+</div>
+
+</body>
+</html>
+</body></html>

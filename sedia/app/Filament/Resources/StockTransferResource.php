@@ -269,7 +269,7 @@ class StockTransferResource extends Resource
                     ->requiresConfirmation()
                     ->modalHeading('Batalkan Transfer?')
                     ->modalDescription('Jika sudah dikirim, stok akan dikembalikan ke outlet asal.')
-                    ->visible(fn (StockTransfer $record) => in_array($record->status, ['draft', 'sent'], true) && (Auth::user()?->isAdmin() || $record->from_outlet_id === Auth::user()?->outlet_id))
+                    ->visible(fn (StockTransfer $record) => in_array($record->status, ['draft', 'sent'], true) && (OutletContext::user()?->isAdmin() || $record->from_outlet_id === OutletContext::user()?->outlet_id))
                     ->action(function (StockTransfer $record) {
                         try {
                             app(StockService::class)->cancelTransfer($record, Auth::id());
@@ -287,7 +287,7 @@ class StockTransferResource extends Resource
                         ->icon('heroicon-o-x-circle')
                         ->color('danger')
                         ->requiresConfirmation()
-                        ->visible(fn () => Auth::user()?->isAdmin() ?? false)
+                        ->visible(fn () => OutletContext::user()?->isAdmin() ?? false)
                         ->action(function (Collection $records) {
                             $done = 0;
                             foreach ($records as $record) {
@@ -302,7 +302,7 @@ class StockTransferResource extends Resource
                             }
                             Notification::make()->title("{$done} transfer dibatalkan")->success()->send();
                         }),
-                    DeleteBulkAction::make()->visible(fn () => Auth::user()?->isAdmin() ?? false),
+                    DeleteBulkAction::make()->visible(fn () => OutletContext::user()?->isAdmin() ?? false),
                 ]),
             ])
             ->defaultSort('transferred_at', 'desc');

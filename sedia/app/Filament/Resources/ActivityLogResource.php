@@ -13,7 +13,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class ActivityLogResource extends Resource
@@ -30,7 +30,7 @@ class ActivityLogResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
     public static function canCreate(): bool
@@ -38,14 +38,14 @@ class ActivityLogResource extends Resource
         return false;
     }
 
-    public static function canEdit($record): bool
+    public static function canEdit(Model $record): bool
     {
         return false;
     }
 
-    public static function canDelete($record): bool
+    public static function canDelete(Model $record): bool
     {
-        return Auth::user()?->isAdmin() ?? false;
+        return OutletContext::user()?->isAdmin() ?? false;
     }
 
     public static function getEloquentQuery(): Builder
