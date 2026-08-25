@@ -6,6 +6,8 @@ use App\Filament\Resources\StockResource\Pages;
 use App\Models\Stock;
 use App\Support\OutletContext;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
@@ -71,6 +73,11 @@ class StockResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('outlet_id')->label('Outlet')->relationship('outlet', 'name'),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->visible(fn () => OutletContext::user()?->isAdmin() ?? false),
+                ]),
             ])
             ->defaultSort('outlet_id')
             ->poll('30s');

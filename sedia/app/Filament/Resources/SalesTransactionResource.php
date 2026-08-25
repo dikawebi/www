@@ -3,18 +3,25 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\SalesTransactionResource\Pages;
+use App\Models\ActivityLog;
 use App\Models\Employee;
 use App\Models\MenuItem;
 use App\Models\SalesTransaction;
 use App\Models\User;
+use App\Services\StockService;
 use App\Support\OutletContext;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Components\Utilities\Set;
@@ -23,6 +30,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
@@ -254,7 +262,57 @@ class SalesTransactionResource extends Resource
                         'debit' => 'Debit',
                     ]),
             ])
-            ->recordActions([ViewAction::make()])
+            ->recordActions([
+                ViewAction::make(),
+                Action::make('receipt')
+                    ->label('Struk')
+                    ->icon('heroicon-o-printer')
+                    ->color('gray')
+                    ->url(fn (SalesTransaction $record) => route('receipt.show', $record))
+                    ->openUrlInNewTab(),
+                Action::make('void')
+                    ->label('Batalkan')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Batalkan Transaksi?')
+                    ->modalDescription('Stok bahan akan dikembalikan. Hanya admin yang bisa membatalkan.')
+                    ->visible(fn (SalesTransaction $record) => $record->status === 'completed' && (OutletContext::user()?->isAdmin() ?? false))
+                    ->action(function (SalesTransaction $record) {
+                        try {
+                            app(StockService::class)->voidSale($record, Auth::id());
+                            ActivityLog::record('voided', $record, 'Transaksi '.$record->invoice_number.' dibatalkan');
+                            Notification::make()->title('Transaksi dibatalkan')->body('Stok telah dikembalikan.')->success()->send();
+                        } catch (\RuntimeException $e) {
+                            Notification::make()->title('Gagal membatalkan')->body($e->getMessage())->danger()->send();
+                        }
+                    }),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    BulkAction::make('voidSelected')
+                        ->label('Batalkan terpilih')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->visible(fn () => OutletContext::user()?->isAdmin() ?? false)
+                        ->action(function (Collection $records) {
+                            $done = 0;
+                            foreach ($records as $record) {
+                                if ($record->status !== 'completed') {
+                                    continue;
+                                }
+                                try {
+                                    app(StockService::class)->voidSale($record, Auth::id());
+                                    $done++;
+                                } catch (\Throwable $e) {
+                                }
+                            }
+                            Notification::make()->title("{$done} transaksi dibatalkan")->success()->send();
+                        }),
+                    DeleteBulkAction::make()->visible(fn () => OutletContext::user()?->isAdmin() ?? false),
+                ]),
+            ])
             ->defaultSort('transaction_date', 'desc');
     }
 

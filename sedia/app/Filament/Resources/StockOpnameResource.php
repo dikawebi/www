@@ -11,6 +11,8 @@ use App\Services\StockService;
 use App\Support\OutletContext;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -183,6 +185,11 @@ class StockOpnameResource extends Resource
                             Notification::make()->title('Gagal')->body($e->getMessage())->danger()->send();
                         }
                     }),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->visible(fn () => OutletContext::user()?->isAdmin() ?? false),
+                ]),
             ])
             ->defaultSort('opname_date', 'desc');
     }

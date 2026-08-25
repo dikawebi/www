@@ -3,22 +3,29 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\KasbonResource\Pages;
+use App\Models\ActivityLog;
 use App\Models\Employee;
 use App\Models\EmployeeTransaction;
 use App\Models\User;
 use App\Support\OutletContext;
 use BackedEnum;
+use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use UnitEnum;
@@ -180,6 +187,60 @@ class KasbonResource extends Resource
                         'approved' => 'Disetujui',
                         'rejected' => 'Ditolak',
                     ]),
+            ])
+            ->recordActions([
+                Action::make('approve')
+                    ->label('Setujui')
+                    ->icon('heroicon-o-check-circle')
+                    ->color('success')
+                    ->visible(fn (EmployeeTransaction $record) => $record->status === 'pending' && (OutletContext::user()?->isAdmin() ?? false))
+                    ->requiresConfirmation()
+                    ->action(function (EmployeeTransaction $record) {
+                        $record->update(['status' => 'approved']);
+                        ActivityLog::record('approved', $record, 'Kasbon '.$record->employee->name.' disetujui');
+                        Notification::make()->title('Kasbon disetujui')->success()->send();
+                        // Notif ke admin lain & kasir terkait
+                        $recipients = User::where('role', 'admin')->get();
+                        if ($recipients->isNotEmpty()) {
+                            Notification::make()->title('Kasbon disetujui')->body($record->employee->name.' — Rp '.number_format($record->amount, 0, ',', '.'))->sendToDatabase($recipients);
+                        }
+                    }),
+                Action::make('reject')
+                    ->label('Tolak')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->visible(fn (EmployeeTransaction $record) => $record->status === 'pending' && (OutletContext::user()?->isAdmin() ?? false))
+                    ->requiresConfirmation()
+                    ->action(function (EmployeeTransaction $record) {
+                        $record->update(['status' => 'rejected']);
+                        ActivityLog::record('rejected', $record, 'Kasbon '.$record->employee->name.' ditolak');
+                        Notification::make()->title('Kasbon ditolak')->warning()->send();
+                    }),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    BulkAction::make('approveSelected')
+                        ->label('Setujui terpilih')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->visible(fn () => OutletContext::user()?->isAdmin() ?? false)
+                        ->requiresConfirmation()
+                        ->action(function (Collection $records) {
+                            $records->where('status', 'pending')->each->update(['status' => 'approved']);
+                            Notification::make()->title('Kasbon terpilih disetujui')->success()->send();
+                        }),
+                    BulkAction::make('rejectSelected')
+                        ->label('Tolak terpilih')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->visible(fn () => OutletContext::user()?->isAdmin() ?? false)
+                        ->requiresConfirmation()
+                        ->action(function (Collection $records) {
+                            $records->where('status', 'pending')->each->update(['status' => 'rejected']);
+                            Notification::make()->title('Kasbon terpilih ditolak')->warning()->send();
+                        }),
+                    DeleteBulkAction::make()->visible(fn () => OutletContext::user()?->isAdmin() ?? false),
+                ]),
             ])
             ->defaultSort('trans_date', 'desc');
     }

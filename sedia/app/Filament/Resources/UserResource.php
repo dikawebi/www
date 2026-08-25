@@ -6,7 +6,9 @@ use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use App\Support\OutletContext;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -96,6 +98,11 @@ class UserResource extends Resource
                 TextColumn::make('created_at')->label('Dibuat')->dateTime('d M Y')->sortable(),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->visible(fn () => OutletContext::user()?->isAdmin() ?? false),
+                ]),
+            ])
             ->defaultSort('name');
     }
 

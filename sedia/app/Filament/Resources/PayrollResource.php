@@ -8,6 +8,8 @@ use App\Models\Payroll;
 use App\Models\User;
 use App\Support\OutletContext;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -243,6 +245,11 @@ class PayrollResource extends Resource
                         'paid' => 'Dibayar',
                         'cancelled' => 'Dibatalkan',
                     ]),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->visible(fn () => OutletContext::user()?->isAdmin() ?? false),
+                ]),
             ])
             ->defaultSort('period_start', 'desc');
     }

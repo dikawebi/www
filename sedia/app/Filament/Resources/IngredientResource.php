@@ -7,6 +7,8 @@ use App\Models\Ingredient;
 use App\Models\User;
 use App\Support\OutletContext;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -118,6 +120,11 @@ class IngredientResource extends Resource
             ->filters([
                 TernaryFilter::make('is_active')
                     ->label('Status aktif'),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->visible(fn () => OutletContext::user()?->isAdmin() ?? false),
+                ]),
             ])
             ->defaultSort('name');
     }

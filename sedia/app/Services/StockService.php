@@ -95,6 +95,64 @@ class StockService
     }
 
     /**
+     * Void penjualan: kembalikan stok sesuai movement sale_deduction yang tercatat.
+     * Hanya untuk status completed, admin only (dicek di Resource).
+     */
+    public function voidSale(SalesTransaction $transaction, ?int $actorId = null): void
+    {
+        DB::transaction(function () use ($transaction, $actorId) {
+            $tx = SalesTransaction::whereKey($transaction->id)->lockForUpdate()->first() ?? $transaction;
+            $tx->load('items.menuItem.recipes.ingredient', 'outlet');
+
+            if ($tx->status !== 'completed') {
+                throw new RuntimeException('Hanya transaksi Selesai yang bisa dibatalkan (status: '.$tx->status.').');
+            }
+
+            foreach ($tx->items as $item) {
+                // Cari movement sale_deduction milik item ini; jika ada, reverse exact qty
+                $movements = StockMovement::where('reference_type', $item->getMorphClass())
+                    ->where('reference_id', $item->getKey())
+                    ->where('type', StockMovementType::SaleDeduction->value)
+                    ->get();
+
+                if ($movements->isNotEmpty()) {
+                    foreach ($movements as $m) {
+                        $ingredient = Ingredient::find($m->ingredient_id);
+                        if (! $ingredient) {
+                            continue;
+                        }
+                        $outlet = Outlet::find($m->outlet_id) ?? $tx->outlet;
+                        $this->recordMovement(
+                            outlet: $outlet,
+                            ingredient: $ingredient,
+                            type: StockMovementType::SaleDeduction,
+                            quantity: -((float) $m->quantity),
+                            reference: $tx,
+                            createdBy: $actorId,
+                            note: "Void: {$item->menuItem->name} x{$item->quantity}",
+                        );
+                    }
+                } else {
+                    // Fallback: hitung dari resep (untuk data lama)
+                    foreach ($item->menuItem->recipes as $recipe) {
+                        $this->recordMovement(
+                            outlet: $tx->outlet,
+                            ingredient: $recipe->ingredient,
+                            type: StockMovementType::SaleDeduction,
+                            quantity: (float) $recipe->qty_per_unit * $item->quantity,
+                            reference: $tx,
+                            createdBy: $actorId,
+                            note: "Void: {$item->menuItem->name} x{$item->quantity}",
+                        );
+                    }
+                }
+            }
+
+            $tx->update(['status' => 'void']);
+        });
+    }
+
+    /**
      * Kirim transfer antar outlet.
      * Hanya potong stok outlet asal dan ubah status jadi sent.
      */
@@ -173,6 +231,37 @@ class StockService
                 'received_by' => $createdBy ?? $transfer->received_by,
                 'received_at' => now(),
             ]);
+        });
+    }
+
+    /**
+     * Cancel transfer: draft→cancelled langsung, sent→cancelled kembalikan stok ke outlet asal.
+     */
+    public function cancelTransfer(StockTransfer $transfer, ?int $actorId = null): void
+    {
+        DB::transaction(function () use ($transfer, $actorId) {
+            $tx = StockTransfer::whereKey($transfer->id)->lockForUpdate()->first() ?? $transfer;
+            $tx->load('items.ingredient', 'fromOutlet', 'toOutlet');
+
+            if (in_array($tx->status, ['received', 'cancelled'], true)) {
+                throw new RuntimeException('Transfer sudah selesai/dibatalkan, tidak bisa dibatalkan lagi.');
+            }
+
+            if ($tx->status === 'sent') {
+                foreach ($tx->items as $item) {
+                    $this->recordMovement(
+                        outlet: $tx->fromOutlet,
+                        ingredient: $item->ingredient,
+                        type: StockMovementType::TransferIn,
+                        quantity: $item->quantity,
+                        reference: $tx,
+                        createdBy: $actorId ?? $tx->created_by,
+                        note: "Cancel transfer: kembalikan ke {$tx->fromOutlet->name}",
+                    );
+                }
+            }
+
+            $tx->update(['status' => 'cancelled']);
         });
     }
 

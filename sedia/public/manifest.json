@@ -1,0 +1,17 @@
+{
+  "name": "Sedia POS",
+  "short_name": "Sedia",
+  "description": "POS ringan - Sedia",
+  "start_url": "/dashboard/pos",
+  "scope": "/dashboard/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#f59e0b",
+  "icons": [
+    {
+      "src": "/favicon.ico",
+      "sizes": "64x64",
+      "type": "image/x-icon"
+    }
+  ]
+}

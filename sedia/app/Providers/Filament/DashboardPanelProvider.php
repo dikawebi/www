@@ -45,6 +45,7 @@ class DashboardPanelProvider extends PanelProvider
                 NavigationGroup::make('Laporan'),
                 NavigationGroup::make('Pengaturan'),
             ])
+            ->databaseNotifications()
             ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,

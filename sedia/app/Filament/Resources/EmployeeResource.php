@@ -7,6 +7,8 @@ use App\Filament\Resources\EmployeeResource\RelationManagers\TransactionsRelatio
 use App\Models\Employee;
 use App\Support\OutletContext;
 use BackedEnum;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -121,6 +123,11 @@ class EmployeeResource extends Resource
                 SelectFilter::make('status')
                     ->label('Status')
                     ->options(['active' => 'Aktif', 'resigned' => 'Resign']),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make()->visible(fn () => OutletContext::user()?->isAdmin() ?? false),
+                ]),
             ])
             ->defaultSort('name');
     }

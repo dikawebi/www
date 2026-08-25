@@ -4,12 +4,16 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\StockTransferResource\Pages;
 use App\Filament\Resources\StockTransferResource\RelationManagers\ItemsRelationManager;
+use App\Models\ActivityLog;
 use App\Models\StockTransfer;
 use App\Models\User;
 use App\Services\StockService;
 use App\Support\OutletContext;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
@@ -22,6 +26,7 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Auth;
 use UnitEnum;
@@ -257,6 +262,48 @@ class StockTransferResource extends Resource
                             Notification::make()->title('Gagal memproses')->body($e->getMessage())->danger()->send();
                         }
                     }),
+                Action::make('cancel')
+                    ->label('Batalkan')
+                    ->icon('heroicon-o-x-circle')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Batalkan Transfer?')
+                    ->modalDescription('Jika sudah dikirim, stok akan dikembalikan ke outlet asal.')
+                    ->visible(fn (StockTransfer $record) => in_array($record->status, ['draft', 'sent'], true) && (Auth::user()?->isAdmin() || $record->from_outlet_id === Auth::user()?->outlet_id))
+                    ->action(function (StockTransfer $record) {
+                        try {
+                            app(StockService::class)->cancelTransfer($record, Auth::id());
+                            ActivityLog::record('cancelled', $record, 'Transfer #'.$record->id.' dibatalkan');
+                            Notification::make()->title('Transfer dibatalkan')->success()->send();
+                        } catch (\RuntimeException $e) {
+                            Notification::make()->title('Gagal')->body($e->getMessage())->danger()->send();
+                        }
+                    }),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    BulkAction::make('cancelSelected')
+                        ->label('Batalkan terpilih')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('danger')
+                        ->requiresConfirmation()
+                        ->visible(fn () => Auth::user()?->isAdmin() ?? false)
+                        ->action(function (Collection $records) {
+                            $done = 0;
+                            foreach ($records as $record) {
+                                if (! in_array($record->status, ['draft', 'sent'], true)) {
+                                    continue;
+                                }
+                                try {
+                                    app(StockService::class)->cancelTransfer($record, Auth::id());
+                                    $done++;
+                                } catch (\Throwable $e) {
+                                }
+                            }
+                            Notification::make()->title("{$done} transfer dibatalkan")->success()->send();
+                        }),
+                    DeleteBulkAction::make()->visible(fn () => Auth::user()?->isAdmin() ?? false),
+                ]),
             ])
             ->defaultSort('transferred_at', 'desc');
     }
