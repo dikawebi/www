@@ -37,6 +37,16 @@ class StockOpnameResource extends Resource
 
     public static function canEdit(Model $record): bool
     {
+        return true; 
+    }
+
+    public static function canView(Model $record): bool
+    {
+        return true;
+    }
+
+    protected static function canUpdateRecord(Model $record): bool
+    {
         /** @var User $user */
         $user = Auth::user();
         return ($user?->isAdmin() || $record->outlet_id === $user?->outlet_id) && $record->status === 'draft';
@@ -84,7 +94,8 @@ class StockOpnameResource extends Resource
                 ->disabled(fn (?StockOpname $record) => $record?->status === 'applied')
                 ->required(),
             Textarea::make('note')->label('Catatan')->columnSpanFull(),
-        ]);
+        ])
+        ->disabled(fn (?StockOpname $record) => $record?->status === 'applied');
     }
 
     public static function table(Table $table): Table
