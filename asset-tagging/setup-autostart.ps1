@@ -52,9 +52,11 @@ Register-ScheduledTask -TaskName $taskCompose `
 Write-Host "[OK] Task terpasang : $taskCompose" -ForegroundColor Green
 
 # ---- Task 2: tunnel ngrok (90 detik setelah login, hidden, auto-restart) ----
-$ngrokCmd = "ngrok http --url=$Domain 8000"
-$actionNgrok = New-ScheduledTaskAction -Execute "powershell.exe" `
-    -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command `"$ngrokCmd`""
+$ngrokPath = (Get-Command ngrok -ErrorAction SilentlyContinue).Source
+if (-not $ngrokPath) { $ngrokPath = (where.exe ngrok 2>$null | Select-Object -First 1) }
+if (-not $ngrokPath) { $ngrokPath = "ngrok" }
+$actionNgrok = New-ScheduledTaskAction -Execute $ngrokPath `
+    -Argument "http --url=$Domain --request-header-add `"ngrok-skip-browser-warning: true`" 8000"
 $triggerNgrok = New-ScheduledTaskTrigger -AtLogOn
 $triggerNgrok.Delay = "PT90S"
 Register-ScheduledTask -TaskName $taskNgrok `
