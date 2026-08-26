@@ -1,0 +1,20 @@
+# Ganti dengan subdomain DuckDNS Anda
+perusahaan-anda.duckdns.org {
+	reverse_proxy nginx:80
+
+	# Header keamanan dasar
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	# Body size untuk upload aset
+	request_body {
+		max_size 25MB
+	}
+
+	encode gzip
+}
