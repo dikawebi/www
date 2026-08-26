@@ -5,6 +5,7 @@ vendor
 .gitattributes
 .gitignore
 public/hot
+public/storage
 tests
 *.log
 docker-compose.yml

@@ -30,6 +30,9 @@ php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
+# Pastikan storage:link ada (dibuat di dalam container, bukan host)
+php artisan storage:link || true
+
 case "$ROLE" in
   app)
     php artisan migrate --force
