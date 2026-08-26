@@ -65,11 +65,23 @@
                 @endif
                 <div>
                     <label class="text-xs font-semibold uppercase tracking-wide text-gray-500">Bayar</label>
-                    <div class="pos-pay-pills mt-1">
-                        @foreach (['cash' => 'Tunai', 'qris' => 'QRIS', 'transfer' => 'Transfer', 'debit' => 'Debit'] as $val => $label)
-                            <button type="button" wire:click="$set('paymentMethod','{{ $val }}')" class="pos-pay-pill {{ $paymentMethod === $val ? 'active' : '' }}">{{ $label }}</button>
-                        @endforeach
-                    </div>
+                    @if (! $isSplit)
+                        <div class="pos-pay-pills mt-1">
+                            @foreach (['cash' => 'Tunai', 'qris' => 'QRIS', 'transfer' => 'Transfer', 'debit' => 'Debit'] as $val => $label)
+                                <button type="button" wire:click="$set('paymentMethod','{{ $val }}')" class="pos-pay-pill {{ $paymentMethod === $val ? 'active' : '' }}">{{ $label }}</button>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="mt-1 grid grid-cols-2 gap-2">
+                            @foreach (['cash'=>'Tunai','qris'=>'QRIS','transfer'=>'Transfer','debit'=>'Debit'] as $k=>$lbl)
+                                <div>
+                                    <label class="text-[11px] font-semibold text-gray-500">{{ $lbl }}</label>
+                                    <input type="number" wire:model.live.debounce.300ms="splitAmounts.{{ $k }}" min="0" step="1000" class="fi-input mt-0.5 w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900" placeholder="0">
+                                </div>
+                            @endforeach
+                        </div>
+                    @endif
+                    <label class="mt-2 flex items-center gap-1.5 text-xs"><input type="checkbox" wire:model.live="isSplit"> Split payment</label>
                 </div>
                 <div class="pos-search">
                     <label class="text-xs font-semibold uppercase tracking-wide text-gray-500">Cari menu</label>
@@ -154,7 +166,13 @@
                         <span class="text-xs text-gray-500">{{ count($cart) }} item</span>
                     </div>
                     <div class="mt-1 text-2xl font-extrabold tracking-tight">{{ $this->formatRupiah($this->cartTotal) }}</div>
-                    <div class="mt-1 text-xs text-gray-500">Metode: <span class="font-semibold text-gray-900 dark:text-white">{{ strtoupper($paymentMethod) }}</span> · Outlet: <span class="font-semibold">{{ $this->outletId ? ($this->outletOptions()[$outletId] ?? '-') : '-' }}</span></div>
+                    @if ($isSplit)
+                        <div class="mt-2 space-y-1 text-xs">
+                            <div class="flex justify-between"><span>Dibayar</span><span class="font-semibold">{{ $this->formatRupiah($this->paidTotal) }}</span></div>
+                            <div class="flex justify-between text-amber-700 dark:text-amber-400"><span>Kembalian</span><span class="font-bold">{{ $this->formatRupiah($this->changeDue) }}</span></div>
+                        </div>
+                    @endif
+                    <div class="mt-1 text-xs text-gray-500">Metode: <span class="font-semibold text-gray-900 dark:text-white">{{ $isSplit ? 'SPLIT' : strtoupper($paymentMethod) }}</span> · Outlet: <span class="font-semibold">{{ $this->outletId ? ($this->outletOptions()[$outletId] ?? '-') : '-' }}</span></div>
                 </div>
 
                 <div class="mt-3 grid grid-cols-2 gap-2">

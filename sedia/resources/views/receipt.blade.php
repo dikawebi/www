@@ -39,6 +39,17 @@
     <div class="row muted"><span>Tanggal</span><span>{{ $transaction->transaction_date->format('d/m/Y H:i') }}</span></div>
     <div class="row muted"><span>Kasir</span><span>{{ $transaction->cashier?->name ?? '-' }}</span></div>
     <div class="row muted"><span>Bayar</span><span>{{ ucfirst($transaction->payment_method) }}</span></div>
+    @if (! empty($transaction->payments))
+        @foreach ($transaction->payments as $pay)
+            <div class="row muted"><span>{{ ucfirst($pay['method']) }}</span><span>Rp {{ number_format($pay['amount'], 0, ',', '.') }}</span></div>
+        @endforeach
+        @if ($transaction->paid_amount)
+            <div class="row muted"><span>Dibayar</span><span>Rp {{ number_format($transaction->paid_amount, 0, ',', '.') }}</span></div>
+        @endif
+        @if ($transaction->change_amount > 0)
+            <div class="row muted"><span>Kembalian</span><span>Rp {{ number_format($transaction->change_amount, 0, ',', '.') }}</span></div>
+        @endif
+    @endif
     <div class="row muted"><span>Status</span><span>{{ $transaction->status }}</span></div>
     <hr class="divider">
     @foreach ($transaction->items as $item)
@@ -47,6 +58,9 @@
     @endforeach
     <hr class="divider">
     <div class="row total-row"><span>Total</span><span>Rp {{ number_format($transaction->total_amount, 0, ',', '.') }}</span></div>
+    @if ($transaction->change_amount > 0)
+        <div class="row"><span>Kembalian</span><span>Rp {{ number_format($transaction->change_amount, 0, ',', '.') }}</span></div>
+    @endif
     <hr class="divider">
     <div class="center muted">Terima kasih — Sampai jumpa lagi</div>
     <div class="center muted" style="margin-top:4px;">{{ $transaction->created_at->format('d M Y H:i') }}</div>

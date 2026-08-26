@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Models\Employee;
 use App\Models\EmployeeTransaction;
+use App\Models\Expense;
 use App\Models\Ingredient;
 use App\Models\MenuItem;
 use App\Models\Outlet;
@@ -42,7 +43,7 @@ class AppServiceProvider extends ServiceProvider
         SalesTransaction::observe(SalesTransactionObserver::class);
 
         // Activity log untuk model bisnis utama (tanpa Stock/StockMovement agar tidak bising)
-        foreach ([SalesTransaction::class, EmployeeTransaction::class, Payroll::class, StockTransfer::class, StockOpname::class, MenuItem::class, Ingredient::class, User::class, Outlet::class, Employee::class] as $model) {
+        foreach ([SalesTransaction::class, EmployeeTransaction::class, Payroll::class, StockTransfer::class, StockOpname::class, MenuItem::class, Ingredient::class, User::class, Outlet::class, Employee::class, Expense::class] as $model) {
             $model::observe(ActivityObserver::class);
         }
 

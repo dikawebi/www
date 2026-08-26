@@ -37,17 +37,35 @@ class MenuBestSellerReport extends Report
         }
 
         $rows = $query
-            ->selectRaw('menu_items.name as menu_name, menu_items.category as category, SUM(sales_transaction_items.quantity) as qty_sold, SUM(sales_transaction_items.subtotal) as total_revenue')
+            ->selectRaw('menu_items.id as menu_item_id, menu_items.name as menu_name, menu_items.category as category, SUM(sales_transaction_items.quantity) as qty_sold, SUM(sales_transaction_items.subtotal) as total_revenue')
             ->groupBy('menu_items.id', 'menu_items.name', 'menu_items.category')
             ->orderByDesc('qty_sold')
             ->get();
 
-        return collect($rows)->map(fn ($row) => [
-            'menu_name' => $row->menu_name,
-            'category' => $row->category,
-            'qty_sold' => (int) $row->qty_sold,
-            'total_revenue' => (float) $row->total_revenue,
-        ]);
+        // Retur per menu dalam periode (kurangi qty & revenue) — net
+        $returQuery = DB::table('sales_return_items')
+            ->join('sales_returns', 'sales_returns.id', '=', 'sales_return_items.sales_return_id')
+            ->whereBetween('sales_returns.created_at', [$this->periodStart(), $this->periodEnd()]);
+        if ($this->outletId) {
+            $returQuery->where('sales_returns.outlet_id', $this->outletId);
+        } elseif (! $this->isAdminUser()) {
+            $returQuery->where('sales_returns.outlet_id', OutletContext::currentOutletId());
+        }
+        $returData = $returQuery->selectRaw('sales_return_items.menu_item_id, SUM(sales_return_items.quantity) as ret_qty, SUM(sales_return_items.subtotal) as ret_rev')
+            ->groupBy('sales_return_items.menu_item_id')->get()->keyBy('menu_item_id');
+
+        return collect($rows)->map(function ($row) use ($returData) {
+            $ret = $returData->get($row->menu_item_id);
+            $retQty = (int) ($ret->ret_qty ?? 0);
+            $retRev = (float) ($ret->ret_rev ?? 0);
+
+            return [
+                'menu_name' => $row->menu_name,
+                'category' => $row->category,
+                'qty_sold' => max(0, (int) $row->qty_sold - $retQty),
+                'total_revenue' => max(0, (float) $row->total_revenue - $retRev),
+            ];
+        });
     }
 
     /**

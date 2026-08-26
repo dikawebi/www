@@ -6,6 +6,8 @@ use App\Enums\StockMovementType;
 use App\Exceptions\InsufficientStockException;
 use App\Models\Ingredient;
 use App\Models\Outlet;
+use App\Models\SalesReturn;
+use App\Models\SalesReturnItem;
 use App\Models\SalesTransaction;
 use App\Models\SalesTransactionItem;
 use App\Models\Stock;
@@ -149,6 +151,84 @@ class StockService
             }
 
             $tx->update(['status' => 'void']);
+        });
+    }
+
+    /**
+     * Retur parsial: kembalikan stok untuk qty tertentu per item.
+     *
+     * @param  array<int, int>  $returnMap  [sales_transaction_item_id => qty_to_return]
+     */
+    public function returnSaleItems(SalesTransaction $transaction, array $returnMap, ?int $actorId = null, ?string $reason = null): SalesReturn
+    {
+        return DB::transaction(function () use ($transaction, $returnMap, $actorId, $reason) {
+            $tx = SalesTransaction::whereKey($transaction->id)->lockForUpdate()->first() ?? $transaction;
+            $tx->load('items.menuItem.recipes.ingredient', 'outlet');
+
+            if ($tx->status !== 'completed') {
+                throw new RuntimeException('Hanya transaksi Selesai yang bisa diretur.');
+            }
+
+            $return = SalesReturn::create([
+                'sales_transaction_id' => $tx->id,
+                'outlet_id' => $tx->outlet_id,
+                'returned_by' => $actorId,
+                'reason' => $reason,
+                'total_refund' => 0,
+            ]);
+
+            $totalRefund = 0;
+
+            foreach ($returnMap as $itemId => $qtyReturn) {
+                $qtyReturn = (int) $qtyReturn;
+                if ($qtyReturn <= 0) {
+                    continue;
+                }
+                $item = $tx->items()->whereKey($itemId)->first();
+                if (! $item) {
+                    throw new RuntimeException("Item #{$itemId} tidak ditemukan.");
+                }
+                // Cek sudah pernah diretur berapa
+                $alreadyReturned = SalesReturnItem::whereHas('salesReturn', fn ($q) => $q->where('sales_transaction_id', $tx->id))
+                    ->where('sales_transaction_item_id', $itemId)->sum('quantity');
+                $maxReturnable = $item->quantity - $alreadyReturned;
+                if ($qtyReturn > $maxReturnable) {
+                    throw new RuntimeException("Qty retur {$item->menuItem->name} melebihi sisa ({$maxReturnable}).");
+                }
+
+                $refund = (float) $item->price * $qtyReturn;
+                $totalRefund += $refund;
+
+                SalesReturnItem::create([
+                    'sales_return_id' => $return->id,
+                    'sales_transaction_item_id' => $item->id,
+                    'menu_item_id' => $item->menu_item_id,
+                    'quantity' => $qtyReturn,
+                    'price' => $item->price,
+                    'subtotal' => $refund,
+                ]);
+
+                foreach ($item->menuItem->recipes as $recipe) {
+                    $qtyToRestore = (float) $recipe->qty_per_unit * $qtyReturn;
+                    $this->recordMovement(
+                        outlet: $tx->outlet,
+                        ingredient: $recipe->ingredient,
+                        type: StockMovementType::SaleReturn,
+                        quantity: $qtyToRestore,
+                        reference: $return,
+                        createdBy: $actorId,
+                        note: "Retur: {$item->menuItem->name} x{$qtyReturn} dari {$tx->invoice_number}",
+                    );
+                }
+            }
+
+            if ($totalRefund <= 0) {
+                throw new RuntimeException('Tidak ada item untuk diretur.');
+            }
+
+            $return->update(['total_refund' => $totalRefund]);
+
+            return $return;
         });
     }
 

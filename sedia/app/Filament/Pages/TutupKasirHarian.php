@@ -83,14 +83,25 @@ class TutupKasirHarian extends Page
 
         return $transactions->groupBy(fn ($t) => $t->cashier_id ?? 0)->map(function (Collection $group) {
             $first = $group->first();
-            $byPayment = $group->groupBy('payment_method')->map(fn (Collection $g) => (float) $g->sum('total_amount'));
+            $byPayment = [];
+            foreach ($group as $trx) {
+                foreach ($trx->getPaymentsArray() as $pay) {
+                    $method = $pay['method'] ?? 'cash';
+                    $amount = (float) ($pay['amount'] ?? 0);
+                    // Kurangi kembalian dari tunai
+                    if ($method === 'cash' && $trx->change_amount > 0) {
+                        $amount = max(0, $amount - (float) $trx->change_amount);
+                    }
+                    $byPayment[$method] = ($byPayment[$method] ?? 0) + $amount;
+                }
+            }
 
             return [
                 'cashier_id' => $first->cashier_id,
                 'cashier_name' => $first->cashier?->name ?? 'Tanpa Kasir',
                 'trx_count' => $group->count(),
                 'total' => (float) $group->sum('total_amount'),
-                'by_payment' => $byPayment->all(),
+                'by_payment' => $byPayment,
             ];
         })->sortByDesc('total')->values();
     }

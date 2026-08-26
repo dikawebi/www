@@ -27,7 +27,7 @@ class IngredientConsumptionReport extends Report
     {
         $query = DB::table('stock_movements')
             ->whereBetween('stock_movements.created_at', [$this->periodStart(), $this->periodEnd()])
-            ->whereIn('stock_movements.type', ['sale_deduction', 'expired', 'reject', 'transfer_out']);
+            ->whereIn('stock_movements.type', ['sale_deduction', 'sale_return', 'expired', 'reject', 'transfer_out']);
 
         if ($this->outletId) {
             $query->where('stock_movements.outlet_id', $this->outletId);
@@ -49,7 +49,9 @@ class IngredientConsumptionReport extends Report
 
             $byType = collect($rows)->pluck('total_qty', 'type');
 
-            $saleQty = (float) ($byType->get('sale_deduction') ?? 0);
+            $grossSaleQty = (float) ($byType->get('sale_deduction') ?? 0);
+            $returQty = (float) ($byType->get('sale_return') ?? 0);
+            $saleQty = max(0, $grossSaleQty - $returQty);
             $wasteQty = (float) ($byType->get('expired') ?? 0) + (float) ($byType->get('reject') ?? 0);
             $transferOutQty = (float) ($byType->get('transfer_out') ?? 0);
             $totalOutQty = $saleQty + $wasteQty + $transferOutQty;

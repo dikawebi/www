@@ -6,6 +6,7 @@ use App\Filament\Resources\SalesTransactionResource\Pages;
 use App\Models\ActivityLog;
 use App\Models\Employee;
 use App\Models\MenuItem;
+use App\Models\SalesReturnItem;
 use App\Models\SalesTransaction;
 use App\Models\User;
 use App\Services\StockService;
@@ -17,9 +18,11 @@ use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\Hidden;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
@@ -285,6 +288,63 @@ class SalesTransactionResource extends Resource
                             Notification::make()->title('Transaksi dibatalkan')->body('Stok telah dikembalikan.')->success()->send();
                         } catch (\RuntimeException $e) {
                             Notification::make()->title('Gagal membatalkan')->body($e->getMessage())->danger()->send();
+                        }
+                    }),
+                Action::make('retur')
+                    ->label('Retur')
+                    ->icon('heroicon-o-arrow-uturn-left')
+                    ->color('warning')
+                    ->visible(fn (SalesTransaction $record) => $record->status === 'completed')
+                    ->form([
+                        Textarea::make('reason')->label('Alasan Retur')->required()->placeholder('Mis: salah pesan, tidak jadi'),
+                        Repeater::make('items')
+                            ->label('Pilih Item & Qty Diretur')
+                            ->schema([
+                                Hidden::make('sales_transaction_item_id'),
+                                TextInput::make('menu_name')->label('Menu')->disabled(),
+                                TextInput::make('qty_sold')->label('Qty Terjual')->disabled()->numeric(),
+                                TextInput::make('qty_return')->label('Qty Retur')->numeric()->minValue(0)->default(0)->required(),
+                                TextInput::make('max_returnable')->label('Max')->disabled()->numeric(),
+                            ])->columns(5)->deletable(false)->addable(false)->reorderable(false),
+                    ])
+                    ->fillForm(function (SalesTransaction $record) {
+                        $items = [];
+                        foreach ($record->items()->with('menuItem')->get() as $it) {
+                            $already = SalesReturnItem::whereHas('salesReturn', fn ($q) => $q->where('sales_transaction_id', $record->id))->where('sales_transaction_item_id', $it->id)->sum('quantity');
+                            $max = $it->quantity - $already;
+                            if ($max <= 0) {
+                                continue;
+                            }
+                            $items[] = [
+                                'sales_transaction_item_id' => $it->id,
+                                'menu_name' => $it->menuItem->name,
+                                'qty_sold' => $it->quantity,
+                                'qty_return' => 0,
+                                'max_returnable' => $max,
+                            ];
+                        }
+
+                        return ['items' => $items, 'reason' => ''];
+                    })
+                    ->action(function (array $data, SalesTransaction $record) {
+                        $map = [];
+                        foreach ($data['items'] ?? [] as $row) {
+                            $qty = (int) ($row['qty_return'] ?? 0);
+                            if ($qty > 0) {
+                                $map[(int) $row['sales_transaction_item_id']] = $qty;
+                            }
+                        }
+                        if (empty($map)) {
+                            Notification::make()->title('Tidak ada item dipilih')->warning()->send();
+
+                            return;
+                        }
+                        try {
+                            $ret = app(StockService::class)->returnSaleItems($record, $map, Auth::id(), $data['reason'] ?? null);
+                            ActivityLog::record('sale_return', $ret, 'Retur '.$record->invoice_number.' — Rp '.number_format($ret->total_refund, 0, ',', '.'));
+                            Notification::make()->title('Retur berhasil')->body('Refund Rp '.number_format($ret->total_refund, 0, ',', '.').' — stok dikembalikan.')->success()->send();
+                        } catch (\RuntimeException $e) {
+                            Notification::make()->title('Gagal retur')->body($e->getMessage())->danger()->send();
                         }
                     }),
             ])

@@ -11,6 +11,7 @@ enum StockMovementType: string
     case TransferIn = 'transfer_in';         // masuk dari outlet lain
     case TransferOut = 'transfer_out';       // keluar ke outlet lain
     case OpnameAdjustment = 'opname_adjustment'; // koreksi hasil stock opname
+    case SaleReturn = 'sale_return';          // retur penjualan (kembalikan stok)
 
     public function label(): string
     {
@@ -22,12 +23,13 @@ enum StockMovementType: string
             self::TransferIn => 'Transfer masuk',
             self::TransferOut => 'Transfer keluar',
             self::OpnameAdjustment => 'Koreksi stock opname',
+            self::SaleReturn => 'Retur penjualan',
         };
     }
 
     // Movement yang menambah stock vs mengurangi stock, dipakai untuk validasi arah quantity
     public function isInbound(): bool
     {
-        return in_array($this, [self::Purchase, self::TransferIn]);
+        return in_array($this, [self::Purchase, self::TransferIn, self::SaleReturn]);
     }
 }

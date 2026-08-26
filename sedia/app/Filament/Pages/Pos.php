@@ -31,6 +31,11 @@ class Pos extends Page
 
     public string $paymentMethod = 'cash';
 
+    public bool $isSplit = false;
+
+    /** @var array<string, float> */
+    public array $splitAmounts = ['cash' => 0, 'qris' => 0, 'transfer' => 0, 'debit' => 0];
+
     public string $search = '';
 
     public string $selectedCategory = '';
@@ -80,6 +85,27 @@ class Pos extends Page
     public function getCartTotalProperty(): float
     {
         return (float) collect($this->cart)->sum('subtotal');
+    }
+
+    public function getPaidTotalProperty(): float
+    {
+        if (! $this->isSplit) {
+            return $this->cartTotal;
+        }
+
+        return (float) array_sum($this->splitAmounts);
+    }
+
+    public function getChangeDueProperty(): float
+    {
+        return max(0, $this->paidTotal - $this->cartTotal);
+    }
+
+    public function updatedIsSplit(): void
+    {
+        if ($this->isSplit) {
+            $this->splitAmounts = ['cash' => $this->cartTotal, 'qris' => 0, 'transfer' => 0, 'debit' => 0];
+        }
     }
 
     public function addToCart(int $menuItemId): void
@@ -157,18 +183,40 @@ class Pos extends Page
             return;
         }
 
+        $total = $this->cartTotal;
+        $paid = $this->paidTotal;
+        $change = $this->changeDue;
+
+        if ($this->isSplit) {
+            if ($paid < $total - 0.01) {
+                FilamentNotification::make()->title('Bayar kurang')->body('Total '.$this->formatRupiah($total).', dibayar '.$this->formatRupiah($paid))->danger()->send();
+
+                return;
+            }
+            $payments = collect($this->splitAmounts)->filter(fn ($v) => $v > 0)->map(fn ($v, $k) => ['method' => $k, 'amount' => (float) $v])->values()->all();
+            $primaryMethod = collect($payments)->sortByDesc('amount')->first()['method'] ?? 'cash';
+        } else {
+            $payments = null;
+            $paid = $total;
+            $change = 0;
+            $primaryMethod = $this->paymentMethod;
+        }
+
         $cashierId = Employee::where('outlet_id', $outletId)->where('status', 'active')->value('id');
 
         try {
             $trx = null;
-            DB::transaction(function () use (&$trx, $outletId, $cashierId) {
+            DB::transaction(function () use (&$trx, $outletId, $cashierId, $payments, $paid, $change, $primaryMethod) {
                 $trx = SalesTransaction::create([
                     'invoice_number' => 'INV-'.now()->format('Ymd').'-'.strtoupper(Str::random(5)),
                     'outlet_id' => $outletId,
                     'cashier_id' => $cashierId,
                     'transaction_date' => now(),
                     'total_amount' => 0,
-                    'payment_method' => $this->paymentMethod,
+                    'payment_method' => $primaryMethod,
+                    'payments' => $payments,
+                    'paid_amount' => $paid,
+                    'change_amount' => $change,
                     'status' => 'completed',
                 ]);
                 foreach ($this->cart as $row) {

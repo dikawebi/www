@@ -2,7 +2,9 @@
 
 namespace App\Filament\Pages\Reports;
 
+use App\Models\Expense;
 use App\Models\MenuItem;
+use App\Models\Payroll;
 use App\Support\OutletContext;
 use BackedEnum;
 use Illuminate\Support\Collection;
@@ -57,12 +59,25 @@ class MenuMarginReport extends Report
             ->get()
             ->keyBy('menu_item_id');
 
-        // 3. Gabungkan: hanya tampilkan menu yang benar-benar terjual di periode ini.
-        return $sales->map(function ($saleRow) use ($menuItems, $hppByMenu) {
+        // Retur per menu dalam periode — kurangi qty & revenue (net)
+        $returQuery = DB::table('sales_return_items')
+            ->join('sales_returns', 'sales_returns.id', '=', 'sales_return_items.sales_return_id')
+            ->whereBetween('sales_returns.created_at', [$this->periodStart(), $this->periodEnd()]);
+        if ($this->outletId) {
+            $returQuery->where('sales_returns.outlet_id', $this->outletId);
+        } elseif (! $this->isAdminUser()) {
+            $returQuery->where('sales_returns.outlet_id', OutletContext::currentOutletId());
+        }
+        $returByMenu = $returQuery->selectRaw('sales_return_items.menu_item_id, SUM(sales_return_items.quantity) as ret_qty, SUM(sales_return_items.subtotal) as ret_rev')
+            ->groupBy('sales_return_items.menu_item_id')->get()->keyBy('menu_item_id');
+
+        // 3. Gabungkan: hanya tampilkan menu yang benar-benar terjual (net) di periode ini.
+        return $sales->map(function ($saleRow) use ($menuItems, $hppByMenu, $returByMenu) {
             $menuItem = $menuItems->firstWhere('id', $saleRow->menu_item_id);
             $hppPerUnit = (float) ($hppByMenu->get($saleRow->menu_item_id) ?? 0);
-            $qtySold = (int) $saleRow->qty_sold;
-            $revenue = (float) $saleRow->revenue;
+            $ret = $returByMenu->get($saleRow->menu_item_id);
+            $qtySold = max(0, (int) $saleRow->qty_sold - (int) ($ret->ret_qty ?? 0));
+            $revenue = max(0, (float) $saleRow->revenue - (float) ($ret->ret_rev ?? 0));
             $totalHpp = $hppPerUnit * $qtySold;
             $grossMargin = $revenue - $totalHpp;
 
@@ -78,6 +93,7 @@ class MenuMarginReport extends Report
                 'margin_pct' => $revenue > 0 ? ($grossMargin / $revenue) * 100 : 0,
             ];
         })
+            ->filter(fn ($row) => $row['qty_sold'] > 0)
             ->sortByDesc('gross_margin')
             ->values();
     }
@@ -94,11 +110,33 @@ class MenuMarginReport extends Report
         $grossMargin = (float) $rows->sum('gross_margin');
         $marginPct = $revenue > 0 ? ($grossMargin / $revenue) * 100 : 0;
 
-        return [
+        // Kas kecil & payroll dalam periode (untuk laba bersih)
+        $expenseQuery = Expense::whereBetween('expense_date', [$this->startDate, $this->endDate]);
+        $payrollQuery = Payroll::where('status', 'paid')->whereBetween('pay_date', [$this->startDate, $this->endDate]);
+        if ($this->outletId) {
+            $expenseQuery->where('outlet_id', $this->outletId);
+            $payrollQuery->where('outlet_id', $this->outletId);
+        } elseif (! $this->isAdminUser()) {
+            $expenseQuery->where('outlet_id', OutletContext::currentOutletId());
+            $payrollQuery->where('outlet_id', OutletContext::currentOutletId());
+        }
+        $totalExpense = (float) $expenseQuery->sum('amount');
+        $totalPayroll = (float) $payrollQuery->sum('total_salary');
+        $netProfit = $grossMargin - $totalExpense - $totalPayroll;
+
+        $summary = [
             ['label' => 'Total Omzet', 'value' => $this->formatRupiah($revenue)],
             ['label' => 'Total HPP', 'value' => $this->formatRupiah($totalHpp)],
             ['label' => 'Laba Kotor', 'value' => $this->formatRupiah($grossMargin)],
             ['label' => 'Margin Rata-rata', 'value' => number_format($marginPct, 1).'%'],
         ];
+
+        if ($totalExpense > 0 || $totalPayroll > 0) {
+            $summary[] = ['label' => 'Total Pengeluaran (Kas Kecil)', 'value' => $this->formatRupiah($totalExpense)];
+            $summary[] = ['label' => 'Total Gaji Dibayar', 'value' => $this->formatRupiah($totalPayroll)];
+            $summary[] = ['label' => 'Laba Bersih (Kotor - Beban)', 'value' => $this->formatRupiah($netProfit)];
+        }
+
+        return $summary;
     }
 }

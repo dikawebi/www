@@ -14,13 +14,25 @@ class SalesTransaction extends Model
 
     protected $fillable = [
         'invoice_number', 'outlet_id', 'cashier_id',
-        'transaction_date', 'total_amount', 'payment_method', 'status',
+        'transaction_date', 'total_amount', 'payment_method', 'payments', 'paid_amount', 'change_amount', 'status',
     ];
 
     protected $casts = [
         'transaction_date' => 'datetime',
         'total_amount' => 'decimal:2',
+        'payments' => 'array',
+        'paid_amount' => 'decimal:2',
+        'change_amount' => 'decimal:2',
     ];
+
+    public function getPaymentsArray(): array
+    {
+        if (is_array($this->payments) && ! empty($this->payments)) {
+            return $this->payments;
+        }
+
+        return [['method' => $this->payment_method ?? 'cash', 'amount' => (float) $this->total_amount]];
+    }
 
     public function outlet(): BelongsTo
     {
@@ -40,6 +52,11 @@ class SalesTransaction extends Model
     public function stockMovements(): MorphMany
     {
         return $this->morphMany(StockMovement::class, 'reference');
+    }
+
+    public function returns(): HasMany
+    {
+        return $this->hasMany(SalesReturn::class);
     }
 
     /**

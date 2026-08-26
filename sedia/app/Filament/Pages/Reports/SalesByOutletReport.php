@@ -3,6 +3,7 @@
 namespace App\Filament\Pages\Reports;
 
 use App\Models\Outlet;
+use App\Models\SalesReturn;
 use App\Models\SalesTransaction;
 use App\Support\OutletContext;
 use BackedEnum;
@@ -21,7 +22,7 @@ class SalesByOutletReport extends Report
     protected string $view = 'filament.pages.reports.sales-by-outlet-report';
 
     /**
-     * @return Collection<int, array{outlet_id: int, outlet_name: string, trx_count: int, total_omzet: float, aov: float}>
+     * @return Collection<int, array{outlet_id: int, outlet_name: string, trx_count: int, total_omzet: float, total_retur: float, net_omzet: float, aov: float}>
      */
     public function getRows(): Collection
     {
@@ -41,18 +42,32 @@ class SalesByOutletReport extends Report
             ->orderByDesc('total_omzet')
             ->get();
 
+        // Retur per outlet dalam periode (berdasarkan waktu retur, bukan transaksi)
+        $returQuery = SalesReturn::query()
+            ->whereBetween('created_at', [$this->periodStart(), $this->periodEnd()]);
+        if ($this->outletId) {
+            $returQuery->where('outlet_id', $this->outletId);
+        } elseif (! $this->isAdminUser()) {
+            $returQuery->where('outlet_id', OutletContext::currentOutletId());
+        }
+        $returByOutlet = $returQuery->selectRaw('outlet_id, SUM(total_refund) as total_retur')->groupBy('outlet_id')->pluck('total_retur', 'outlet_id');
+
         $outletNames = Outlet::query()->pluck('name', 'id');
 
-        return $rows->map(function ($row) use ($outletNames) {
+        return $rows->map(function ($row) use ($outletNames, $returByOutlet) {
             $trxCount = (int) $row->trx_count;
             $totalOmzet = (float) $row->total_omzet;
+            $totalRetur = (float) ($returByOutlet->get($row->outlet_id) ?? 0);
+            $netOmzet = $totalOmzet - $totalRetur;
 
             return [
                 'outlet_id' => $row->outlet_id,
                 'outlet_name' => $outletNames->get($row->outlet_id, '—'),
                 'trx_count' => $trxCount,
                 'total_omzet' => $totalOmzet,
-                'aov' => $trxCount > 0 ? $totalOmzet / $trxCount : 0,
+                'total_retur' => $totalRetur,
+                'net_omzet' => $netOmzet,
+                'aov' => $trxCount > 0 ? $netOmzet / $trxCount : 0,
             ];
         });
     }
@@ -61,11 +76,15 @@ class SalesByOutletReport extends Report
     {
         $trxCount = (int) $rows->sum('trx_count');
         $totalOmzet = (float) $rows->sum('total_omzet');
+        $totalRetur = (float) $rows->sum('total_retur');
+        $netOmzet = (float) $rows->sum('net_omzet');
 
         return [
             'trx_count' => $trxCount,
             'total_omzet' => $totalOmzet,
-            'aov' => $trxCount > 0 ? $totalOmzet / $trxCount : 0,
+            'total_retur' => $totalRetur,
+            'net_omzet' => $netOmzet,
+            'aov' => $trxCount > 0 ? $netOmzet / $trxCount : 0,
         ];
     }
 
@@ -76,10 +95,17 @@ class SalesByOutletReport extends Report
     {
         $grandTotal = $this->getGrandTotal($this->getRows());
 
-        return [
-            ['label' => 'Total Omzet', 'value' => $this->formatRupiah($grandTotal['total_omzet'])],
+        $summary = [
+            ['label' => 'Total Omzet (Gross)', 'value' => $this->formatRupiah($grandTotal['total_omzet'])],
             ['label' => 'Jumlah Transaksi', 'value' => number_format($grandTotal['trx_count'])],
             ['label' => 'Rata-rata / Transaksi', 'value' => $this->formatRupiah($grandTotal['aov'])],
         ];
+
+        if ($grandTotal['total_retur'] > 0) {
+            $summary[] = ['label' => 'Total Retur', 'value' => $this->formatRupiah($grandTotal['total_retur'])];
+            $summary[] = ['label' => 'Net Omzet', 'value' => $this->formatRupiah($grandTotal['net_omzet'])];
+        }
+
+        return $summary;
     }
 }
