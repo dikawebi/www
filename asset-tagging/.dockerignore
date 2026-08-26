@@ -1,0 +1,11 @@
+node_modules
+vendor
+.env
+.git
+.gitattributes
+.gitignore
+public/hot
+tests
+*.log
+docker-compose.yml
+.vercel
