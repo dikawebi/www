@@ -58,8 +58,12 @@ if (-not $ngrokPath) {
     $searchRoots = @(
         "$env:LOCALAPPDATA\Microsoft\WinGet\Packages",
         "$env:LOCALAPPDATA\Microsoft\WinGet\Links",
+        "$env:LOCALAPPDATA\ngrok",
+        "$env:USERPROFILE",
         "C:\Program Files",
-        "C:\ProgramData"
+        "C:\ProgramData",
+        "C:\tools",
+        "C:\ngrok"
     )
     foreach ($root in $searchRoots) {
         $found = Get-ChildItem $root -Recurse -Filter ngrok.exe -ErrorAction SilentlyContinue | Select-Object -First 1
