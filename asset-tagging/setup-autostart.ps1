@@ -53,9 +53,8 @@ Write-Host "[OK] Task terpasang : $taskCompose" -ForegroundColor Green
 
 # ---- Task 2: tunnel ngrok (90 detik setelah login, hidden, auto-restart) ----
 $ngrokPath = (Get-Command ngrok -ErrorAction SilentlyContinue).Source
-if (-not $ngrokPath) { $ngrokPath = (where.exe ngrok 2>$null | Select-Object -First 1) }
 if (-not $ngrokPath) {
-    # Fallback: cari di lokasi umum winget
+    # Cari di lokasi umum winget (bypas where.exe yang error di beberapa PC)
     $searchRoots = @(
         "$env:LOCALAPPDATA\Microsoft\WinGet\Packages",
         "$env:LOCALAPPDATA\Microsoft\WinGet\Links",
