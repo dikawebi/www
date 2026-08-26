@@ -75,4 +75,4 @@ Write-Host ""
 Write-Host "  Tekan Ctrl+C untuk menghentikan tunnel." -ForegroundColor DarkGray
 Write-Host ""
 
-ngrok http --url=$Domain --host-header=rewrite 8000
+ngrok http --domain=$Domain --host-header=rewrite 8000
