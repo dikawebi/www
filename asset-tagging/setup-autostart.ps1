@@ -54,7 +54,23 @@ Write-Host "[OK] Task terpasang : $taskCompose" -ForegroundColor Green
 # ---- Task 2: tunnel ngrok (90 detik setelah login, hidden, auto-restart) ----
 $ngrokPath = (Get-Command ngrok -ErrorAction SilentlyContinue).Source
 if (-not $ngrokPath) { $ngrokPath = (where.exe ngrok 2>$null | Select-Object -First 1) }
-if (-not $ngrokPath) { $ngrokPath = "ngrok" }
+if (-not $ngrokPath) {
+    # Fallback: cari di lokasi umum winget
+    $searchRoots = @(
+        "$env:LOCALAPPDATA\Microsoft\WinGet\Packages",
+        "$env:LOCALAPPDATA\Microsoft\WinGet\Links",
+        "C:\Program Files",
+        "C:\ProgramData"
+    )
+    foreach ($root in $searchRoots) {
+        $found = Get-ChildItem $root -Recurse -Filter ngrok.exe -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($found) { $ngrokPath = $found.FullName; break }
+    }
+}
+if (-not $ngrokPath) {
+    Write-Host "ERROR: ngrok.exe tidak ditemukan. Jalankan: winget install ngrok.ngrok" -ForegroundColor Red
+    exit 1
+}
 $actionNgrok = New-ScheduledTaskAction -Execute $ngrokPath `
     -Argument "http --url=$Domain --request-header-add `"ngrok-skip-browser-warning: true`" 8000"
 $triggerNgrok = New-ScheduledTaskTrigger -AtLogOn
