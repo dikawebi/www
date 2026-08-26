@@ -43,11 +43,40 @@ class Pos extends Page
     /** @var array<int, array{menu_item_id: int, name: string, price: float, qty: int, subtotal: float}> */
     public array $cart = [];
 
+    /** @var array<int, array{id:int, name:string, category:string|null, price:float}> */
+    public array $menuCache = [];
+
     public function mount(): void
     {
         $user = OutletContext::user();
         $this->outletId = $user && ! $user->isAdmin() ? $user->outlet_id : (OutletContext::currentOutletId() ?? $user?->outlet_id);
         $this->paymentMethod = 'cash';
+        $this->loadMenuCache();
+    }
+
+    public function updatedSearch(): void
+    {
+        $this->loadMenuCache();
+    }
+
+    public function updatedSelectedCategory(): void
+    {
+        $this->loadMenuCache();
+    }
+
+    private function loadMenuCache(): void
+    {
+        $q = MenuItem::query()->select(['id', 'name', 'category', 'price'])->where('is_active', true)->orderBy('name');
+        if (filled($this->search)) {
+            $q->where(function ($qq) {
+                $q2 = '%'.$this->search.'%';
+                $qq->where('name', 'like', $q2)->orWhere('category', 'like', $q2);
+            });
+        }
+        if (filled($this->selectedCategory)) {
+            $q->where('category', $this->selectedCategory);
+        }
+        $this->menuCache = $q->get()->toArray();
     }
 
     public function outletOptions(): array
@@ -66,13 +95,20 @@ class Pos extends Page
         return MenuItem::where('is_active', true)->whereNotNull('category')->where('category', '!=', '')->distinct()->orderBy('category')->pluck('category');
     }
 
-    /** @return Collection<int, MenuItem> */
+    /** @return Collection<int, object> */
     public function getMenuItemsProperty(): Collection
     {
-        $q = MenuItem::where('is_active', true)->orderBy('name');
+        // Pakai cache in-memory (menuCache) agar add-to-cart tidak query ulang.
+        // Jika cache kosong (misal setelah dehydrate), fallback ke DB sekali.
+        if (! empty($this->menuCache)) {
+            return collect($this->menuCache)->map(fn ($a) => (object) $a);
+        }
+
+        $q = MenuItem::query()->select(['id', 'name', 'category', 'price'])->where('is_active', true)->orderBy('name');
         if (filled($this->search)) {
             $q->where(function ($qq) {
-                $qq->where('name', 'like', '%'.$this->search.'%')->orWhere('category', 'like', '%'.$this->search.'%');
+                $q2 = '%'.$this->search.'%';
+                $qq->where('name', 'like', $q2)->orWhere('category', 'like', $q2);
             });
         }
         if (filled($this->selectedCategory)) {
@@ -93,7 +129,7 @@ class Pos extends Page
             return $this->cartTotal;
         }
 
-        return (float) array_sum($this->splitAmounts);
+        return (float) array_sum(array_map(fn ($v) => (float) $v, $this->splitAmounts));
     }
 
     public function getChangeDueProperty(): float
@@ -110,12 +146,24 @@ class Pos extends Page
 
     public function addToCart(int $menuItemId): void
     {
-        $menu = MenuItem::find($menuItemId);
-        if (! $menu) {
-            return;
+        // Cari di cache dulu (tanpa DB) agar respon tap langsung.
+        $cached = collect($this->menuCache)->firstWhere('id', $menuItemId);
+        if ($cached) {
+            $id = (int) $cached['id'];
+            $name = (string) $cached['name'];
+            $price = (float) $cached['price'];
+        } else {
+            $menu = MenuItem::find($menuItemId);
+            if (! $menu) {
+                return;
+            }
+            $id = $menu->id;
+            $name = $menu->name;
+            $price = (float) $menu->price;
         }
+
         foreach ($this->cart as $i => $row) {
-            if ($row['menu_item_id'] === $menuItemId) {
+            if ($row['menu_item_id'] === $id) {
                 $this->cart[$i]['qty']++;
                 $this->cart[$i]['subtotal'] = $this->cart[$i]['qty'] * $this->cart[$i]['price'];
 
@@ -123,11 +171,11 @@ class Pos extends Page
             }
         }
         $this->cart[] = [
-            'menu_item_id' => $menu->id,
-            'name' => $menu->name,
-            'price' => (float) $menu->price,
+            'menu_item_id' => $id,
+            'name' => $name,
+            'price' => $price,
             'qty' => 1,
-            'subtotal' => (float) $menu->price,
+            'subtotal' => $price,
         ];
     }
 

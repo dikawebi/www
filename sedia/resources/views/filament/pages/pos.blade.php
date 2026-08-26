@@ -1,100 +1,139 @@
 <x-filament-panels::page>
     <style>
-        .pos-page { --pos-radius: 1rem; }
-        .pos-toolbar { display:flex; flex-wrap:wrap; gap:0.75rem; align-items:end; }
-        .pos-toolbar > * { flex: 1 1 160px; }
-        .pos-toolbar .pos-search { flex: 2 1 260px; }
-        .pos-pay-pills { display:flex; gap:0.5rem; flex-wrap:wrap; }
-        .pos-pay-pill { padding:0.5rem 0.9rem; border-radius:9999px; border:1px solid #e5e7eb; background:#fff; font-size:0.8rem; font-weight:600; cursor:pointer; transition:all 150ms; }
-        .pos-pay-pill.active { background:var(--primary-600, #d97706); color:#fff; border-color:var(--primary-600, #d97706); box-shadow:0 2px 8px rgba(245,158,11,0.3); }
-        .dark .pos-pay-pill { background:#1f2937; border-color:#374151; color:#e5e7eb; }
-        .dark .pos-pay-pill.active { background:#f59e0b; color:#111827; border-color:#f59e0b; }
-        .pos-cat-pills { display:flex; gap:0.5rem; flex-wrap:wrap; margin-top:0.9rem; }
-        .pos-cat-pill { padding:0.35rem 0.75rem; border-radius:9999px; border:1px solid #e5e7eb; background:#f9fafb; font-size:0.78rem; font-weight:500; cursor:pointer; }
-        .pos-cat-pill.active { background:#111827; color:#fff; border-color:#111827; }
-        .dark .pos-cat-pill { background:#111827; border-color:#374151; color:#9ca3af; }
-        .dark .pos-cat-pill.active { background:#fff; color:#111827; border-color:#fff; }
-        .pos-layout { display:grid; grid-template-columns:1fr; gap:1rem; margin-top:1rem; }
-        @media (min-width: 1024px) { .pos-layout { grid-template-columns: minmax(0, 1.7fr) 380px; align-items:start; } }
-        .pos-menu-grid { display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:0.85rem; }
-        @media (min-width: 640px) { .pos-menu-grid { grid-template-columns:repeat(3, minmax(0,1fr)); } }
-        @media (min-width: 1280px) { .pos-menu-grid { grid-template-columns:repeat(4, minmax(0,1fr)); } }
-        .pos-menu-card { position:relative; border:1px solid #e5e7eb; border-radius:1rem; padding:1rem; background:#fff; cursor:pointer; transition:all 150ms; text-align:left; display:flex; flex-direction:column; min-height:118px; }
-        .pos-menu-card:hover { border-color:#f59e0b; box-shadow:0 4px 16px rgba(0,0,0,0.07); transform:translateY(-1px); }
-        .pos-menu-card:active { transform:translateY(0); }
-        .dark .pos-menu-card { background:#1f2937; border-color:#2d3748; color:#f3f4f6; }
-        .dark .pos-menu-card:hover { background:#1e293b; border-color:#f59e0b; }
-        .pos-menu-cat { font-size:0.68rem; letter-spacing:0.06em; text-transform:uppercase; font-weight:700; color:#9ca3af; }
-        .pos-menu-name { font-size:0.92rem; font-weight:700; line-height:1.3; margin-top:0.3rem; color:#111827; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.4em; }
-        .dark .pos-menu-name { color:#f9fafb; }
-        .pos-menu-price { margin-top:auto; padding-top:0.7rem; font-size:0.92rem; font-weight:800; color:#b45309; }
-        .dark .pos-menu-price { color:#fbbf24; }
-        .pos-menu-add { position:absolute; top:0.7rem; right:0.7rem; width:26px; height:26px; border-radius:9999px; background:#111827; color:#fff; display:flex; align-items:center; justify-content:center; font-size:14px; line-height:1; }
-        .dark .pos-menu-add { background:#f59e0b; color:#111827; }
-        .pos-cart { position:sticky; top:1rem; display:flex; flex-direction:column; max-height: calc(100vh - 2rem); }
-        .pos-cart-items { flex:1; overflow:auto; margin: -0.25rem; padding:0.25rem; }
-        .pos-cart-row { display:flex; gap:0.75rem; align-items:center; padding:0.75rem 0; border-bottom:1px solid #f3f4f6; }
-        .dark .pos-cart-row { border-bottom-color:#1f2937; }
-        .pos-cart-row:last-child { border-bottom:none; }
-        .pos-cart-name { font-size:0.86rem; font-weight:600; color:#111827; line-height:1.3; }
-        .dark .pos-cart-name { color:#f3f4f6; }
-        .pos-cart-meta { font-size:0.75rem; color:#6b7280; margin-top:0.15rem; }
-        .pos-qty { display:flex; align-items:center; gap:0.35rem; background:#f9fafb; border-radius:9999px; padding:0.2rem; }
-        .dark .pos-qty { background:#111827; }
-        .pos-qty-btn { width:28px; height:28px; border-radius:9999px; border:none; background:#fff; display:inline-flex; align-items:center; justify-content:center; cursor:pointer; font-weight:700; box-shadow:0 1px 2px rgba(0,0,0,0.08); transition:all 120ms; }
-        .pos-qty-btn:hover { background:#111827; color:#fff; }
-        .dark .pos-qty-btn { background:#1f2937; color:#e5e7eb; }
-        .pos-qty-val { width:1.6rem; text-align:center; font-size:0.85rem; font-weight:700; }
-        .pos-total-box { background:#f9fafb; border-radius:0.85rem; padding:0.9rem 1rem; margin-top:0.75rem; }
-        .dark .pos-total-box { background:#0f172a; }
+        /* ——— POS: touch-friendly & lega ——— */
+        .pos-page{ --pos-gap:1rem; }
+        .pos-toolbar{ display:grid; grid-template-columns:1fr; gap:1rem; }
+        @media(min-width:768px){ .pos-toolbar{ grid-template-columns: 1.1fr 1fr; } }
+        @media(min-width:1100px){ .pos-toolbar{ grid-template-columns: 220px 1fr 1.15fr; } }
+        .pos-field label{ display:block; font-size:0.72rem; font-weight:700; letter-spacing:0.07em; text-transform:uppercase; color:#6b7280; margin-bottom:0.45rem; }
+        .pos-field select, .pos-field input{ width:100%; border-radius:0.9rem; border:1px solid #e5e7eb; background:#fff; padding:0.85rem 0.95rem; font-size:0.92rem; line-height:1; transition:border-color 150ms, box-shadow 150ms; }
+        .pos-field select:focus, .pos-field input:focus{ outline:none; border-color:#f59e0b; box-shadow:0 0 0 3px rgba(245,158,11,0.15); }
+        .dark .pos-field select, .dark .pos-field input{ background:#111827; border-color:#374151; color:#f3f4f6; }
+        .pos-pay-pills{ display:flex; flex-wrap:wrap; gap:0.6rem; }
+        .pos-pay-pill{ flex:1 1 auto; min-height:44px; padding:0.65rem 1rem; border-radius:9999px; border:1.5px solid #e5e7eb; background:#fff; font-size:0.86rem; font-weight:700; cursor:pointer; transition:all 150ms; display:inline-flex; align-items:center; justify-content:center; gap:0.4rem; }
+        .pos-pay-pill.active{ background:#111827; color:#fff; border-color:#111827; box-shadow:0 4px 12px rgba(0,0,0,0.12); }
+        .dark .pos-pay-pill{ background:#1f2937; border-color:#334155; color:#e2e8f0; }
+        .dark .pos-pay-pill.active{ background:#f59e0b; color:#111827; border-color:#f59e0b; }
+        .pos-split-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; margin-top:0.6rem; }
+        .pos-split-grid label{ font-size:0.7rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:#6b7280; }
+        .pos-split-grid input{ margin-top:0.3rem; border-radius:0.75rem; border:1px solid #e5e7eb; padding:0.7rem 0.8rem; font-size:0.9rem; width:100%; }
+        .dark .pos-split-grid input{ background:#1f2937; border-color:#374151; color:#fff; }
+        .pos-cat-bar{ display:flex; gap:0.6rem; flex-wrap:nowrap; overflow:auto; padding:0.2rem 0 0.6rem; scrollbar-width:none; margin-top:1rem; }
+        .pos-cat-bar::-webkit-scrollbar{ display:none; }
+        .pos-cat-pill{ flex:0 0 auto; min-height:38px; padding:0.5rem 1rem; border-radius:9999px; border:1.5px solid #e5e7eb; background:#f9fafb; font-size:0.84rem; font-weight:600; cursor:pointer; white-space:nowrap; transition:all 150ms; }
+        .pos-cat-pill.active{ background:#f59e0b; color:#fff; border-color:#f59e0b; box-shadow:0 2px 10px rgba(245,158,11,0.25); }
+        .dark .pos-cat-pill{ background:#1e293b; border-color:#334155; color:#94a3b8; }
+        .dark .pos-cat-pill.active{ background:#f59e0b; color:#111827; border-color:#f59e0b; }
+        .pos-layout{ display:grid; grid-template-columns:1fr; gap:1.25rem; margin-top:1.1rem; }
+        @media(min-width:1050px){ .pos-layout{ grid-template-columns: minmax(0, 1.75fr) 400px; align-items:start; } }
+        .pos-menu-head{ display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:0.9rem; }
+        .pos-menu-head h3{ font-size:0.95rem; font-weight:800; letter-spacing:-0.02em; }
+        .pos-menu-count{ background:#111827; color:#fff; border-radius:9999px; padding:0.3rem 0.7rem; font-size:0.75rem; font-weight:700; }
+        .dark .pos-menu-count{ background:#f59e0b; color:#111827; }
+        .pos-menu-grid{ display:grid; grid-template-columns:repeat(2, minmax(0,1fr)); gap:1rem; }
+        @media(min-width:640px){ .pos-menu-grid{ grid-template-columns:repeat(3, minmax(0,1fr)); } }
+        @media(min-width:1360px){ .pos-menu-grid{ grid-template-columns:repeat(4, minmax(0,1fr)); } }
+        .pos-menu-card{ position:relative; border:1.5px solid #e5e7eb; border-radius:1.15rem; padding:1.15rem 1rem 1rem; background:#fff; cursor:pointer; transition:all 160ms; text-align:left; display:flex; flex-direction:column; min-height:148px; }
+        .pos-menu-card:hover{ border-color:#f59e0b; box-shadow:0 8px 24px rgba(0,0,0,0.08); transform:translateY(-2px); }
+        .pos-menu-card:active{ transform:translateY(0); box-shadow:0 2px 8px rgba(0,0,0,0.06); }
+        .dark .pos-menu-card{ background:#1e293b; border-color:#334155; }
+        .dark .pos-menu-card:hover{ border-color:#f59e0b; background:#1e293b; }
+        .pos-menu-top{ display:flex; align-items:start; justify-content:space-between; gap:0.5rem; }
+        .pos-menu-cat{ font-size:0.68rem; letter-spacing:0.07em; text-transform:uppercase; font-weight:800; color:#fff; background:#111827; padding:0.22rem 0.5rem; border-radius:9999px; line-height:1; }
+        .dark .pos-menu-cat{ background:#334155; color:#e2e8f0; }
+        .pos-menu-add{ width:36px; height:36px; border-radius:9999px; background:#f59e0b; color:#111827; display:grid; place-items:center; font-size:18px; font-weight:800; line-height:1; flex:0 0 36px; box-shadow:0 2px 8px rgba(245,158,11,0.35); }
+        .pos-menu-name{ font-size:0.96rem; font-weight:800; line-height:1.32; margin-top:0.75rem; color:#111827; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; min-height:2.6em; }
+        .dark .pos-menu-name{ color:#f1f5f9; }
+        .pos-menu-foot{ margin-top:auto; padding-top:0.85rem; display:flex; align-items:baseline; justify-content:space-between; gap:0.5rem; }
+        .pos-menu-price{ font-size:1rem; font-weight:900; color:#b45309; letter-spacing:-0.02em; }
+        .dark .pos-menu-price{ color:#fcd34d; }
+        .pos-menu-unit{ font-size:0.72rem; color:#9ca3af; font-weight:600; }
+        .pos-cart{ position:sticky; top:1rem; display:flex; flex-direction:column; max-height:calc(100vh - 1.5rem); }
+        @media(max-width:1049px){ .pos-cart{ position:static; max-height:none; } }
+        .pos-cart-head{ display:flex; align-items:center; justify-content:space-between; gap:0.75rem; padding-bottom:0.85rem; border-bottom:1px solid #f3f4f6; margin-bottom:0.25rem; }
+        .dark .pos-cart-head{ border-bottom-color:#1e293b; }
+        .pos-cart-title{ font-size:0.95rem; font-weight:800; letter-spacing:-0.02em; }
+        .pos-cart-badge{ background:#f59e0b; color:#fff; border-radius:9999px; padding:0.3rem 0.7rem; font-size:0.75rem; font-weight:800; }
+        .pos-cart-items{ flex:1; overflow:auto; padding:0.25rem; margin:0 -0.25rem; }
+        @media(max-width:1049px){ .pos-cart-items{ max-height:420px; } }
+        .pos-cart-row{ display:grid; grid-template-columns:1fr auto; gap:0.75rem; align-items:center; padding:0.95rem 0.6rem; border-bottom:1px solid #f3f4f6; border-radius:0.75rem; transition:background 120ms; }
+        .pos-cart-row:hover{ background:#f9fafb; }
+        .dark .pos-cart-row{ border-bottom-color:#1e293b; }
+        .dark .pos-cart-row:hover{ background:#0f172a; }
+        .pos-cart-name{ font-size:0.9rem; font-weight:700; color:#111827; line-height:1.35; }
+        .dark .pos-cart-name{ color:#f1f5f9; }
+        .pos-cart-meta{ font-size:0.78rem; color:#6b7280; margin-top:0.2rem; display:flex; gap:0.5rem; flex-wrap:wrap; }
+        .pos-cart-meta strong{ color:#111827; }
+        .dark .pos-cart-meta strong{ color:#f1f5f9; }
+        .pos-qty{ display:flex; align-items:center; gap:0.4rem; background:#fff; border:1px solid #e5e7eb; border-radius:9999px; padding:0.25rem; }
+        .dark .pos-qty{ background:#1f2937; border-color:#334155; }
+        .pos-qty-btn{ width:36px; height:36px; border-radius:9999px; border:none; background:#111827; color:#fff; display:grid; place-items:center; cursor:pointer; font-size:16px; font-weight:800; line-height:1; transition:all 140ms; }
+        .pos-qty-btn:hover{ background:#000; transform:scale(1.05); }
+        .pos-qty-btn:active{ transform:scale(0.96); }
+        .dark .pos-qty-btn{ background:#f59e0b; color:#111827; }
+        .pos-qty-val{ min-width:2rem; text-align:center; font-size:0.92rem; font-weight:800; }
+        .pos-remove{ width:36px; height:36px; border-radius:9999px; border:1px solid #fee2e2; background:#fff; color:#dc2626; display:grid; place-items:center; cursor:pointer; transition:all 140ms; }
+        .pos-remove:hover{ background:#dc2626; color:#fff; border-color:#dc2626; }
+        .dark .pos-remove{ background:#1f2937; border-color:#7f1d1d; color:#fca5a5; }
+        .pos-total-box{ background:#111827; color:#fff; border-radius:1rem; padding:1.15rem; margin-top:0.9rem; }
+        .dark .pos-total-box{ background:#f59e0b; color:#111827; }
+        .pos-total-label{ font-size:0.7rem; letter-spacing:0.08em; text-transform:uppercase; font-weight:700; opacity:0.7; }
+        .pos-total-value{ font-size:1.75rem; font-weight:900; letter-spacing:-0.03em; line-height:1; margin-top:0.35rem; }
+        .pos-total-meta{ font-size:0.78rem; opacity:0.75; margin-top:0.5rem; display:flex; flex-wrap:wrap; gap:0.4rem 1rem; }
+        .pos-actions{ display:grid; grid-template-columns:1fr 1.35fr; gap:0.75rem; margin-top:0.9rem; }
+        .pos-actions .fi-btn{ min-height:48px; font-size:0.92rem; font-weight:700; border-radius:0.9rem; }
+        .pos-empty{ border:1.5px dashed #e5e7eb; border-radius:1rem; background:#f9fafb; padding:2.2rem 1.5rem; text-align:center; }
+        .dark .pos-empty{ background:#0f172a; border-color:#1e293b; }
     </style>
 
     <div class="pos-page">
-        {{-- Toolbar --}}
+        {{-- Toolbar: outlet + bayar + cari --}}
         <x-filament::section>
             <div class="pos-toolbar">
                 @if ($this->isAdminUser())
-                    <div>
-                        <label class="text-xs font-semibold uppercase tracking-wide text-gray-500">Outlet</label>
-                        <select wire:model.live="outletId" class="fi-input mt-1 w-full rounded-xl border border-gray-200 bg-white px-3 py-2.5 text-sm dark:border-gray-700 dark:bg-gray-900">
+                    <div class="pos-field">
+                        <label>Outlet</label>
+                        <select wire:model.live="outletId">
                             @foreach ($this->outletOptions() as $id => $name)
                                 <option value="{{ $id }}">{{ $name }}</option>
                             @endforeach
                         </select>
                     </div>
                 @endif
-                <div>
-                    <label class="text-xs font-semibold uppercase tracking-wide text-gray-500">Bayar</label>
+                <div class="pos-field">
+                    <label>Metode Bayar</label>
                     @if (! $isSplit)
-                        <div class="pos-pay-pills mt-1">
+                        <div class="pos-pay-pills">
                             @foreach (['cash' => 'Tunai', 'qris' => 'QRIS', 'transfer' => 'Transfer', 'debit' => 'Debit'] as $val => $label)
                                 <button type="button" wire:click="$set('paymentMethod','{{ $val }}')" class="pos-pay-pill {{ $paymentMethod === $val ? 'active' : '' }}">{{ $label }}</button>
                             @endforeach
                         </div>
                     @else
-                        <div class="mt-1 grid grid-cols-2 gap-2">
+                        <div class="pos-split-grid">
                             @foreach (['cash'=>'Tunai','qris'=>'QRIS','transfer'=>'Transfer','debit'=>'Debit'] as $k=>$lbl)
                                 <div>
-                                    <label class="text-[11px] font-semibold text-gray-500">{{ $lbl }}</label>
-                                    <input type="number" wire:model.live.debounce.300ms="splitAmounts.{{ $k }}" min="0" step="1000" class="fi-input mt-0.5 w-full rounded-lg border border-gray-200 bg-white px-2 py-1.5 text-sm dark:border-gray-700 dark:bg-gray-900" placeholder="0">
+                                    <label>{{ $lbl }}</label>
+                                    <input type="number" inputmode="numeric" wire:model.live.debounce.300ms="splitAmounts.{{ $k }}" min="0" step="1000" placeholder="0">
                                 </div>
                             @endforeach
                         </div>
                     @endif
-                    <label class="mt-2 flex items-center gap-1.5 text-xs"><input type="checkbox" wire:model.live="isSplit"> Split payment</label>
+                    <label class="mt-3 flex items-center gap-2 text-xs font-semibold text-gray-600 dark:text-gray-400" style="text-transform:none; letter-spacing:0; cursor:pointer;">
+                        <input type="checkbox" wire:model.live="isSplit" style="width:16px; height:16px; accent-color:#f59e0b;"> Split payment
+                    </label>
                 </div>
-                <div class="pos-search">
-                    <label class="text-xs font-semibold uppercase tracking-wide text-gray-500">Cari menu</label>
-                    <div class="relative mt-1">
-                        <span class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3 text-gray-400">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                <div class="pos-field">
+                    <label>Cari Menu</label>
+                    <div style="position:relative;">
+                        <span style="position:absolute; left:0.9rem; top:50%; transform:translateY(-50%); color:#9ca3af; pointer-events:none;">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                         </span>
-                        <input wire:model.live.debounce.300ms="search" placeholder="Ketik nama atau kategori..." class="fi-input w-full rounded-xl border border-gray-200 bg-white py-2.5 pl-9 pr-3 text-sm dark:border-gray-700 dark:bg-gray-900" />
+                        <input wire:model.live.debounce.300ms="search" placeholder="Nama menu atau kategori..." style="padding-left:2.6rem;">
                     </div>
                 </div>
             </div>
 
-            <div class="pos-cat-pills">
+            <div class="pos-cat-bar">
                 <button wire:click="$set('selectedCategory','')" class="pos-cat-pill {{ $selectedCategory === '' ? 'active' : '' }}">Semua</button>
                 @foreach ($this->categories as $cat)
                     <button wire:click="$set('selectedCategory','{{ $cat }}')" class="pos-cat-pill {{ $selectedCategory === $cat ? 'active' : '' }}">{{ $cat }}</button>
@@ -103,24 +142,33 @@
         </x-filament::section>
 
         <div class="pos-layout">
-            {{-- Menu grid --}}
+            {{-- Menu --}}
             <x-filament::section>
-                <div class="mb-3 flex items-center justify-between">
-                    <h3 class="text-sm font-bold tracking-tight">Menu</h3>
-                    <span class="rounded-full bg-gray-900 px-2.5 py-1 text-xs font-semibold text-white dark:bg-white dark:text-gray-900">{{ $this->menuItems->count() }} item</span>
+                <div class="pos-menu-head">
+                    <h3>Menu</h3>
+                    <span class="pos-menu-count">{{ $this->menuItems->count() }} item</span>
                 </div>
-                <div class="pos-menu-grid">
+                <div class="pos-menu-grid" wire:loading.class="opacity-60" wire:target="search, selectedCategory">
+                    <div wire:loading wire:target="search, selectedCategory" class="col-span-full flex items-center justify-center gap-2 py-6 text-sm text-gray-500">
+                        <svg class="animate-spin" width="18" height="18" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="#e5e7eb" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="#f59e0b" stroke-width="3" stroke-linecap="round"/></svg>
+                        Memuat menu...
+                    </div>
                     @forelse ($this->menuItems as $menu)
-                        <button wire:click="addToCart({{ $menu->id }})" class="pos-menu-card" wire:key="menu-{{ $menu->id }}">
-                            <span class="pos-menu-add">+</span>
-                            <span class="pos-menu-cat">{{ $menu->category ?? 'Tanpa kategori' }}</span>
-                            <span class="pos-menu-name">{{ $menu->name }}</span>
-                            <span class="pos-menu-price">{{ $this->formatRupiah($menu->price) }}</span>
+                        <button wire:click="addToCart({{ $menu->id }})" wire:loading.attr="disabled" wire:target="addToCart" class="pos-menu-card" wire:key="menu-{{ $menu->id }}">
+                            <div class="pos-menu-top">
+                                <span class="pos-menu-cat">{{ $menu->category ?? 'Tanpa kategori' }}</span>
+                                <span class="pos-menu-add">+</span>
+                            </div>
+                            <div class="pos-menu-name">{{ $menu->name }}</div>
+                            <div class="pos-menu-foot">
+                                <span class="pos-menu-price">{{ $this->formatRupiah($menu->price) }}</span>
+                                <span class="pos-menu-unit">/ porsi</span>
+                            </div>
                         </button>
                     @empty
-                        <div class="col-span-full rounded-xl border border-dashed border-gray-200 bg-gray-50 py-10 text-center dark:border-gray-700 dark:bg-gray-800/50">
-                            <div class="text-sm font-medium text-gray-700 dark:text-gray-300">Tidak ada menu</div>
-                            <div class="mt-1 text-xs text-gray-500">Coba ubah pencarian atau kategori.</div>
+                        <div wire:loading.remove wire:target="search, selectedCategory" class="pos-empty" style="grid-column:1 / -1;">
+                            <div style="font-size:0.95rem; font-weight:700;">Tidak ada menu</div>
+                            <div style="margin-top:0.3rem; font-size:0.84rem; color:#6b7280;">Coba ubah pencarian atau kategori.</div>
                         </div>
                     @endforelse
                 </div>
@@ -128,58 +176,66 @@
 
             {{-- Cart --}}
             <x-filament::section class="pos-cart">
-                <div class="mb-3 flex items-center justify-between">
-                    <h3 class="text-sm font-bold tracking-tight">Keranjang</h3>
-                    <span class="rounded-full bg-amber-500 px-2.5 py-1 text-xs font-bold text-white">{{ count($cart) }} item</span>
+                <div class="pos-cart-head">
+                    <h3 class="pos-cart-title">Keranjang</h3>
+                    <span class="pos-cart-badge">{{ count($cart) }} item · {{ array_sum(array_column($cart,'qty')) }} pcs</span>
                 </div>
 
                 <div class="pos-cart-items">
                     @forelse ($cart as $i => $row)
                         <div class="pos-cart-row" wire:key="cart-{{ $i }}-{{ $row['menu_item_id'] }}">
-                            <div class="min-w-0 flex-1">
-                                <div class="pos-cart-name truncate">{{ $row['name'] }}</div>
-                                <div class="pos-cart-meta">{{ $this->formatRupiah($row['price']) }} · Subtotal <span class="font-semibold text-gray-900 dark:text-white">{{ $this->formatRupiah($row['subtotal']) }}</span></div>
+                            <div style="min-width:0; flex:1;">
+                                <div class="pos-cart-name">{{ $row['name'] }}</div>
+                                <div class="pos-cart-meta">
+                                    <span>{{ $this->formatRupiah($row['price']) }} × {{ $row['qty'] }}</span>
+                                    <span>·</span>
+                                    <strong>{{ $this->formatRupiah($row['subtotal']) }}</strong>
+                                </div>
                             </div>
-                            <div class="flex items-center gap-2">
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
                                 <div class="pos-qty">
                                     <button wire:click="decQty({{ $i }})" class="pos-qty-btn" aria-label="Kurangi">−</button>
                                     <span class="pos-qty-val">{{ $row['qty'] }}</span>
                                     <button wire:click="incQty({{ $i }})" class="pos-qty-btn" aria-label="Tambah">+</button>
                                 </div>
-                                <button wire:click="removeFromCart({{ $i }})" class="rounded-full p-1.5 text-gray-400 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950" title="Hapus">
-                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                <button wire:click="removeFromCart({{ $i }})" class="pos-remove" title="Hapus" aria-label="Hapus">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/></svg>
                                 </button>
                             </div>
                         </div>
                     @empty
-                        <div class="rounded-xl border border-dashed border-gray-200 bg-gray-50 py-10 text-center dark:border-gray-700 dark:bg-gray-800/50">
-                            <div class="mx-auto flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm dark:bg-gray-900">🛒</div>
-                            <div class="mt-3 text-sm font-semibold">Keranjang kosong</div>
-                            <div class="mt-1 text-xs text-gray-500">Tap kartu menu untuk menambah pesanan.</div>
+                        <div class="pos-empty">
+                            <div style="width:56px; height:56px; border-radius:9999px; background:#fff; display:grid; place-items:center; margin:0 auto; box-shadow:0 2px 8px rgba(0,0,0,0.06); font-size:22px;">🛒</div>
+                            <div style="margin-top:0.9rem; font-size:0.95rem; font-weight:800;">Keranjang kosong</div>
+                            <div style="margin-top:0.3rem; font-size:0.84rem; color:#6b7280; line-height:1.5;">Tap kartu menu di kiri untuk<br>menambah pesanan.</div>
                         </div>
                     @endforelse
                 </div>
 
                 <div class="pos-total-box">
-                    <div class="flex items-center justify-between">
-                        <span class="text-xs font-semibold uppercase tracking-wide text-gray-500">Total bayar</span>
-                        <span class="text-xs text-gray-500">{{ count($cart) }} item</span>
-                    </div>
-                    <div class="mt-1 text-2xl font-extrabold tracking-tight">{{ $this->formatRupiah($this->cartTotal) }}</div>
+                    <div class="pos-total-label">Total bayar</div>
+                    <div class="pos-total-value">{{ $this->formatRupiah($this->cartTotal) }}</div>
                     @if ($isSplit)
-                        <div class="mt-2 space-y-1 text-xs">
-                            <div class="flex justify-between"><span>Dibayar</span><span class="font-semibold">{{ $this->formatRupiah($this->paidTotal) }}</span></div>
-                            <div class="flex justify-between text-amber-700 dark:text-amber-400"><span>Kembalian</span><span class="font-bold">{{ $this->formatRupiah($this->changeDue) }}</span></div>
+                        <div style="margin-top:0.7rem; padding-top:0.7rem; border-top:1px solid rgba(255,255,255,0.2); display:grid; gap:0.3rem; font-size:0.84rem;">
+                            <div style="display:flex; justify-content:space-between;"><span style="opacity:0.8;">Dibayar</span><span style="font-weight:700;">{{ $this->formatRupiah($this->paidTotal) }}</span></div>
+                            <div style="display:flex; justify-content:space-between; font-weight:800;"><span>Kembalian</span><span>{{ $this->formatRupiah($this->changeDue) }}</span></div>
                         </div>
                     @endif
-                    <div class="mt-1 text-xs text-gray-500">Metode: <span class="font-semibold text-gray-900 dark:text-white">{{ $isSplit ? 'SPLIT' : strtoupper($paymentMethod) }}</span> · Outlet: <span class="font-semibold">{{ $this->outletId ? ($this->outletOptions()[$outletId] ?? '-') : '-' }}</span></div>
+                    <div class="pos-total-meta">
+                        <span>Metode: <b>{{ $isSplit ? 'SPLIT' : strtoupper($paymentMethod) }}</b></span>
+                        <span>Outlet: <b>{{ $this->outletId ? ($this->outletOptions()[$outletId] ?? '-') : '-' }}</b></span>
+                        <span>{{ count($cart) }} item</span>
+                    </div>
                 </div>
 
-                <div class="mt-3 grid grid-cols-2 gap-2">
-                    <x-filament::button wire:click="clearCart" color="gray" icon="heroicon-o-trash" :disabled="empty($cart)">Kosongkan</x-filament::button>
-                    <x-filament::button wire:click="checkout" icon="heroicon-o-credit-card" :disabled="empty($cart)" style="background: #f59e0b; border-color:#f59e0b;">Bayar</x-filament::button>
+                <div class="pos-actions">
+                    <x-filament::button wire:click="clearCart" color="gray" icon="heroicon-o-trash" :disabled="empty($cart)" wire:loading.attr="disabled" wire:target="checkout,clearCart" style="min-height:48px;">Kosongkan</x-filament::button>
+                    <x-filament::button wire:click="checkout" icon="heroicon-o-credit-card" :disabled="empty($cart)" wire:loading.attr="disabled" wire:target="checkout" style="min-height:48px; background:#f59e0b; border-color:#f59e0b; color:#111827; font-weight:800;">
+                        <span wire:loading.remove wire:target="checkout">Bayar</span>
+                        <span wire:loading wire:target="checkout" class="inline-flex items-center gap-2"><svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="rgba(17,24,39,0.2)" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="#111827" stroke-width="3" stroke-linecap="round"/></svg> Memproses...</span>
+                    </x-filament::button>
                 </div>
-                <p class="mt-2.5 text-center text-[11px] leading-relaxed text-gray-500">Stok bahan dipotong otomatis saat bayar. Jika stok kurang, transaksi dibatalkan dengan notifikasi.</p>
+                <p style="margin-top:0.7rem; text-align:center; font-size:11px; line-height:1.5; color:#6b7280;">Stok dipotong otomatis per resep. Jika bahan kurang, transaksi dibatalkan.</p>
             </x-filament::section>
         </div>
     </div>
