@@ -78,6 +78,26 @@ services:
     networks:
       - asset-tagging
 
+  # Reverse proxy dengan auto-HTTPS (aktif hanya untuk production/VPS):
+  #   docker compose --env-file .env.docker --profile prod up -d
+  caddy:
+    image: caddy:2-alpine
+    container_name: asset_tagging_caddy
+    restart: unless-stopped
+    profiles: ["prod"]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy-data:/data
+      - caddy-config:/config
+    depends_on:
+      - nginx
+    networks:
+      - asset-tagging
+
 networks:
   asset-tagging:
     driver: bridge
@@ -86,3 +106,5 @@ volumes:
   db-data:
   storage-data:
   public-build:
+  caddy-data:
+  caddy-config:
