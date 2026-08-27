@@ -4,6 +4,7 @@ namespace App\Filament\Pages\Reports;
 
 use App\Models\Outlet;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use Carbon\Carbon;
 use Filament\Pages\Page;
 use UnitEnum;
@@ -11,6 +12,13 @@ use UnitEnum;
 abstract class Report extends Page
 {
     protected static string|UnitEnum|null $navigationGroup = 'Laporan';
+
+    public static function canAccess(): bool
+    {
+        $key = class_basename(static::class);
+
+        return RolePermission::can(OutletContext::user(), $key, 'view');
+    }
 
     public string $startDate;
 

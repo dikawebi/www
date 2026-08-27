@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\Payroll;
 use App\Models\User;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -44,13 +45,17 @@ class PayrollResource extends Resource
 
     public static function canCreate(): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'PayrollResource', 'create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        /** @var User $user */
-        $user = Auth::user();
+        $user = OutletContext::user();
+
+        if (! RolePermission::can($user, 'PayrollResource', 'edit')) {
+            return false;
+        }
+
         if ($record->status === 'paid') {
             return false;
         }
@@ -60,10 +65,7 @@ class PayrollResource extends Resource
 
     public static function canDelete(Model $record): bool
     {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'PayrollResource', 'delete');
     }
 
     public static function getEloquentQuery(): Builder

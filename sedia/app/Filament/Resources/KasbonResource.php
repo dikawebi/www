@@ -8,6 +8,7 @@ use App\Models\Employee;
 use App\Models\EmployeeTransaction;
 use App\Models\User;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -48,13 +49,17 @@ class KasbonResource extends Resource
 
     public static function canCreate(): bool
     {
-        return (bool) Auth::user();
+        return RolePermission::can(OutletContext::user(), 'KasbonResource', 'create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        /** @var User $user */
-        $user = Auth::user();
+        $user = OutletContext::user();
+
+        if (! RolePermission::can($user, 'KasbonResource', 'edit')) {
+            return false;
+        }
+
         if ($record->status !== 'pending') {
             return $user?->isAdmin() ?? false;
         }
@@ -64,10 +69,7 @@ class KasbonResource extends Resource
 
     public static function canDelete(Model $record): bool
     {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'KasbonResource', 'delete');
     }
 
     public static function getEloquentQuery(): Builder

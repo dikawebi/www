@@ -6,6 +6,7 @@ use App\Filament\Resources\MenuItemResource\Pages;
 use App\Filament\Resources\MenuItemResource\RelationManagers\RecipesRelationManager;
 use App\Models\MenuItem;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -34,22 +35,22 @@ class MenuItemResource extends Resource
 
     public static function canCreate(): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'MenuItemResource', 'create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'MenuItemResource', 'edit');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'MenuItemResource', 'delete');
     }
 
     public static function canDeleteAny(): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'MenuItemResource', 'delete');
     }
 
     public static function form(Schema $schema): Schema

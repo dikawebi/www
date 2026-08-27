@@ -13,7 +13,6 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             RolePermissionSeeder::class,
             MasterDataSeeder::class,
-            AssetSeeder::class,
         ]);
     }
 }

@@ -6,6 +6,7 @@ use App\Filament\Resources\ExpenseResource\Pages;
 use App\Models\Expense;
 use App\Models\User;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -37,23 +38,23 @@ class ExpenseResource extends Resource
 
     public static function canCreate(): bool
     {
-        return (bool) Auth::user();
+        return RolePermission::can(OutletContext::user(), 'ExpenseResource', 'create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        /** @var User|null $user */
-        $user = Auth::user();
+        $user = OutletContext::user();
+
+        if (! RolePermission::can($user, 'ExpenseResource', 'edit')) {
+            return false;
+        }
 
         return $user?->isAdmin() || $record->outlet_id === $user?->outlet_id;
     }
 
     public static function canDelete(Model $record): bool
     {
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        return $user?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'ExpenseResource', 'delete');
     }
 
     public static function getEloquentQuery(): Builder

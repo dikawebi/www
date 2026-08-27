@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Outlet;
 use App\Models\SalesTransaction;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Pages\Page;
 use Illuminate\Support\Collection;
@@ -21,6 +22,11 @@ class TutupKasirHarian extends Page
     protected static ?string $title = 'Tutup Kasir Harian';
 
     protected string $view = 'filament.pages.tutup-kasir-harian';
+
+    public static function canAccess(): bool
+    {
+        return RolePermission::can(OutletContext::user(), 'TutupKasirHarian', 'view');
+    }
 
     public string $selectedDate;
 

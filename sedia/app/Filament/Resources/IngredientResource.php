@@ -4,8 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\IngredientResource\Pages;
 use App\Models\Ingredient;
-use App\Models\User;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -19,7 +19,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class IngredientResource extends Resource
@@ -36,25 +35,22 @@ class IngredientResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return true;
+        return RolePermission::can(OutletContext::user(), 'IngredientResource', 'view');
     }
 
     public static function canCreate(): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'IngredientResource', 'create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'IngredientResource', 'edit');
     }
 
     public static function canDelete(Model $record): bool
     {
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        return $user?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'IngredientResource', 'delete');
     }
 
     public static function form(Schema $schema): Schema

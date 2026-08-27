@@ -4,8 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\OutletResource\Pages;
 use App\Models\Outlet;
-use App\Models\User;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -18,7 +18,6 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Support\Facades\Auth;
 use UnitEnum;
 
 class OutletResource extends Resource
@@ -35,34 +34,22 @@ class OutletResource extends Resource
 
     public static function canViewAny(): bool
     {
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        return $user?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'OutletResource', 'view');
     }
 
     public static function canCreate(): bool
     {
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        return $user?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'OutletResource', 'create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        return $user?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'OutletResource', 'edit');
     }
 
     public static function canDelete(Model $record): bool
     {
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        return $user?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'OutletResource', 'delete');
     }
 
     public static function form(Schema $schema): Schema

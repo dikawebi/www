@@ -7,6 +7,7 @@ use App\Models\Employee;
 use App\Models\MenuItem;
 use App\Models\SalesTransaction;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Notifications\Notification as FilamentNotification;
 use Filament\Pages\Page;
@@ -26,6 +27,11 @@ class Pos extends Page
     protected static ?string $title = 'POS Kasir';
 
     protected string $view = 'filament.pages.pos';
+
+    public static function canAccess(): bool
+    {
+        return RolePermission::can(OutletContext::user(), 'Pos', 'view');
+    }
 
     public ?int $outletId = null;
 

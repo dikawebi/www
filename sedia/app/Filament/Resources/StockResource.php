@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\StockResource\Pages;
 use App\Models\Stock;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
@@ -30,6 +31,11 @@ class StockResource extends Resource
     protected static ?int $navigationSort = 2;
 
     protected static ?string $pluralModelLabel = 'Saldo Stok';
+
+    public static function canViewAny(): bool
+    {
+        return RolePermission::can(OutletContext::user(), 'StockResource', 'view');
+    }
 
     public static function canCreate(): bool
     {

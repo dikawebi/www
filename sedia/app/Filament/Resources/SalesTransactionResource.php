@@ -11,6 +11,7 @@ use App\Models\SalesTransaction;
 use App\Models\User;
 use App\Services\StockService;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -51,23 +52,23 @@ class SalesTransactionResource extends Resource
 
     public static function canCreate(): bool
     {
-        return true;
+        return RolePermission::can(OutletContext::user(), 'SalesTransactionResource', 'create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        /** @var User|null $user */
-        $user = Auth::user();
+        $user = OutletContext::user();
+
+        if (! RolePermission::can($user, 'SalesTransactionResource', 'edit')) {
+            return false;
+        }
 
         return $user?->isAdmin() || $record->outlet_id === $user?->outlet_id;
     }
 
     public static function canDelete(Model $record): bool
     {
-        /** @var User|null $user */
-        $user = Auth::user();
-
-        return $user?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'SalesTransactionResource', 'delete');
     }
 
     public static function getEloquentQuery(): Builder

@@ -9,6 +9,7 @@ use App\Models\StockTransfer;
 use App\Models\User;
 use App\Services\StockService;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
@@ -45,13 +46,16 @@ class StockTransferResource extends Resource
 
     public static function canCreate(): bool
     {
-        return (bool) Auth::user();
+        return RolePermission::can(OutletContext::user(), 'StockTransferResource', 'create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        /** @var User $user */
-        $user = Auth::user();
+        $user = OutletContext::user();
+
+        if (! RolePermission::can($user, 'StockTransferResource', 'edit')) {
+            return false;
+        }
 
         if ($user?->isAdmin()) {
             return true;
@@ -62,10 +66,7 @@ class StockTransferResource extends Resource
 
     public static function canDelete(Model $record): bool
     {
-        /** @var User $user */
-        $user = Auth::user();
-
-        return $user?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'StockTransferResource', 'delete');
     }
 
     public static function getEloquentQuery(): Builder

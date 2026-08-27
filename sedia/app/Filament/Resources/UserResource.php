@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\User;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
@@ -33,27 +34,27 @@ class UserResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'UserResource', 'view');
     }
 
     public static function canCreate(): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'UserResource', 'create');
     }
 
     public static function canEdit(Model $record): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'UserResource', 'edit');
     }
 
     public static function canDelete(Model $record): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'UserResource', 'delete');
     }
 
     public static function canDeleteAny(): bool
     {
-        return OutletContext::user()?->isAdmin() ?? false;
+        return RolePermission::can(OutletContext::user(), 'UserResource', 'delete');
     }
 
     public static function form(Schema $schema): Schema

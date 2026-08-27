@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Models\Ingredient;
 use App\Models\Stock;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Pages\Page;
 use Illuminate\Support\Collection;
@@ -22,6 +23,11 @@ class SaranReorder extends Page
     protected static ?string $title = 'Saran Reorder Stok';
 
     protected string $view = 'filament.pages.saran-reorder';
+
+    public static function canAccess(): bool
+    {
+        return RolePermission::can(OutletContext::user(), 'SaranReorder', 'view');
+    }
 
     public ?int $outletId = null;
 

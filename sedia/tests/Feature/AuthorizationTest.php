@@ -15,12 +15,19 @@ use App\Models\SalesTransactionItem;
 use App\Models\StockOpname;
 use App\Models\User;
 use App\Support\OutletContext;
+use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 class AuthorizationTest extends TestCase
 {
     use RefreshDatabase;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        $this->seed(RolePermissionSeeder::class);
+    }
 
     public function test_staff_cannot_manage_users(): void
     {
