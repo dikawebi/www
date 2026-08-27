@@ -87,7 +87,8 @@ Write-Host "[OK] Task terpasang : $taskNgrok" -ForegroundColor Green
 # ---- Task 3: health-check tiap 5 menit (self-healing mid-session) ----
 $actionHealth = New-ScheduledTaskAction -Execute "powershell.exe" `
     -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command `"Set-Location '$ProjectDir'; docker compose --env-file .env.docker up -d | Out-Null; if (-not (Get-Process ngrok -ErrorAction SilentlyContinue)) { Start-ScheduledTask -TaskName '$taskNgrok' -ErrorAction SilentlyContinue }`""
-$triggerHealth = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5) -RepetitionDuration ([TimeSpan]::MaxValue)
+$triggerHealth = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5)
+$triggerHealth.Repetition.Duration = ""  # Indefinite / tanpa batas waktu
 Register-ScheduledTask -TaskName $taskHealth `
     -Action $actionHealth -Trigger $triggerHealth -Settings $settings `
     -Description "Asset Tagging: health-check every 5 min" -Force | Out-Null
