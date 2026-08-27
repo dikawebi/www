@@ -22,9 +22,10 @@ if (-not $Remove -and -not (Test-Path (Join-Path $ProjectDir "docker-compose.yml
 
 $taskCompose = "AssetTagging-Stack"
 $taskNgrok   = "AssetTagging-Ngrok"
+$taskHealth  = "AssetTagging-HealthCheck"
 
 if ($Remove) {
-    foreach ($t in @($taskCompose, $taskNgrok)) {
+    foreach ($t in @($taskCompose, $taskNgrok, $taskHealth)) {
         Unregister-ScheduledTask -TaskName $t -Confirm:$false -ErrorAction SilentlyContinue
         Write-Host "Task dihapus : $t" -ForegroundColor Yellow
     }
@@ -82,6 +83,15 @@ Register-ScheduledTask -TaskName $taskNgrok `
     -Action $actionNgrok -Trigger $triggerNgrok -Settings $settings `
     -Description "Asset Tagging: ngrok tunnel" -Force | Out-Null
 Write-Host "[OK] Task terpasang : $taskNgrok" -ForegroundColor Green
+
+# ---- Task 3: health-check tiap 5 menit (self-healing mid-session) ----
+$actionHealth = New-ScheduledTaskAction -Execute "powershell.exe" `
+    -Argument "-NoProfile -ExecutionPolicy Bypass -WindowStyle Hidden -Command `"Set-Location '$ProjectDir'; docker compose --env-file .env.docker up -d | Out-Null; if (-not (Get-Process ngrok -ErrorAction SilentlyContinue)) { Start-ScheduledTask -TaskName '$taskNgrok' -ErrorAction SilentlyContinue }`""
+$triggerHealth = New-ScheduledTaskTrigger -Once -At (Get-Date) -RepetitionInterval (New-TimeSpan -Minutes 5) -RepetitionDuration ([TimeSpan]::MaxValue)
+Register-ScheduledTask -TaskName $taskHealth `
+    -Action $actionHealth -Trigger $triggerHealth -Settings $settings `
+    -Description "Asset Tagging: health-check every 5 min" -Force | Out-Null
+Write-Host "[OK] Task terpasang : $taskHealth (tiap 5 menit)" -ForegroundColor Green
 
 # ---- PC tidak boleh sleep saat dicolok listrik ----
 powercfg /change standby-timeout-ac 0
