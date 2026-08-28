@@ -9,6 +9,7 @@ use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
@@ -66,6 +67,18 @@ class OutletResource extends Resource
                 ->label('No. telepon')
                 ->tel()
                 ->maxLength(20),
+            Textarea::make('receipt_header')
+                ->label('Kop struk (header)')
+                ->rows(2)
+                ->placeholder('Contoh: Terima kasih telah berbelanja')
+                ->helperText('Muncul di atas nama outlet pada struk. Per outlet.')
+                ->columnSpanFull(),
+            Textarea::make('receipt_footer')
+                ->label('Footer struk')
+                ->rows(2)
+                ->placeholder('Contoh: Barang yang sudah dibeli tidak dapat ditukar')
+                ->helperText('Muncul di bawah total pada struk. Per outlet.')
+                ->columnSpanFull(),
             Toggle::make('is_active')
                 ->label('Aktif')
                 ->default(true),

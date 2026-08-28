@@ -24,7 +24,7 @@
         .pos-cat-pill.active{ background:#f59e0b; color:#fff; border-color:#f59e0b; box-shadow:0 2px 10px rgba(245,158,11,0.25); }
         .dark .pos-cat-pill{ background:#1e293b; border-color:#334155; color:#94a3b8; }
         .dark .pos-cat-pill.active{ background:#f59e0b; color:#111827; border-color:#f59e0b; }
-        .pos-layout{ display:grid; grid-template-columns:1fr; gap:1.25rem; margin-top:1.1rem; }
+        .pos-layout{ display:grid; grid-template-columns:1fr; gap:20px; margin-top:0; }
         @media(min-width:1050px){ .pos-layout{ grid-template-columns: minmax(0, 1.75fr) 400px; align-items:start; } }
         .pos-menu-head{ display:flex; align-items:center; justify-content:space-between; gap:1rem; margin-bottom:0.9rem; }
         .pos-menu-head h3{ font-size:0.95rem; font-weight:800; letter-spacing:-0.02em; }
@@ -86,7 +86,38 @@
         .dark .pos-empty{ background:#0f172a; border-color:#1e293b; }
     </style>
 
-    <div class="pos-page">
+    <div class="pos-page" style="display:flex; flex-direction:column; gap:20px">
+        {{-- Invoice & Tanggal — 2 card terpisah, gap 20px both axes, anti-purge --}}
+        <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap:20px">
+            {{-- Invoice: pos-menu-card --}}
+            <button type="button" onclick="navigator.clipboard.writeText('{{ $previewInvoice }}'); const t=this.querySelector('.inv-copy'); if(t){const o=t.textContent; t.textContent='✓'; setTimeout(()=>t.textContent=o,1200)}" class="pos-menu-card text-left" style="min-height:132px; cursor:pointer; text-align:left; width:100%">
+                <div class="pos-menu-top">
+                    <span class="pos-menu-cat">INVOICE</span>
+                    <span class="pos-menu-add" style="font-size:13px"><span class="inv-copy">⧉</span></span>
+                </div>
+                <div class="pos-menu-name" style="font-family:ui-monospace,monospace; font-size:12.5px; line-height:1.4; word-break:break-all; min-height:1.8em">{{ $previewInvoice }}</div>
+                <div class="pos-menu-foot">
+                    <span class="pos-menu-price" style="font-size:11.5px; color:#f59e0b">Outlet: {{ $this->outletId ? ($this->outletOptions()[$this->outletId] ?? '-') : '-' }}</span>
+                    <span class="pos-menu-unit">AUTO</span>
+                </div>
+            </button>
+            {{-- Tanggal: pos-menu-card --}}
+            <div class="pos-menu-card" style="min-height:132px; cursor:default" x-data="{ now: new Date(), tick(){ this.now = new Date() } }" x-init="setInterval(()=>tick(),1000)">
+                <div class="pos-menu-top">
+                    <span class="pos-menu-cat">TANGGAL</span>
+                    <span class="pos-menu-add" style="font-size:14px; background:#10b981">📅</span>
+                </div>
+                <div class="pos-menu-name" style="line-height:1.35">
+                    <span style="display:block; font-size:13px; font-weight:800">{{ now()->translatedFormat('l') }}</span>
+                    <span style="display:block; font-size:12px; font-weight:600; color:#94a3b8; margin-top:1px">{{ now()->translatedFormat('d F Y') }}</span>
+                </div>
+                <div class="pos-menu-foot">
+                    <span class="pos-menu-price" style="font-size:13px" x-text="new Date().toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit'}) + ' WIB'"> {{ now()->format('H:i') }} WIB</span>
+                    <span class="pos-menu-unit" x-text="now.toLocaleTimeString('id-ID',{hour:'2-digit',minute:'2-digit',second:'2-digit'})">{{ now()->format('H:i:s') }}</span>
+                </div>
+            </div>
+        </div>
+
         {{-- Toolbar: outlet + bayar + cari --}}
         <x-filament::section>
             <div class="pos-toolbar">
@@ -230,11 +261,114 @@
 
                 <div class="pos-actions">
                     <x-filament::button wire:click="clearCart" color="gray" icon="heroicon-o-trash" :disabled="empty($cart)" wire:loading.attr="disabled" wire:target="checkout,clearCart" style="min-height:48px;">Kosongkan</x-filament::button>
-                    <x-filament::button wire:click="checkout" icon="heroicon-o-credit-card" :disabled="empty($cart)" wire:loading.attr="disabled" wire:target="checkout" style="min-height:48px; background:#f59e0b; border-color:#f59e0b; color:#111827; font-weight:800;">
-                        <span wire:loading.remove wire:target="checkout">Bayar</span>
-                        <span wire:loading wire:target="checkout" class="inline-flex items-center gap-2"><svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="rgba(17,24,39,0.2)" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="#111827" stroke-width="3" stroke-linecap="round"/></svg> Memproses...</span>
-                    </x-filament::button>
+                    @if($paymentMethod === 'cash' && ! $isSplit)
+                        <x-filament::button type="button" onclick="document.getElementById('cashPayDialog')?.showModal()" icon="heroicon-o-banknotes" :disabled="empty($cart)" style="min-height:48px; background:#f59e0b; border-color:#f59e0b; color:#111827; font-weight:800;">Bayar Tunai</x-filament::button>
+                    @else
+                        <x-filament::button wire:click="checkout" icon="heroicon-o-credit-card" :disabled="empty($cart)" wire:loading.attr="disabled" wire:target="checkout" style="min-height:48px; background:#f59e0b; border-color:#f59e0b; color:#111827; font-weight:800;">
+                            <span wire:loading.remove wire:target="checkout">Bayar</span>
+                            <span wire:loading wire:target="checkout" class="inline-flex items-center gap-2"><svg class="animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="10" stroke="rgba(17,24,39,0.2)" stroke-width="3"/><path d="M12 2a10 10 0 0 1 10 10" stroke="#111827" stroke-width="3" stroke-linecap="round"/></svg> Memproses...</span>
+                        </x-filament::button>
+                    @endif
                 </div>
+
+                {{-- Cash modal — Alpine local state + Livewire cartTotalLive agar kembalian akurat --}}
+                <dialog id="cashPayDialog" wire:ignore.self x-data="{
+                    cashRaw: '',
+                    totalLive: $wire.entangle('cartTotalLive'),
+                    get total() { return Number(this.totalLive) || 0 },
+                    get cashNum() { return Number(String(this.cashRaw).replace(/\./g,'').replace(/[^0-9]/g,'')) || 0 },
+                    get formattedCash() { return this.cashRaw ? new Intl.NumberFormat('id-ID').format(Number(String(this.cashRaw).replace(/\./g,'').replace(/[^0-9]/g,'')) || 0) : '' },
+                    get rawChange() { return this.cashNum - this.total },
+                    get change() { return Math.max(0, this.rawChange) },
+                    get isShort() { return this.rawChange < 0 },
+                    get isValid() { return this.rawChange >= 0 && this.total > 0 && this.cashNum > 0 },
+                    formatRp(val) { return 'Rp ' + new Intl.NumberFormat('id-ID').format(val || 0) },
+                    async submitPay() {
+                        if (!this.isValid) return;
+                        await $wire.set('cashReceived', this.cashNum);
+                        await $wire.checkout();
+                        this.cashRaw = '';
+                    },
+                    setCash(v) { this.cashRaw = String(v); $nextTick(() => { const el = document.getElementById('cashInputEl'); if(el) el.value = this.formattedCash }) }
+                }" x-init="$watch('$wire.cartTotalLive', v => {})" @open.window="cashRaw = ''" style="border:0; padding:16px; background:transparent; max-width:440px; width:96%; margin:auto">
+                    <form method="dialog" @submit.prevent="submitPay()" style="background:#fff; border-radius:20px; padding:22px; box-shadow:0 24px 60px rgba(0,0,0,0.35); border:1px solid #e5e7eb; color:#0f172a">
+                        <div style="display:flex; align-items:center; justify-content:space-between; gap:12px">
+                            <h3 style="font-size:15px; font-weight:800; margin:0">Pembayaran Tunai</h3>
+                            <button type="button" onclick="this.closest('dialog').close()" style="width:30px; height:30px; border-radius:9999px; border:1px solid #e5e7eb; background:#f8fafc; cursor:pointer">✕</button>
+                        </div>
+                        <div style="margin-top:14px; background:#0f172a; color:#fff; border-radius:14px; padding:14px 16px; display:flex; justify-content:space-between; align-items:center">
+                            <span style="font-size:12px; opacity:0.8; font-weight:600">TOTAL</span>
+                            <span style="font-size:20px; font-weight:900" x-text="formatRp(total)"></span>
+                        </div>
+                        <div style="margin-top:14px">
+                            <label style="display:block; font-size:12px; font-weight:700; color:#334155; margin-bottom:6px">Uang diterima dari pelanggan</label>
+                            <input id="cashInputEl" type="text" inputmode="numeric" placeholder="Contoh: 50.000"
+                                :value="formattedCash" @input="cashRaw = $event.target.value.replace(/\./g,'').replace(/[^0-9]/g,''); $event.target.value = formattedCash"
+                                style="width:100%; border-radius:12px; border:1.5px solid #cbd5e1; padding:12px 14px; font-size:18px; font-weight:700; outline:none; color:#0f172a" autofocus>
+                            <div style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px">
+                                <button type="button" @click="setCash(total)" style="flex:1; min-width:72px; border-radius:9999px; border:1px solid #e5e7eb; background:#f8fafc; padding:7px 10px; font-size:12px; font-weight:700; cursor:pointer">Uang pas</button>
+                                @foreach([50000,100000,150000,200000] as $quick)
+                                    <button type="button" @click="setCash({{ $quick }})" style="flex:1; min-width:72px; border-radius:9999px; border:1px solid #e5e7eb; background:#fff; padding:7px 10px; font-size:12px; font-weight:600; cursor:pointer">{{ number_format($quick,0,',','.') }}</button>
+                                @endforeach
+                            </div>
+                        </div>
+
+                        <div style="margin-top:14px; border-radius:12px; padding:12px 14px; display:flex; justify-content:space-between; align-items:center;"
+                            :style="{ border: isShort ? '1.5px solid #fecaca' : (change > 0 ? '1.5px solid #fde68a' : '1.5px solid #e5e7eb'), background: isShort ? '#fef2f2' : (change > 0 ? '#fffbeb' : '#f8fafc') }">
+                            <span style="font-size:12px; font-weight:700; color:#475569">Kembalian</span>
+                            <span style="font-size:18px; font-weight:900;" :style="{ color: isShort ? '#dc2626' : '#0f172a' }" x-text="formatRp(change)"></span>
+                        </div>
+                        <template x-if="isShort">
+                            <div style="margin-top:8px; font-size:12px; color:#dc2626; font-weight:600">
+                                Uang kurang <span x-text="formatRp(total - cashNum)"></span>
+                            </div>
+                        </template>
+                        <div style="margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                            <button type="button" onclick="this.closest('dialog').close()" style="border-radius:12px; border:1px solid #e5e7eb; background:#fff; padding:11px; font-size:13px; font-weight:700; cursor:pointer">Batal</button>
+                            <button type="submit" :disabled="!isValid" style="border-radius:12px; border:0; padding:11px; font-size:13px; font-weight:800; cursor:pointer"
+                                :style="{ background: isValid ? '#f59e0b' : '#9ca3af', color: isValid ? '#111827' : '#fff' }">
+                                <span wire:loading.remove wire:target="checkout">Proses Bayar</span>
+                                <span wire:loading wire:target="checkout">Memproses...</span>
+                            </button>
+                        </div>
+                        <p style="margin-top:10px; text-align:center; font-size:11px; color:#94a3b8">Tekan Enter atau klik Proses Bayar untuk menyelesaikan</p>
+                    </form>
+                </dialog>
+                <style>dialog::backdrop{ background:rgba(2,6,23,0.62); backdrop-filter:blur(3px) } dialog[open]{ display:grid; place-items:center; position:fixed; inset:0; width:100%; height:100%; max-width:100%; max-height:100%; z-index:9999 }</style>
+                <script>
+                    document.getElementById('cashPayDialog')?.addEventListener('click', e=>{ const r=e.target.getBoundingClientRect(); if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) e.target.close(); });
+                </script>
+
+                {{-- Success modal: Cetak vs Transaksi Baru --}}
+                <dialog id="posSuccessDialog" style="border:0; padding:16px; background:transparent; max-width:420px; width:96%; margin:auto">
+                    <div style="background:#fff; border-radius:20px; padding:24px; box-shadow:0 24px 60px rgba(0,0,0,0.35); border:1px solid #e5e7eb; text-align:center" x-data="{ invoice:'', receiptUrl:'' }" @pos-checkout-success.window="invoice=$event.detail.invoice; receiptUrl=$event.detail.receiptUrl; $el.closest('dialog').showModal()" @click.self="$el.closest('dialog').close()">
+                        <div style="width:56px; height:56px; border-radius:9999px; background:#f0fdf4; border:1px solid #bbf7d0; display:grid; place-items:center; margin:0 auto; color:#15803d; font-size:24px">✓</div>
+                        <h3 style="margin-top:12px; font-size:16px; font-weight:800; color:#0f172a">Transaksi Berhasil!</h3>
+                        <p class="font-mono text-xs font-bold text-gray-600" style="margin-top:4px" x-text="invoice"></p>
+                        <p style="margin-top:8px; font-size:12px; color:#64748b">Ingin cetak bukti transaksi?</p>
+                        <div style="margin-top:16px; display:grid; grid-template-columns:1fr 1fr; gap:10px">
+                            <button type="button" @click="if(receiptUrl) window.open(receiptUrl, '_blank'); $wire.resetPos(); $el.closest('dialog').close()" style="display:grid; place-items:center; border-radius:12px; background:#0f172a; color:#fff; padding:11px; font-size:13px; font-weight:700; cursor:pointer; width:100%">🖨️ Cetak Struk</button>
+                            <button type="button" @click="$wire.resetPos(); $el.closest('dialog').close()" style="border-radius:12px; border:1px solid #e5e7eb; background:#f59e0b; color:#111827; padding:11px; font-size:13px; font-weight:800; cursor:pointer">Transaksi Baru</button>
+                        </div>
+                        <button type="button" @click="$wire.resetPos(); $el.closest('dialog').close()" style="margin-top:10px; font-size:11px; color:#94a3b8; background:transparent; border:0; cursor:pointer">Tutup</button>
+                    </div>
+                </dialog>
+                <script>
+                    document.addEventListener('livewire:init', () => {
+                        Livewire.on('pos-checkout-success', (e) => {
+                            document.getElementById('cashPayDialog')?.close();
+                            const d = document.getElementById('posSuccessDialog');
+                            if (d) {
+                                // Alpine will pick via @pos-checkout-success.window, but also fallback
+                                d.showModal();
+                            }
+                        });
+                    });
+                    document.getElementById('posSuccessDialog')?.addEventListener('click', e=>{
+                        const r=e.target.getBoundingClientRect();
+                        if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom) e.target.close();
+                    });
+                </script>
                 <p style="margin-top:0.7rem; text-align:center; font-size:11px; line-height:1.5; color:#6b7280;">Stok dipotong otomatis per resep. Jika bahan kurang, transaksi dibatalkan.</p>
             </x-filament::section>
         </div>

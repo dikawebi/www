@@ -14,7 +14,7 @@ class Outlet extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'address', 'phone', 'is_active'];
+    protected $fillable = ['name', 'address', 'phone', 'receipt_header', 'receipt_footer', 'is_active'];
 
     protected $casts = [
         'is_active' => 'boolean',

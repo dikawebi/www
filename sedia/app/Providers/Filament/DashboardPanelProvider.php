@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Support\Branding;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -18,6 +19,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\HtmlString;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 
 class DashboardPanelProvider extends PanelProvider
@@ -29,9 +31,15 @@ class DashboardPanelProvider extends PanelProvider
             ->id('dashboard')
             ->path('dashboard')
             ->login()
-            ->colors([
-                'primary' => Color::Amber,
-            ])
+            ->brandName(fn () => Branding::appName())
+            ->brandLogo(fn () => new HtmlString(
+                ($logo = Branding::appLogoUrl())
+                    ? '<div style="display:flex;align-items:center;gap:10px"><img src="'.e($logo).'" alt="'.e(Branding::appName()).' logo" style="height:36px;width:auto;object-fit:contain;border-radius:6px;flex-shrink:0"><span style="font-weight:800;font-size:14.5px;letter-spacing:-0.01em;line-height:1;white-space:nowrap">'.e(Branding::appName()).'</span></div>'
+                    : '<span style="font-weight:800;font-size:15px;letter-spacing:-0.01em">'.e(Branding::appName()).'</span>'
+            ))
+            ->brandLogoHeight('38px')
+            ->favicon(fn () => Branding::faviconUrl())
+            ->colors(fn () => ['primary' => Color::hex(Branding::primaryColor()) ?: Color::Amber])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([

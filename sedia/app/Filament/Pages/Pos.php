@@ -5,6 +5,7 @@ namespace App\Filament\Pages;
 use App\Exceptions\InsufficientStockException;
 use App\Models\Employee;
 use App\Models\MenuItem;
+use App\Models\Outlet;
 use App\Models\SalesTransaction;
 use App\Support\OutletContext;
 use App\Support\RolePermission;
@@ -42,6 +43,8 @@ class Pos extends Page
     /** @var array<string, float> */
     public array $splitAmounts = ['cash' => 0, 'qris' => 0, 'transfer' => 0, 'debit' => 0];
 
+    public ?float $cashReceived = null;
+
     public string $search = '';
 
     public string $selectedCategory = '';
@@ -52,12 +55,39 @@ class Pos extends Page
     /** @var array<int, array{id:int, name:string, category:string|null, price:float}> */
     public array $menuCache = [];
 
+    public ?string $previewInvoice = null;
+
+    public float $cartTotalLive = 0;
+
     public function mount(): void
     {
         $user = OutletContext::user();
-        $this->outletId = $user && ! $user->isAdmin() ? $user->outlet_id : (OutletContext::currentOutletId() ?? $user?->outlet_id);
+        $this->outletId = OutletContext::currentOutletId() ?? ($user && ! $user->isAdmin() ? $user->outlet_id : Outlet::where('is_active', true)->value('id'));
         $this->paymentMethod = 'cash';
+        $this->generatePreviewInvoice();
         $this->loadMenuCache();
+        $this->syncCartTotalLive();
+    }
+
+    private function syncCartTotalLive(): void
+    {
+        $this->cartTotalLive = $this->cartTotal;
+    }
+
+    public function updatedOutletId(): void
+    {
+        if ($this->isAdminUser() && $this->outletId) {
+            OutletContext::setCurrentOutletId($this->outletId);
+        }
+        $this->generatePreviewInvoice();
+        $this->loadMenuCache();
+    }
+
+    public function generatePreviewInvoice(): void
+    {
+        $outletName = $this->outletId ? (Outlet::find($this->outletId)?->name ?? 'POS') : 'POS';
+        $cleanName = strtoupper(preg_replace('/[^A-Z0-9]/i', '', $outletName));
+        $this->previewInvoice = 'INV/'.$cleanName.'/'.now()->format('Ymd/His');
     }
 
     public function updatedSearch(): void
@@ -143,6 +173,11 @@ class Pos extends Page
         return max(0, $this->paidTotal - $this->cartTotal);
     }
 
+    public function getCashChangeProperty(): float
+    {
+        return max(0, (float) ($this->cashReceived ?? 0) - $this->cartTotal);
+    }
+
     public function updatedIsSplit(): void
     {
         if ($this->isSplit) {
@@ -172,6 +207,7 @@ class Pos extends Page
             if ($row['menu_item_id'] === $id) {
                 $this->cart[$i]['qty']++;
                 $this->cart[$i]['subtotal'] = $this->cart[$i]['qty'] * $this->cart[$i]['price'];
+                $this->syncCartTotalLive();
 
                 return;
             }
@@ -183,6 +219,7 @@ class Pos extends Page
             'qty' => 1,
             'subtotal' => $price,
         ];
+        $this->syncCartTotalLive();
     }
 
     public function decQty(int $index): void
@@ -196,6 +233,7 @@ class Pos extends Page
         } else {
             $this->cart[$index]['subtotal'] = $this->cart[$index]['qty'] * $this->cart[$index]['price'];
         }
+        $this->syncCartTotalLive();
     }
 
     public function incQty(int $index): void
@@ -205,16 +243,27 @@ class Pos extends Page
         }
         $this->cart[$index]['qty']++;
         $this->cart[$index]['subtotal'] = $this->cart[$index]['qty'] * $this->cart[$index]['price'];
+        $this->syncCartTotalLive();
     }
 
     public function removeFromCart(int $index): void
     {
         array_splice($this->cart, $index, 1);
+        $this->syncCartTotalLive();
     }
 
     public function clearCart(): void
     {
         $this->cart = [];
+        $this->syncCartTotalLive();
+    }
+
+    public function resetPos(): void
+    {
+        $this->cart = [];
+        $this->cashReceived = null;
+        $this->syncCartTotalLive();
+        $this->generatePreviewInvoice();
     }
 
     public function checkout(): void
@@ -224,7 +273,11 @@ class Pos extends Page
 
             return;
         }
-        $outletId = $this->outletId;
+        $outletId = $this->outletId ?? OutletContext::currentOutletId();
+        if (! $outletId) {
+            $outletId = Outlet::where('is_active', true)->value('id');
+        }
+
         if (! $outletId) {
             FilamentNotification::make()->title('Pilih outlet dulu')->danger()->send();
 
@@ -238,10 +291,24 @@ class Pos extends Page
         }
 
         $total = $this->cartTotal;
-        $paid = $this->paidTotal;
-        $change = $this->changeDue;
+
+        // Validasi khusus cash: wajib input uang diterima via modal
+        if (! $this->isSplit && $this->paymentMethod === 'cash') {
+            if ($this->cashReceived === null || $this->cashReceived == 0) {
+                FilamentNotification::make()->title('Masukkan uang diterima')->body('Total '.$this->formatRupiah($total))->warning()->send();
+
+                return;
+            }
+            if ((float) $this->cashReceived < $total - 0.01) {
+                FilamentNotification::make()->title('Uang kurang')->body('Total '.$this->formatRupiah($total).', diterima '.$this->formatRupiah((float) $this->cashReceived))->danger()->send();
+
+                return;
+            }
+        }
 
         if ($this->isSplit) {
+            $paid = $this->paidTotal;
+            $change = $this->changeDue;
             if ($paid < $total - 0.01) {
                 FilamentNotification::make()->title('Bayar kurang')->body('Total '.$this->formatRupiah($total).', dibayar '.$this->formatRupiah($paid))->danger()->send();
 
@@ -249,6 +316,11 @@ class Pos extends Page
             }
             $payments = collect($this->splitAmounts)->filter(fn ($v) => $v > 0)->map(fn ($v, $k) => ['method' => $k, 'amount' => (float) $v])->values()->all();
             $primaryMethod = collect($payments)->sortByDesc('amount')->first()['method'] ?? 'cash';
+        } elseif ($this->paymentMethod === 'cash') {
+            $paid = (float) $this->cashReceived;
+            $change = max(0, $paid - $total);
+            $payments = [['method' => 'cash', 'amount' => $paid]];
+            $primaryMethod = 'cash';
         } else {
             $payments = null;
             $paid = $total;
@@ -260,9 +332,10 @@ class Pos extends Page
 
         try {
             $trx = null;
-            DB::transaction(function () use (&$trx, $outletId, $cashierId, $payments, $paid, $change, $primaryMethod) {
+            $invoiceNumber = $this->previewInvoice ?? ('INV-'.now()->format('Ymd').'-'.strtoupper(Str::random(5)));
+            DB::transaction(function () use (&$trx, $outletId, $cashierId, $payments, $paid, $change, $primaryMethod, $invoiceNumber) {
                 $trx = SalesTransaction::create([
-                    'invoice_number' => 'INV-'.now()->format('Ymd').'-'.strtoupper(Str::random(5)),
+                    'invoice_number' => $invoiceNumber,
                     'outlet_id' => $outletId,
                     'cashier_id' => $cashierId,
                     'transaction_date' => now(),
@@ -284,10 +357,17 @@ class Pos extends Page
             });
 
             $total = $this->cartTotal;
+            $paidForNote = $paid;
+            $changeForNote = $change;
             $this->cart = [];
-            FilamentNotification::make()->title('Transaksi berhasil')->body('Total Rp '.number_format($total, 0, ',', '.'))->success()->send();
-            // Optional: redirect to receipt
-            $this->dispatch('pos-checkout-success', invoice: $trx?->invoice_number ?? '');
+            $this->cashReceived = null;
+            $this->syncCartTotalLive();
+            $this->generatePreviewInvoice();
+            $msg = $primaryMethod === 'cash' && $changeForNote > 0
+                ? 'Dibayar '.number_format($paidForNote, 0, ',', '.').' • Kembalian '.number_format($changeForNote, 0, ',', '.')
+                : 'Total Rp '.number_format($total, 0, ',', '.');
+            FilamentNotification::make()->title('Transaksi berhasil')->body($msg)->success()->send();
+            $this->dispatch('pos-checkout-success', invoice: $trx?->invoice_number ?? '', receiptUrl: route('receipt.show', $trx?->id ?? 0));
         } catch (InsufficientStockException $e) {
             FilamentNotification::make()
                 ->danger()->title('Stok tidak cukup')

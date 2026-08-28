@@ -15,6 +15,7 @@ use App\Models\StockTransfer;
 use App\Models\User;
 use App\Observers\ActivityObserver;
 use App\Observers\SalesTransactionObserver;
+use App\Support\Branding;
 use App\Support\OutletContext;
 use Filament\Support\Facades\FilamentView;
 use Filament\View\PanelsRenderHook;
@@ -48,7 +49,7 @@ class AppServiceProvider extends ServiceProvider
         }
 
         FilamentView::registerRenderHook(
-            PanelsRenderHook::TOPBAR_START,
+            PanelsRenderHook::TOPBAR_END,
             fn () => view('filament.outlet-switcher', [
                 'currentOutletId' => OutletContext::currentOutletId(),
             ]),
@@ -56,7 +57,7 @@ class AppServiceProvider extends ServiceProvider
 
         FilamentView::registerRenderHook(
             PanelsRenderHook::HEAD_START,
-            fn () => Blade::render('<link rel="manifest" href="/manifest.json"><meta name="theme-color" content="#f59e0b"><link rel="apple-touch-icon" href="/favicon.ico">'),
+            fn () => Blade::render('<link rel="manifest" href="/manifest.json"><meta name="theme-color" content="'.e(Branding::primaryColor()).'"><link rel="apple-touch-icon" href="'.e(Branding::faviconUrl()).'">'),
         );
 
         FilamentView::registerRenderHook(
