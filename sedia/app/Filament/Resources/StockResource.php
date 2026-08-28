@@ -8,6 +8,7 @@ use App\Support\OutletContext;
 use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
@@ -79,6 +80,14 @@ class StockResource extends Resource
             ])
             ->filters([
                 SelectFilter::make('outlet_id')->label('Outlet')->relationship('outlet', 'name'),
+            ])
+            ->striped()
+            ->searchPlaceholder('Cari stok...')
+            ->emptyStateHeading('Belum ada stok')
+            ->emptyStateDescription('Saldo stok terbentuk dari pembelian & penjualan. Cek transfer stok.')
+            ->emptyStateIcon('heroicon-o-archive-box')
+            ->emptyStateActions([
+                CreateAction::make()->label('Stok'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

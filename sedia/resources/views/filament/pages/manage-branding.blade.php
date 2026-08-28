@@ -6,10 +6,10 @@
         </div>
     </form>
     @php $logo = \App\Support\Branding::appLogoUrl(); $name = \App\Support\Branding::appName(); @endphp
-    <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900">
+    <div class="mt-8 rounded-2xl border border-gray-200 bg-white p-5 dark:border-gray-700 dark:bg-gray-900 dark:text-white">
         <div class="text-xs font-bold uppercase tracking-widest text-gray-400">Preview</div>
         <div class="mt-3 flex items-center gap-3">
-            @if($logo)<img src="{{ $logo }}" alt="logo" class="h-10 rounded-lg border bg-white object-contain p-1"> @endif
+            @if($logo)<img src="{{ $logo }}" alt="logo" class="h-10 rounded-lg border border-gray-200 bg-white dark:bg-gray-800 dark:border-gray-600 object-contain p-1"> @endif
             <div>
                 <div class="text-sm font-bold">{{ $name }}</div>
                 <div class="text-xs text-gray-500">Warna: <span class="inline-block h-3 w-3 rounded-full align-middle" style="background:{{ \App\Support\Branding::primaryColor() }}"></span> {{ \App\Support\Branding::primaryColor() }} • Favicon: {{ \App\Support\Branding::faviconUrl() }}</div>

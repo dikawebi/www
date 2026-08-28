@@ -7,13 +7,20 @@ use Illuminate\Database\Eloquent\Model;
 
 class ActivityObserver
 {
+    private const SENSITIVE = ['password', 'remember_token'];
+
+    private function sanitize(array $attributes): array
+    {
+        return array_diff_key($attributes, array_flip(self::SENSITIVE));
+    }
+
     public function created(Model $model): void
     {
         ActivityLog::record(
             action: 'created',
             subject: $model,
             description: class_basename($model).' #'.$model->getKey().' dibuat',
-            properties: $model->getAttributes(),
+            properties: $this->sanitize($model->getAttributes()),
         );
     }
 
@@ -24,8 +31,8 @@ class ActivityObserver
             return;
         }
 
-        // Jangan log touch timestamp saja
-        $filtered = array_diff_key($changes, array_flip(['updated_at']));
+        // Jangan log touch timestamp saja + sanitasi
+        $filtered = array_diff_key($changes, array_flip(['updated_at', ...self::SENSITIVE]));
         if (empty($filtered)) {
             return;
         }
@@ -35,8 +42,8 @@ class ActivityObserver
             subject: $model,
             description: class_basename($model).' #'.$model->getKey().' diperbarui',
             properties: [
-                'changes' => $filtered,
-                'original' => array_intersect_key($model->getOriginal(), $filtered),
+                'changes' => $this->sanitize($filtered),
+                'original' => $this->sanitize(array_intersect_key($model->getOriginal(), $filtered)),
             ],
         );
     }
@@ -47,7 +54,7 @@ class ActivityObserver
             action: 'deleted',
             subject: $model,
             description: class_basename($model).' #'.$model->getKey().' dihapus',
-            properties: $model->getAttributes(),
+            properties: $this->sanitize($model->getAttributes()),
         );
     }
 }

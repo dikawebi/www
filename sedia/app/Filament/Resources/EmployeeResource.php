@@ -9,6 +9,7 @@ use App\Support\OutletContext;
 use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -124,6 +125,14 @@ class EmployeeResource extends Resource
                 SelectFilter::make('status')
                     ->label('Status')
                     ->options(['active' => 'Aktif', 'resigned' => 'Resign']),
+            ])
+            ->striped()
+            ->searchPlaceholder('Cari karyawan...')
+            ->emptyStateHeading('Belum ada karyawan')
+            ->emptyStateDescription('Tambah karyawan pertama untuk kelola data SDM outlet.')
+            ->emptyStateIcon('heroicon-o-users')
+            ->emptyStateActions([
+                CreateAction::make()->url(fn () => static::getUrl('create'))->label('Tambah Karyawan'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

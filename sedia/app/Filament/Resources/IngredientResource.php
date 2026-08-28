@@ -8,6 +8,7 @@ use App\Support\OutletContext;
 use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
@@ -116,6 +117,14 @@ class IngredientResource extends Resource
             ->filters([
                 TernaryFilter::make('is_active')
                     ->label('Status aktif'),
+            ])
+            ->striped()
+            ->searchPlaceholder('Cari bahan baku...')
+            ->emptyStateHeading('Belum ada bahan baku')
+            ->emptyStateDescription('Tambah bahan baku dengan unit dan HPP untuk kalkulasi margin.')
+            ->emptyStateIcon('heroicon-o-cube')
+            ->emptyStateActions([
+                CreateAction::make()->url(fn () => static::getUrl('create'))->label('Buat Bahan'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

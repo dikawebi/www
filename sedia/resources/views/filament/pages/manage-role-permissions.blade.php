@@ -25,13 +25,18 @@
         .dark .mp-key{background:#0f172a;color:#94a3b8}
         .mp-badge{display:inline-block;margin-left:6px;background:#fef3c7;color:#92400e;font-size:10px;font-weight:700;padding:2px 7px;border-radius:9999px;vertical-align:middle}
         .dark .mp-badge{background:#452e00;color:#fbbf24}
-        .mp-check{width:17px;height:17px;accent-color:#16a34a;cursor:pointer}
+        .mp-check{width:22px;height:22px;accent-color:#16a34a;cursor:pointer}
+        .mp-check:checked{accent-color:#16a34a;background:#16a34a}
+        .mp-check-wrap{display:inline-flex;align-items:center;justify-content:center;min-width:44px;min-height:44px;padding:11px;cursor:pointer}
+        .mp-table td:has(.mp-check){padding:11px 6px}
         .mp-dash{color:#cbd5e1;font-size:16px}
         .dark .mp-dash{color:#475569}
+        .mp-action-btn{border:1px solid #e5e7eb;background:#fff;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer;min-height:44px}
+        .dark .mp-action-btn{border-color:#334155;background:#0f172a;color:#e2e8f0}
         @media(max-width:768px){
             .mp-table th:first-child{width:48%}
             .mp-table th.perm{width:13%}
-            .mp-table td,.mp-table th{padding:10px 6px}
+            .mp-table td,.mp-table th{padding:11px 6px}
             .mp-table th{font-size:9px}
             .mp-name{font-size:12px}
         }
@@ -54,8 +59,8 @@
             </div>
         </div>
         <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:center">
-            <button type="button" wire:click="toggleAll(true)" style="border:1px solid #e5e7eb;background:#fff;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer">✓ Centang semua</button>
-            <button type="button" wire:click="toggleAll(false)" style="border:1px solid #e5e7eb;background:#fff;border-radius:10px;padding:9px 14px;font-size:12px;font-weight:700;cursor:pointer">✕ Kosongkan</button>
+            <button type="button" wire:click="toggleAll(true)" class="mp-action-btn">✓ Centang semua</button>
+            <button type="button" wire:click="toggleAll(false)" class="mp-action-btn">✕ Kosongkan</button>
             <x-filament::button wire:click="save" icon="heroicon-o-check" color="primary" style="border-radius:10px">Simpan Perubahan</x-filament::button>
             <x-filament::button wire:click="resetToDefault" icon="heroicon-o-arrow-path" color="gray" requiresConfirmation style="border-radius:10px">Reset Default</x-filament::button>
         </div>
@@ -90,26 +95,26 @@
                                 <span class="mp-badge">hanya Lihat</span>
                             @endif
                         </td>
-                        <td><input type="checkbox" wire:model.live="permissions.{{ $key }}.view" class="mp-check" title="Lihat {{ $label }}"></td>
+                        <td><label class="mp-check-wrap"><input type="checkbox" wire:model.live="permissions.{{ $key }}.view" class="mp-check" title="Lihat {{ $label }}"></label></td>
                         <td>
                             @if($isPage)
                                 <span class="mp-dash">—</span>
                             @else
-                                <input type="checkbox" wire:model.live="permissions.{{ $key }}.create" class="mp-check" title="Tambah {{ $label }}">
+                                <label class="mp-check-wrap"><input type="checkbox" wire:model.live="permissions.{{ $key }}.create" class="mp-check" title="Tambah {{ $label }}"></label>
                             @endif
                         </td>
                         <td>
                             @if($isPage)
                                 <span class="mp-dash">—</span>
                             @else
-                                <input type="checkbox" wire:model.live="permissions.{{ $key }}.edit" class="mp-check" title="Ubah {{ $label }}">
+                                <label class="mp-check-wrap"><input type="checkbox" wire:model.live="permissions.{{ $key }}.edit" class="mp-check" title="Ubah {{ $label }}"></label>
                             @endif
                         </td>
                         <td>
                             @if($isPage)
                                 <span class="mp-dash">—</span>
                             @else
-                                <input type="checkbox" wire:model.live="permissions.{{ $key }}.delete" class="mp-check" title="Hapus {{ $label }}">
+                                <label class="mp-check-wrap"><input type="checkbox" wire:model.live="permissions.{{ $key }}.delete" class="mp-check" title="Hapus {{ $label }}"></label>
                             @endif
                         </td>
                     </tr>

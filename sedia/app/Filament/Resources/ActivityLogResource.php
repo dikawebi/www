@@ -89,6 +89,12 @@ class ActivityLogResource extends Resource
                 ]),
                 SelectFilter::make('outlet_id')->relationship('outlet', 'name')->label('Outlet'),
             ])
+            ->striped()
+            ->searchPlaceholder('Cari aktivitas...')
+            ->emptyStateHeading('Belum ada aktivitas')
+            ->emptyStateDescription('Log aktivitas sistem akan tercatat di sini.')
+            ->emptyStateIcon('heroicon-o-clock')
+            ->emptyStateActions([])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->visible(fn () => OutletContext::user()?->isAdmin() ?? false),

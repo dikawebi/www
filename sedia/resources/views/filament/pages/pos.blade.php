@@ -16,7 +16,7 @@
         .dark .pos-pay-pill.active{ background:#f59e0b; color:#111827; border-color:#f59e0b; }
         .pos-split-grid{ display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; margin-top:0.6rem; }
         .pos-split-grid label{ font-size:0.7rem; font-weight:700; letter-spacing:0.05em; text-transform:uppercase; color:#6b7280; }
-        .pos-split-grid input{ margin-top:0.3rem; border-radius:0.75rem; border:1px solid #e5e7eb; padding:0.7rem 0.8rem; font-size:0.9rem; width:100%; }
+        .pos-split-grid input{ margin-top:0.3rem; border-radius:0.9rem; border:1px solid #e5e7eb; padding:0.85rem 0.95rem; font-size:0.92rem; width:100%; min-height:44px; }
         .dark .pos-split-grid input{ background:#1f2937; border-color:#374151; color:#fff; }
         .pos-cat-bar{ display:flex; gap:0.6rem; flex-wrap:nowrap; overflow:auto; padding:0.2rem 0 0.6rem; scrollbar-width:none; margin-top:1rem; }
         .pos-cat-bar::-webkit-scrollbar{ display:none; }
@@ -84,6 +84,11 @@
         .pos-actions .fi-btn{ min-height:48px; font-size:0.92rem; font-weight:700; border-radius:0.9rem; }
         .pos-empty{ border:1.5px dashed #e5e7eb; border-radius:1rem; background:#f9fafb; padding:2.2rem 1.5rem; text-align:center; }
         .dark .pos-empty{ background:#0f172a; border-color:#1e293b; }
+        .dark #cashPayDialog form, .dark #posSuccessDialog > div { background:#1f2937 !important; border-color:#334155 !important; }
+        .dark #cashPayDialog form h3, .dark #cashPayDialog form label { color:#f1f5f9 !important; }
+        .dark #cashPayDialog input { background:#111827 !important; color:#f1f5f9 !important; border-color:#374151 !important; }
+        .dark #cashPayDialog button[style*="background:#fff"], .dark #cashPayDialog button[style*="background:#f8fafc"] { color:#0f172a !important; }
+        .dark #cashPayDialog form span[style*="color:#475569"] { color:#94a3b8 !important; }
     </style>
 
     <div class="pos-page" style="display:flex; flex-direction:column; gap:20px">

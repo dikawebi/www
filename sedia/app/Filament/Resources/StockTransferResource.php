@@ -14,6 +14,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
@@ -280,6 +281,14 @@ class StockTransferResource extends Resource
                             Notification::make()->title('Gagal')->body($e->getMessage())->danger()->send();
                         }
                     }),
+            ])
+            ->striped()
+            ->searchPlaceholder('Cari transfer...')
+            ->emptyStateHeading('Belum ada transfer stok')
+            ->emptyStateDescription('Buat transfer antar outlet atau pembelian dari stockist.')
+            ->emptyStateIcon('heroicon-o-arrows-right-left')
+            ->emptyStateActions([
+                CreateAction::make()->url(fn () => static::getUrl('create'))->label('Buat Transfer'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

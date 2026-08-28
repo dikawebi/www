@@ -10,6 +10,7 @@ use App\Support\OutletContext;
 use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Placeholder;
@@ -247,6 +248,14 @@ class PayrollResource extends Resource
                         'paid' => 'Dibayar',
                         'cancelled' => 'Dibatalkan',
                     ]),
+            ])
+            ->striped()
+            ->searchPlaceholder('Cari penggajian...')
+            ->emptyStateHeading('Belum ada penggajian')
+            ->emptyStateDescription('Buat data penggajian pertama untuk periode berjalan.')
+            ->emptyStateIcon('heroicon-o-calculator')
+            ->emptyStateActions([
+                CreateAction::make()->url(fn () => static::getUrl('create'))->label('Buat Gaji'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

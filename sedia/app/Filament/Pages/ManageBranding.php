@@ -14,6 +14,7 @@ use Filament\Forms\Concerns\InteractsWithForms;
 use Filament\Forms\Contracts\HasForms;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Illuminate\Support\Facades\Cache;
 use UnitEnum;
@@ -55,12 +56,16 @@ class ManageBranding extends Page implements HasForms
     {
         return $schema
             ->components([
-                TextInput::make('app_name')->label('Nama Usaha')->required()->maxLength(60)->helperText('Tampil di struk sebagai “Nama Usaha - Nama Cabang”'),
-                Textarea::make('business_address')->label('Alamat Usaha (pusat)')->rows(2)->maxLength(255)->helperText('Jika outlet belum punya alamat, alamat ini dipakai di struk.'),
-                TextInput::make('business_phone')->label('No. Telp Usaha')->tel()->maxLength(20),
-                FileUpload::make('app_logo_path')->label('Logo Perusahaan')->image()->disk('public')->directory('branding')->visibility('public')->imagePreviewHeight('80')->helperText('PNG/WebP transparan, max 1MB. Muncul di sidebar & struk.'),
-                FileUpload::make('app_favicon_path')->label('Favicon')->image()->disk('public')->directory('branding')->visibility('public')->acceptedFileTypes(['image/x-icon', 'image/png', 'image/svg+xml'])->helperText('ICO/PNG 32×32. Muncul di tab browser.'),
-                ColorPicker::make('app_primary_color')->label('Warna Primary')->helperText('Mempengaruhi tombol & accent. Default #f59e0b'),
+                Section::make('Identitas Usaha')->schema([
+                    TextInput::make('app_name')->label('Nama Usaha')->required()->maxLength(60)->helperText('Tampil di struk sebagai “Nama Usaha - Nama Cabang”'),
+                    Textarea::make('business_address')->label('Alamat Usaha (pusat)')->rows(2)->maxLength(255)->helperText('Jika outlet belum punya alamat, alamat ini dipakai di struk.'),
+                    TextInput::make('business_phone')->label('No. Telp Usaha')->tel()->maxLength(20),
+                ])->columns(2),
+                Section::make('Visual & Tema')->schema([
+                    FileUpload::make('app_logo_path')->label('Logo Perusahaan')->image()->disk('public')->directory('branding')->visibility('public')->imagePreviewHeight('80')->helperText('PNG/WebP transparan, max 1MB. Muncul di sidebar & struk.'),
+                    FileUpload::make('app_favicon_path')->label('Favicon')->image()->disk('public')->directory('branding')->visibility('public')->acceptedFileTypes(['image/x-icon', 'image/png', 'image/svg+xml'])->helperText('ICO/PNG 32×32. Muncul di tab browser.'),
+                    ColorPicker::make('app_primary_color')->label('Warna Primary')->helperText('Mempengaruhi tombol & accent. Default #f59e0b'),
+                ])->columns(2),
             ])
             ->statePath('data');
     }

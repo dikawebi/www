@@ -9,6 +9,7 @@ use App\Support\OutletContext;
 use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -122,6 +123,14 @@ class ExpenseResource extends Resource
                 SelectFilter::make('category')->options([
                     'listrik' => 'Listrik', 'air' => 'Air', 'gas' => 'Gas', 'plastik' => 'Plastik', 'perawatan' => 'Perawatan', 'sewa' => 'Sewa', 'bahan_baku' => 'Bahan Baku', 'lainnya' => 'Lainnya',
                 ]),
+            ])
+            ->striped()
+            ->searchPlaceholder('Cari pengeluaran...')
+            ->emptyStateHeading('Belum ada pengeluaran')
+            ->emptyStateDescription('Catat pengeluaran kas kecil pertama untuk outlet.')
+            ->emptyStateIcon('heroicon-o-wallet')
+            ->emptyStateActions([
+                CreateAction::make()->url(fn () => static::getUrl('create'))->label('Catat Pengeluaran'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

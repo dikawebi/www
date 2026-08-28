@@ -9,6 +9,7 @@ use App\Support\OutletContext;
 use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -100,6 +101,14 @@ class MenuItemResource extends Resource
             ->filters([
                 TernaryFilter::make('is_active')
                     ->label('Status aktif'),
+            ])
+            ->striped()
+            ->searchPlaceholder('Cari menu...')
+            ->emptyStateHeading('Belum ada menu')
+            ->emptyStateDescription('Tambah menu pertama dengan resep bahan bakunya.')
+            ->emptyStateIcon('heroicon-o-book-open')
+            ->emptyStateActions([
+                CreateAction::make()->url(fn () => static::getUrl('create'))->label('Buat Menu'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

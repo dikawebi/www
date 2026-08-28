@@ -13,6 +13,7 @@ use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\DatePicker;
@@ -190,6 +191,14 @@ class StockOpnameResource extends Resource
                             Notification::make()->title('Gagal')->body($e->getMessage())->danger()->send();
                         }
                     }),
+            ])
+            ->striped()
+            ->searchPlaceholder('Cari opname...')
+            ->emptyStateHeading('Belum ada stock opname')
+            ->emptyStateDescription('Buat opname pertama untuk koreksi saldo fisik terhadap stok sistem.')
+            ->emptyStateIcon('heroicon-o-clipboard-document-check')
+            ->emptyStateActions([
+                CreateAction::make()->url(fn () => static::getUrl('create'))->label('Buat Opname'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

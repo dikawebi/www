@@ -8,6 +8,7 @@ use App\Support\OutletContext;
 use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
@@ -99,6 +100,14 @@ class UserResource extends Resource
                 TextColumn::make('created_at')->label('Dibuat')->dateTime('d M Y')->sortable(),
             ])
             ->recordActions([EditAction::make(), DeleteAction::make()])
+            ->striped()
+            ->searchPlaceholder('Cari pengguna...')
+            ->emptyStateHeading('Belum ada pengguna')
+            ->emptyStateDescription('Tambah pengguna pertama untuk kelola akses sistem.')
+            ->emptyStateIcon('heroicon-o-user-group')
+            ->emptyStateActions([
+                CreateAction::make()->url(fn () => static::getUrl('create'))->label('Tambah Pengguna'),
+            ])
             ->bulkActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make()->visible(fn () => OutletContext::user()?->isAdmin() ?? false),

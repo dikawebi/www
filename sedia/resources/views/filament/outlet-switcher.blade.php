@@ -10,10 +10,10 @@
 @if ($user)
     <div style="display:flex; align-items:center; flex-shrink:0; margin-right:6px">
         {{-- Pill trigger — high contrast on dark topbar --}}
-        <button type="button" onclick="document.getElementById('outletPickerDialog')?.showModal()"
+        <button type="button" onclick="document.getElementById('outletPickerDialog')?.showModal()" title="{{ $displayName }}"
             style="display:inline-flex; align-items:center; gap:8px; padding:7px 14px; border-radius:9999px; border:1px solid rgba(255,255,255,0.22); background:rgba(255,255,255,0.12); color:#fff; font-size:12.5px; font-weight:700; line-height:1; cursor:pointer; max-width:190px; backdrop-filter:blur(8px)">
             <span style="display:inline-flex; align-items:center; justify-content:center; width:24px; height:24px; border-radius:9999px; background:#f59e0b; color:#111827; font-size:10px; font-weight:900; flex-shrink:0">{{ mb_strtoupper(mb_substr($displayName,0,1)) }}</span>
-            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px">{{ $displayName }}</span>
+            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px" title="{{ $displayName }}">{{ $displayName }}</span>
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.9; flex-shrink:0"><path d="M6 9l6 6 6-6"/></svg>
         </button>
     </div>
@@ -29,7 +29,7 @@
 
             @if ($user->isAdmin())
                 <div style="margin-top:14px">
-                    <input id="outletSearch" oninput="document.querySelectorAll('#outletPickerDialog [data-outlet]').forEach(el=> el.style.display = el.dataset.outlet.toLowerCase().includes(this.value.toLowerCase()) ? 'flex' : 'none')" placeholder="Cari outlet..." style="width:100%; border-radius:12px; border:1.5px solid #cbd5e1; background:#fff; padding:10px 12px; font-size:13px; outline:none; color:#0f172a">
+                    <input id="outletSearch" oninput="document.querySelectorAll('#outletPickerDialog [data-outlet]').forEach(el=> el.style.display = el.dataset.outlet.toLowerCase().includes(this.value.toLowerCase()) ? 'flex' : 'none')" placeholder="Cari outlet..." autofocus x-init="$el.focus()" style="width:100%; border-radius:12px; border:1.5px solid #cbd5e1; background:#fff; padding:10px 12px; font-size:13px; outline:none; color:#0f172a">
                 </div>
                 <form method="POST" action="{{ route('dashboard.outlet-context.update') }}" style="margin-top:12px; max-height:44vh; overflow:auto; padding-right:2px; display:flex; flex-direction:column; gap:7px">
                     @csrf

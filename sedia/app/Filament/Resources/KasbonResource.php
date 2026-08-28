@@ -13,6 +13,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Hidden;
@@ -218,6 +219,14 @@ class KasbonResource extends Resource
                         ActivityLog::record('rejected', $record, 'Kasbon '.$record->employee->name.' ditolak');
                         Notification::make()->title('Kasbon ditolak')->warning()->send();
                     }),
+            ])
+            ->striped()
+            ->searchPlaceholder('Cari kasbon...')
+            ->emptyStateHeading('Belum ada kasbon')
+            ->emptyStateDescription('Ajukan kasbon pertama untuk karyawan yang membutuhkan.')
+            ->emptyStateIcon('heroicon-o-banknotes')
+            ->emptyStateActions([
+                CreateAction::make()->url(fn () => static::getUrl('create'))->label('Ajukan Kasbon'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

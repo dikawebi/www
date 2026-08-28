@@ -8,6 +8,7 @@ use App\Support\OutletContext;
 use App\Support\RolePermission;
 use BackedEnum;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -98,7 +99,8 @@ class OutletResource extends Resource
                     ->limit(40)
                     ->toggleable(),
                 TextColumn::make('phone')
-                    ->label('Telepon'),
+                    ->label('Telepon')
+                    ->searchable(),
                 IconColumn::make('is_active')
                     ->label('Aktif')
                     ->boolean(),
@@ -109,6 +111,14 @@ class OutletResource extends Resource
             ->filters([
                 TernaryFilter::make('is_active')
                     ->label('Status aktif'),
+            ])
+            ->striped()
+            ->searchPlaceholder('Cari outlet...')
+            ->emptyStateHeading('Belum ada outlet')
+            ->emptyStateDescription('Buat outlet pertama untuk mulai transaksi dan kelola stok.')
+            ->emptyStateIcon('heroicon-o-building-storefront')
+            ->emptyStateActions([
+                CreateAction::make()->url(fn () => static::getUrl('create'))->label('Buat Outlet'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([

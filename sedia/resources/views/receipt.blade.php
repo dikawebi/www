@@ -7,8 +7,8 @@
     <style>
         @page { size: 58mm auto; margin: 3mm; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
-        body { font-family: 'Courier New', ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 10.5px; color: #111; background: #fff; line-height: 1.35; }
-        .receipt { width: 56mm; max-width: 100%; margin: 0 auto; padding: 5mm 3mm; }
+        body { font-family: 'Courier New', ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 11px; color: #111; background: #fff; line-height: 1.4; }
+        .receipt { width: 56mm; max-width: 100%; margin: 0 auto; padding: 5mm 3mm; font-size: 11px; line-height: 1.4; }
         .center { text-align: center; }
         .right { text-align: right; }
         .bold { font-weight: 700; }
@@ -86,9 +86,9 @@
         @endif
     </div>
     <div class="center no-print" style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
-        <button onclick="window.print()" style="padding:7px 14px; border:1px solid #111; background:#111; color:#fff; border-radius:8px; cursor:pointer; font-weight:700">Cetak</button>
-        <a href="{{ url('/dashboard/pos') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:8px; text-decoration:none; font-weight:600">Kembali ke POS</a>
-        <a href="{{ url('/dashboard/sales-transactions') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:8px; text-decoration:none;">Riwayat</a>
+        <button onclick="window.print()" style="padding:7px 14px; border:1px solid #111; background:#111; color:#fff; border-radius:12px; cursor:pointer; font-weight:700">Cetak</button>
+        <a href="{{ url('/dashboard/pos') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:12px; text-decoration:none; font-weight:600">Kembali ke POS</a>
+        <a href="{{ url('/dashboard/sales-transactions') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:12px; text-decoration:none;">Riwayat</a>
     </div>
 </div>
 </body>

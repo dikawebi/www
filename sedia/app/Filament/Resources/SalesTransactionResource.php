@@ -16,6 +16,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\BulkAction;
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
@@ -348,6 +349,14 @@ class SalesTransactionResource extends Resource
                             Notification::make()->title('Gagal retur')->body($e->getMessage())->danger()->send();
                         }
                     }),
+            ])
+            ->striped()
+            ->searchPlaceholder('Cari transaksi...')
+            ->emptyStateHeading('Belum ada transaksi')
+            ->emptyStateDescription('Transaksi penjualan akan muncul di sini. Mulai jualan via POS.')
+            ->emptyStateIcon('heroicon-o-shopping-cart')
+            ->emptyStateActions([
+                CreateAction::make()->url(fn () => static::getUrl('create'))->label('Buka POS'),
             ])
             ->bulkActions([
                 BulkActionGroup::make([
