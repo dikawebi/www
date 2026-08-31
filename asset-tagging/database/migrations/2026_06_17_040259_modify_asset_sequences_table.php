@@ -13,9 +13,16 @@ return new class extends Migration
     {
         //
         Schema::table('asset_sequences', function (Blueprint $table) {
-            $table->dropForeign(['category_id']); // Hapus relasi lama jika ada
-            $table->dropColumn('category_id');
-            $table->foreignId('department_id')->constrained('departments'); // Relasi baru
+            if (Schema::hasColumn('asset_sequences', 'category_id')) {
+                // Drop foreign key if exists - handle both naming conventions
+                try { $table->dropForeign(['category_id']); } catch (\Throwable $e) {}
+                $table->dropColumn('category_id');
+            }
+        });
+        Schema::table('asset_sequences', function (Blueprint $table) {
+            if (!Schema::hasColumn('asset_sequences', 'department_id')) {
+                $table->foreignId('department_id')->nullable()->constrained('departments'); // Relasi baru, nullable to avoid NOT NULL violation on existing rows
+            }
         });
     }
 
