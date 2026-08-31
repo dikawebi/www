@@ -92,10 +92,12 @@ class DemoStockSalesPayrollSeeder extends Seeder
             }
         }
 
+        // Konvensi gajian 21-20: periode 21 Mei → 20 Juni, gajian tgl 22 Juni
         $periods = [
-            Carbon::now()->subMonths(2)->startOfMonth(),
-            Carbon::now()->subMonth()->startOfMonth(),
-            Carbon::now()->startOfMonth(),
+            ['start' => '2026-05-21', 'end' => '2026-06-20', 'pay_date' => '2026-06-22'],
+            ['start' => '2026-06-21', 'end' => '2026-07-20', 'pay_date' => '2026-07-22'],
+            ['start' => '2026-07-21', 'end' => '2026-08-20', 'pay_date' => '2026-08-22'],
+            ['start' => '2026-08-21', 'end' => '2026-09-20', 'pay_date' => '2026-09-22'],
         ];
 
         foreach ($employees as $emp) {
@@ -122,21 +124,22 @@ class DemoStockSalesPayrollSeeder extends Seeder
                 ]);
             }
 
-            foreach ($periods as $start) {
-                $end = $start->copy()->endOfMonth();
-                $payDate = $end->copy()->addDays(2); // gajian tgl 2 bulan berikutnya
+            foreach ($periods as $period) {
+                $start = $period['start'];
+                $end = $period['end'];
+                $payDate = $period['pay_date'];
 
                 $exists = Payroll::where('employee_id', $emp->id)
-                    ->where('period_start', $start->toDateString())
+                    ->where('period_start', $start)
                     ->exists();
                 if ($exists) {
                     continue;
                 }
 
-                // Potongan kasbon di periode ini = 0 - 1 kasbon di bulan tsb
+                // Potongan kasbon di periode ini = kasbon antara period_start & period_end
                 $kasbonInPeriod = EmployeeTransaction::where('employee_id', $emp->id)
                     ->where('type', 'kasbon')
-                    ->whereBetween('trans_date', [$start->toDateString(), $end->toDateString()])
+                    ->whereBetween('trans_date', [$start, $end])
                     ->where('status', 'approved')
                     ->sum('amount');
 
@@ -145,18 +148,20 @@ class DemoStockSalesPayrollSeeder extends Seeder
                     $kasbonInPeriod = fake()->randomElement([0, 50000, 100000]);
                 }
 
+                $periodLabel = Carbon::parse($start)->format('d M Y').' — '.Carbon::parse($end)->format('d M Y');
+
                 Payroll::create([
                     'outlet_id' => $emp->outlet_id,
                     'employee_id' => $emp->id,
-                    'pay_date' => $payDate->toDateString(),
-                    'period_start' => $start->toDateString(),
-                    'period_end' => $end->toDateString(),
+                    'pay_date' => $payDate,
+                    'period_start' => $start,
+                    'period_end' => $end,
                     'base_salary' => $emp->base_salary,
-                    'bonus_masuk' => fake()->numberBetween(0, 8) * 15000, // 0-120rb
-                    'bonus_goreng' => fake()->numberBetween(0, 10) * 10000, // 0-100rb
+                    'bonus_masuk' => fake()->numberBetween(0, 8) * 15000,
+                    'bonus_goreng' => fake()->numberBetween(0, 10) * 10000,
                     'kasbon_deduction' => $kasbonInPeriod,
-                    'status' => $start->isBefore(Carbon::now()->startOfMonth()) ? 'paid' : fake()->randomElement(['draft', 'paid']),
-                    'note' => 'Payroll demo '.$start->format('M Y').' - '.$emp->name,
+                    'status' => Carbon::parse($payDate)->isBefore(now()) ? 'paid' : fake()->randomElement(['draft', 'paid']),
+                    'note' => 'Payroll demo '.$periodLabel.' — '.$emp->name,
                 ]);
             }
         }

@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Support\OutletContext;
 use App\Support\RolePermission;
 use BackedEnum;
+use Carbon\Carbon;
 use Filament\Actions\BulkActionGroup;
 use Filament\Actions\CreateAction;
 use Filament\Actions\DeleteBulkAction;
@@ -120,11 +121,20 @@ class PayrollResource extends Resource
                 ->required()
                 ->default(now()),
             DatePicker::make('period_start')
-                ->label('Periode Mulai')
-                ->required(),
+                ->label('Periode Mulai (tanggal 21)')
+                ->required()
+                ->live()
+                ->afterStateUpdated(function ($state, Set $set) {
+                    if ($state) {
+                        $start = Carbon::parse($state);
+                        $end = $start->copy()->addMonth()->day(20)->endOfDay();
+                        $set('period_end', $end->toDateString());
+                    }
+                }),
             DatePicker::make('period_end')
-                ->label('Periode Akhir')
-                ->required(),
+                ->label('Periode Akhir (tanggal 20)')
+                ->required()
+                ->helperText('Otomatis: tanggal 20 bulan berikutnya dari periode mulai'),
             TextInput::make('base_salary')
                 ->label('Gaji Pokok')
                 ->numeric()

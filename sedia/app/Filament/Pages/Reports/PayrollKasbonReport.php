@@ -57,6 +57,31 @@ class PayrollKasbonReport extends Report
     }
 
     /**
+     * Rekap gaji per outlet per periode (breakdown detail).
+     *
+     * @return Collection<int, array{period_label: string, period_start: string, outlet_name: string, employee_count: int, total_base: float, total_bonus: float, total_kasbon_deduction: float, total_paid: float}>
+     */
+    public function getPayrollByPeriodRows(): Collection
+    {
+        $query = Payroll::query()
+            ->with(['outlet', 'employee'])
+            ->where('status', 'paid')
+            ->whereBetween('pay_date', [$this->startDate, $this->endDate]);
+
+        if ($this->outletId) {
+            $query->where('outlet_id', $this->outletId);
+        } elseif (! $this->isAdminUser()) {
+            $query->where('outlet_id', OutletContext::currentOutletId());
+        }
+
+        return $query->orderBy('period_start')
+            ->orderBy('outlet_id')
+            ->orderBy('employee_id')
+            ->get()
+            ->values();
+    }
+
+    /**
      * Saldo kasbon berjalan tiap karyawan aktif (bukan dibatasi periode filter —
      * ini snapshot saldo saat ini, bukan histori).
      *
@@ -89,9 +114,11 @@ class PayrollKasbonReport extends Report
     public function getSummary(): array
     {
         $payrollRows = $this->getPayrollRows();
+        $periodRows = $this->getPayrollByPeriodRows();
         $kasbonRows = $this->getOutstandingKasbonRows();
 
         return [
+            ['label' => 'Jumlah Periode', 'value' => $periodRows->pluck('period_start')->unique()->count().' periode'],
             ['label' => 'Total Gaji Dibayar', 'value' => $this->formatRupiah((float) $payrollRows->sum('total_paid'))],
             ['label' => 'Total Bonus', 'value' => $this->formatRupiah((float) $payrollRows->sum('total_bonus'))],
             ['label' => 'Potongan Kasbon', 'value' => $this->formatRupiah((float) $payrollRows->sum('total_kasbon_deduction'))],
