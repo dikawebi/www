@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Filament\Pages;
+namespace App\Filament\Pages\Pos;
 
 use App\Exceptions\InsufficientStockException;
 use App\Models\Employee;
@@ -21,7 +21,7 @@ class Pos extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-computer-desktop';
 
-    protected static string|UnitEnum|null $navigationGroup = 'Penjualan';
+    protected static string|UnitEnum|null $navigationGroup = 'Kasir';
 
     protected static ?string $navigationLabel = 'POS Kasir';
 
@@ -134,8 +134,6 @@ class Pos extends Page
     /** @return Collection<int, object> */
     public function getMenuItemsProperty(): Collection
     {
-        // Pakai cache in-memory (menuCache) agar add-to-cart tidak query ulang.
-        // Jika cache kosong (misal setelah dehydrate), fallback ke DB sekali.
         if (! empty($this->menuCache)) {
             return collect($this->menuCache)->map(fn ($a) => (object) $a);
         }
@@ -187,7 +185,6 @@ class Pos extends Page
 
     public function addToCart(int $menuItemId): void
     {
-        // Cari di cache dulu (tanpa DB) agar respon tap langsung.
         $cached = collect($this->menuCache)->firstWhere('id', $menuItemId);
         if ($cached) {
             $id = (int) $cached['id'];
@@ -283,7 +280,6 @@ class Pos extends Page
 
             return;
         }
-        // Validasi outlet untuk staff
         if (! $this->isAdminUser() && $outletId !== OutletContext::user()?->outlet_id) {
             FilamentNotification::make()->title('Outlet tidak valid')->danger()->send();
 
@@ -292,7 +288,6 @@ class Pos extends Page
 
         $total = $this->cartTotal;
 
-        // Validasi khusus cash: wajib input uang diterima via modal
         if (! $this->isSplit && $this->paymentMethod === 'cash') {
             if ($this->cashReceived === null || $this->cashReceived == 0) {
                 FilamentNotification::make()->title('Masukkan uang diterima')->body('Total '.$this->formatRupiah($total))->warning()->send();

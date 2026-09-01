@@ -23,6 +23,20 @@ Route::prefix('dashboard')
         })->name('dashboard.outlet-context.update');
     });
 
+Route::prefix('pos')
+    ->middleware('auth')
+    ->group(function () {
+        Route::post('/outlet-context', function (Request $request) {
+            $data = $request->validate([
+                'selected_outlet_id' => ['nullable', 'integer'],
+            ]);
+
+            OutletContext::setCurrentOutletId($data['selected_outlet_id'] ?? null);
+
+            return back();
+        })->name('pos.outlet-context.update');
+    });
+
 Route::middleware('auth')->get('/receipt/{record}', function (SalesTransaction $record) {
     $user = OutletContext::user();
     if ($user && ! $user->isAdmin() && $record->outlet_id !== $user->outlet_id) {

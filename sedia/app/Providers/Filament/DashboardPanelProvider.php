@@ -2,6 +2,18 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\ManageBranding;
+use App\Filament\Pages\ManageRolePermissions;
+use App\Filament\Pages\PosShortcut;
+use App\Filament\Pages\Reports\ExpenseReport;
+use App\Filament\Pages\Reports\IngredientConsumptionReport;
+use App\Filament\Pages\Reports\MenuBestSellerReport;
+use App\Filament\Pages\Reports\MenuMarginReport;
+use App\Filament\Pages\Reports\PayrollKasbonReport;
+use App\Filament\Pages\Reports\SalesByOutletReport;
+use App\Filament\Pages\Reports\StockOpnameVarianceReport;
+use App\Filament\Pages\SaranReorder;
+use App\Filament\Pages\TutupKasirHarian;
 use App\Filament\Widgets\LowStockTableWidget;
 use App\Filament\Widgets\RevenueOverviewWidget;
 use App\Filament\Widgets\SalesTrendChartWidget;
@@ -44,9 +56,20 @@ class DashboardPanelProvider extends PanelProvider
             ->favicon(fn () => Branding::faviconUrl())
             ->colors(fn () => ['primary' => Color::hex(Branding::primaryColor()) ?: Color::Amber])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->pages([
                 Dashboard::class,
+                PosShortcut::class,
+                TutupKasirHarian::class,
+                SaranReorder::class,
+                ManageRolePermissions::class,
+                ManageBranding::class,
+                SalesByOutletReport::class,
+                MenuBestSellerReport::class,
+                IngredientConsumptionReport::class,
+                StockOpnameVarianceReport::class,
+                PayrollKasbonReport::class,
+                MenuMarginReport::class,
+                ExpenseReport::class,
             ])
             ->navigationGroups([
                 NavigationGroup::make('Penjualan'),
