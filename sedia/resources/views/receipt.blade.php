@@ -85,10 +85,10 @@
             Thank You<br>Please Come Again<br><span style="font-size:8px">Barang yang sudah dibeli tidak dapat ditukar</span>
         @endif
     </div>
-    <div class="center no-print" style="margin-top:12px; display:flex; gap:8px; justify-content:center;">
+    <div class="center no-print" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">
         <button onclick="window.print()" style="padding:7px 14px; border:1px solid #111; background:#111; color:#fff; border-radius:12px; cursor:pointer; font-weight:700">Cetak</button>
-        <a href="{{ url('/dashboard/pos') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:12px; text-decoration:none; font-weight:600">Kembali ke POS</a>
-        <a href="{{ url('/dashboard/sales-transactions') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:12px; text-decoration:none;">Riwayat</a>
+        <a href="{{ url('/pos') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:12px; text-decoration:none; font-weight:600">Kembali ke POS</a>
+        <a href="{{ url('/dashboard') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:12px; text-decoration:none; font-weight:600">Dashboard</a>
     </div>
 </div>
 </body>

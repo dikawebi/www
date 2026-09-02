@@ -7,6 +7,9 @@
         "dev": "vite"
     },
     "devDependencies": {
+        "@capacitor/android": "^6.2.2",
+        "@capacitor/cli": "^6.2.2",
+        "@capacitor/core": "^6.2.2",
         "@tailwindcss/vite": "^4.0.0",
         "concurrently": "^10.0.3",
         "laravel-vite-plugin": "^3.1",

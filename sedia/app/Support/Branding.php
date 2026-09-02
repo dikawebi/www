@@ -4,6 +4,7 @@ namespace App\Support;
 
 use App\Models\Setting;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class Branding
 {
@@ -16,7 +17,7 @@ class Branding
     {
         $path = Setting::get('app_logo_path');
         if ($path && Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->url($path);
+            return '/storage/'.Str::after($path, 'storage/') ?: $path;
         }
 
         return null;
@@ -26,10 +27,10 @@ class Branding
     {
         $path = Setting::get('app_favicon_path');
         if ($path && Storage::disk('public')->exists($path)) {
-            return Storage::disk('public')->url($path);
+            return '/storage/'.Str::after($path, 'storage/') ?: $path;
         }
 
-        return '/favicon.ico';
+        return '/favicon.png';
     }
 
     public static function primaryColor(): string

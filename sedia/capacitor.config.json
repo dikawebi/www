@@ -1,0 +1,19 @@
+{
+  "appId": "com.sedia.pos",
+  "appName": "Sedia POS",
+  "webDir": "public",
+  "server": {
+    "url": "https://sedia-eosin.vercel.app/pos",
+    "cleartext": false,
+    "androidScheme": "https"
+  },
+  "plugins": {
+    "StatusBar": {
+      "style": "LIGHT",
+      "backgroundColor": "#F59E0B"
+    }
+  },
+  "android": {
+    "allowMixedContent": true
+  }
+}
