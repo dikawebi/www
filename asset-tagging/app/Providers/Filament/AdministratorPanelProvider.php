@@ -28,6 +28,7 @@ class AdministratorPanelProvider extends PanelProvider
             ->id('administrator')
             ->path('asset-tagging')
             ->brandName('Borneo Prima - Assets Tagging')
+            ->favicon(asset('favicon.ico'))
             ->login()
             ->profile()
             ->spa()
