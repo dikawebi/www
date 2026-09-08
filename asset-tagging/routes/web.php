@@ -8,13 +8,11 @@ use Illuminate\Http\Request;
 // 🚀 TEMPORARY DEPLOYMENT TRIGGER ROUTE:
 
 Route::get('/assets/print-qr/{ids}', function ($ids) {
-    // Ubah string ID (contoh: "1,2,3") menjadi array [1, 2, 3]
     $assetIds = explode(',', $ids);
 
-    // Ambil data aset berdasarkan array ID tersebut
-    $assets = Asset::whereIn('id', $assetIds)->get();
+    $assets = Asset::whereIn('id', $assetIds)->get()
+        ->sortBy(fn ($asset) => array_search($asset->id, $assetIds));
 
-    // Tampilkan view cetak
     return view('filament.forms.components.qr-print-page', compact('assets'));
 })->name('asset.print-qr-bulk');
 

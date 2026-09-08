@@ -3,7 +3,7 @@
   "appName": "Sedia POS",
   "webDir": "public",
   "server": {
-    "url": "https://sedia-eosin.vercel.app/pos",
+    "url": "https://venues-alberta-door-ready.trycloudflare.com/pos",
     "cleartext": false,
     "androidScheme": "https"
   },
