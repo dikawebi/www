@@ -2,77 +2,61 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Print QR Code - {{ $asset->asset_id }}</title>
+    <title>Cetak QR Aset - {{ $asset->asset_id }}</title>
     <style>
-        /* Pengaturan standar cetak label fisik */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap');
+
         body {
-            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
+            font-family: 'Inter', sans-serif;
+            margin: 5mm 10mm;
+            background: #f9fafb;
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #ffffff;
+            min-height: 100vh;
         }
-        .ticket-card {
-            text-align: center;
-            padding: 15px;
-            border: 2px dashed #000000; /* Batas potong label */
+
+        .qr-item {
+            background: white;
+            width: 4cm;
+            height: 4cm;
+            padding: 1mm;
             border-radius: 8px;
-            width: 200px; /* Lebar standar label tag */
-            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
         }
-        .qr-image {
-            margin-bottom: 10px;
+
+        .qr-item svg {
+            width: 3cm;
+            height: 3cm;
         }
+
         .asset-id {
-            font-size: 14px;
-            font-weight: bold;
-            text-transform: uppercase;
-            margin: 5px 0 2px 0;
-            letter-spacing: 1px;
-        }
-        .asset-name {
-            font-size: 11px;
-            color: #444444;
-            margin: 0;
-            font-weight: 500;
-            /* Menjaga nama panjang agar tidak merusak layout cetak */
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
+            font-weight: 600;
+            color: #111827;
+            font-size: 8px;
+            margin: 1mm 0 0 0;
+            white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
-            line-height: 1.3;
+            max-width: 100%;
         }
-        /* Menyembunyikan elemen tidak penting saat dicetak ke kertas */
+
         @media print {
-            body { padding: 0; }
-            .ticket-card { border: none; } /* Hilangkan border putus-putus saat print asli jika diinginkan */
+            body { background: white; margin: 5mm 10mm; }
+            .qr-item { border: 1px solid #d1d5db; }
         }
     </style>
 </head>
-<body>
-
-    <div class="ticket-card">
-        <div class="qr-image">
-            {!! SimpleSoftwareIO\QrCode\Facades\QrCode::size(140)->margin(0)->generate($asset->asset_id) !!}
-        </div>
-
-        <div class="asset-id">
-            {{ $asset->asset_id }}
-        </div>
-
-        <div class="asset-name">
-            {{ $asset->name }}
-        </div>
+<body onload="window.print()">
+    <div class="qr-item">
+        {!! QrCode::format('svg')->size(140)->generate($asset->asset_id) !!}
+        <div class="asset-id">{{ $asset->asset_id }}</div>
     </div>
-
-    <script>
-        window.onload = function() {
-            window.print();
-        };
-    </script>
 </body>
 </html>
