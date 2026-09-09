@@ -17,20 +17,27 @@ if [ ! -f /var/www/html/.env ]; then
   php artisan key:generate --force
 fi
 
+# Sync APP_URL dari Docker env_file ke .env
+if [ -n "$APP_URL" ]; then
+  if grep -q "^APP_URL=" /var/www/html/.env; then
+    sed -i "s|^APP_URL=.*|APP_URL=${APP_URL}|" /var/www/html/.env
+  else
+    echo "APP_URL=${APP_URL}" >> /var/www/html/.env
+  fi
+fi
+
 mkdir -p \
-  storage/framework/{cache/data,sessions,testing,views} \
+  storage/framework/{cache,data,sessions,testing,views} \
   storage/logs \
   bootstrap/cache
 chown -R www-data:www-data storage bootstrap/cache
 
-# Buang manifest paket bawaan host (bisa mereferensi dep dev yang tak terpasang)
 rm -f bootstrap/cache/packages.php bootstrap/cache/services.php
 
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
 
-# Pastikan storage:link ada (dibuat di dalam container, bukan host)
 php artisan storage:link || true
 
 case "$ROLE" in
