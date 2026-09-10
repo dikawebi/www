@@ -17,14 +17,29 @@ if [ ! -f /var/www/html/.env ]; then
   php artisan key:generate --force
 fi
 
-# Sync APP_URL dari Docker env_file ke .env
-if [ -n "$APP_URL" ]; then
-  if grep -q "^APP_URL=" /var/www/html/.env; then
-    sed -i "s|^APP_URL=.*|APP_URL=${APP_URL}|" /var/www/html/.env
-  else
-    echo "APP_URL=${APP_URL}" >> /var/www/html/.env
-  fi
-fi
+# Sync env vars dari Docker env_file ke .env
+php -r '
+$keys = ["APP_NAME","APP_ENV","APP_KEY","APP_DEBUG","APP_URL","APP_LOCALE","APP_FALLBACK_LOCALE","APP_FAKER_LOCALE","APP_MAINTENANCE_DRIVER","BCRYPT_ROUNDS","LOG_CHANNEL","LOG_STACK","LOG_DEPRECATIONS_CHANNEL","LOG_LEVEL","DB_CONNECTION","DB_HOST","DB_PORT","DB_DATABASE","DB_USERNAME","DB_PASSWORD","DB_SSLMODE","SESSION_DRIVER","SESSION_LIFETIME","SESSION_ENCRYPT","SESSION_PATH","SESSION_DOMAIN","BROADCAST_CONNECTION","FILESYSTEM_DISK","QUEUE_CONNECTION","CACHE_STORE","MAIL_MAILER","MAIL_FROM_ADDRESS","MAIL_FROM_NAME","VITE_APP_NAME"];
+$envFile = "/var/www/html/.env";
+$lines = file_exists($envFile) ? file($envFile, FILE_IGNORE_NEW_LINES) : [];
+foreach ($keys as $key) {
+    $val = getenv($key);
+    if ($val === false) continue;
+    $found = false;
+    foreach ($lines as &$line) {
+        if (preg_match("/^" . preg_quote($key) . "=/" , $line)) {
+            $line = $key . "=" . $val;
+            $found = true;
+            break;
+        }
+    }
+    if (!$found) {
+        $lines[] = $key . "=" . $val;
+    }
+}
+file_put_contents($envFile, implode("\n", $lines) . "\n");
+echo "Done syncing .env\n";
+'
 
 mkdir -p \
   storage/framework/{cache,data,sessions,testing,views} \
