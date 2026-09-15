@@ -2,16 +2,9 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Pages\Reports\IngredientConsumptionReport;
-use App\Filament\Pages\Reports\MenuBestSellerReport;
-use App\Filament\Pages\Reports\MenuMarginReport;
-use App\Filament\Pages\Reports\PayrollKasbonReport;
-use App\Filament\Pages\Reports\SalesByOutletReport;
-use App\Filament\Pages\Reports\StockOpnameVarianceReport;
 use App\Models\Outlet;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Livewire\Livewire;
 use Tests\TestCase;
 
 class ReportPagesRenderTest extends TestCase
@@ -27,20 +20,10 @@ class ReportPagesRenderTest extends TestCase
             'outlet_id' => $outlet->id,
         ]);
 
-        $reports = [
-            SalesByOutletReport::class,
-            MenuBestSellerReport::class,
-            IngredientConsumptionReport::class,
-            StockOpnameVarianceReport::class,
-            PayrollKasbonReport::class,
-            MenuMarginReport::class,
-        ];
-
+        $reports = ['sales-by-outlet', 'menu-best-seller', 'ingredient-consumption', 'stock-opname-variance', 'payroll-kasbon', 'menu-margin'];
         foreach ($reports as $report) {
-            Livewire::actingAs($admin)
-                ->test($report)
-                ->assertSuccessful()
-                ->assertSee('Cetak');
+            $response = $this->actingAs($admin)->get('/app/reports/'.$report);
+            $response->assertOk()->assertSee('data-page');
         }
     }
 }

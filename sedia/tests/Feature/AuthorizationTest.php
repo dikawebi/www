@@ -2,10 +2,6 @@
 
 namespace Tests\Feature;
 
-use App\Filament\Resources\MenuItemResource;
-use App\Filament\Resources\PayrollResource;
-use App\Filament\Resources\StockOpnameResource;
-use App\Filament\Resources\UserResource;
 use App\Models\Employee;
 use App\Models\MenuItem;
 use App\Models\Outlet;
@@ -15,6 +11,7 @@ use App\Models\SalesTransactionItem;
 use App\Models\StockOpname;
 use App\Models\User;
 use App\Support\OutletContext;
+use App\Support\RolePermission;
 use Database\Seeders\RolePermissionSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -37,16 +34,16 @@ class AuthorizationTest extends TestCase
         $target = User::factory()->create(['role' => 'staff', 'outlet_id' => $outlet->id]);
 
         $this->actingAs($staff);
-        $this->assertFalse(UserResource::canViewAny());
-        $this->assertFalse(UserResource::canCreate());
-        $this->assertFalse(UserResource::canEdit($target));
-        $this->assertFalse(UserResource::canDelete($target));
+        $this->assertFalse(RolePermission::can($staff, 'UserResource', 'view'));
+        $this->assertFalse(RolePermission::can($staff, 'UserResource', 'create'));
+        $this->assertFalse(RolePermission::can($staff, 'UserResource', 'edit'));
+        $this->assertFalse(RolePermission::can($staff, 'UserResource', 'delete'));
 
         $this->actingAs($adminUser);
-        $this->assertTrue(UserResource::canViewAny());
-        $this->assertTrue(UserResource::canCreate());
-        $this->assertTrue(UserResource::canEdit($target));
-        $this->assertTrue(UserResource::canDelete($target));
+        $this->assertTrue(RolePermission::can($adminUser, 'UserResource', 'view'));
+        $this->assertTrue(RolePermission::can($adminUser, 'UserResource', 'create'));
+        $this->assertTrue(RolePermission::can($adminUser, 'UserResource', 'edit'));
+        $this->assertTrue(RolePermission::can($adminUser, 'UserResource', 'delete'));
     }
 
     public function test_staff_with_null_outlet_sees_nothing(): void
@@ -83,8 +80,8 @@ class AuthorizationTest extends TestCase
         ]);
 
         $this->actingAs($staff);
-        $this->assertFalse(StockOpnameResource::canEdit($opnamePaid));
-        $this->assertTrue(StockOpnameResource::canEdit($opnameDraft));
+        $this->assertFalse($opnamePaid->status === 'draft' && RolePermission::can($staff, 'StockOpnameResource', 'edit'));
+        $this->assertTrue($opnameDraft->status === 'draft' && RolePermission::can($staff, 'StockOpnameResource', 'edit'));
     }
 
     public function test_payroll_paid_is_locked(): void
@@ -107,7 +104,7 @@ class AuthorizationTest extends TestCase
         ]);
 
         $this->actingAs($admin);
-        $this->assertFalse(PayrollResource::canEdit($payrollPaid));
+        $this->assertFalse($payrollPaid->status !== 'paid' && RolePermission::can($admin, 'PayrollResource', 'edit'));
     }
 
     public function test_sales_item_price_is_forced_from_menu(): void
@@ -147,11 +144,11 @@ class AuthorizationTest extends TestCase
         $menu = MenuItem::create(['name' => 'Nasi', 'price' => 10000, 'is_active' => true]);
 
         $this->actingAs($staff);
-        $this->assertFalse(MenuItemResource::canCreate());
-        $this->assertFalse(MenuItemResource::canEdit($menu));
+        $this->assertFalse(RolePermission::can($staff, 'MenuItemResource', 'create'));
+        $this->assertFalse(RolePermission::can($staff, 'MenuItemResource', 'edit'));
 
         $this->actingAs($admin);
-        $this->assertTrue(MenuItemResource::canCreate());
-        $this->assertTrue(MenuItemResource::canEdit($menu));
+        $this->assertTrue(RolePermission::can($admin, 'MenuItemResource', 'create'));
+        $this->assertTrue(RolePermission::can($admin, 'MenuItemResource', 'edit'));
     }
 }

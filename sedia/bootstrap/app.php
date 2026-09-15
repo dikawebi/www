@@ -4,6 +4,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
+use App\Http\Middleware\HandleInertiaRequests;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -12,6 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
+        $middleware->web(append: [HandleInertiaRequests::class]);
+
         // Vercel meneruskan tiap request lewat proxy edge-nya sendiri. Tanpa
         // trustProxies, Laravel tidak tahu request asli itu HTTPS, dari host
         // mana, dan IP asli client-nya — ini bisa bikin CSRF/session ganjil

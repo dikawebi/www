@@ -61,10 +61,15 @@ php artisan migrate --seed   # seed: DkriukSeeder + SampleData
 # 3. Build & run
 npm run build
 php artisan serve  # http://127.0.0.1:8000
-# Login: lihat database/seeders/DkriukSeeder.php untuk akun default (admin/staff)
+# Login aplikasi Vue: http://127.0.0.1:8000/app/login
+# Akun default: lihat database/seeders/DkriukSeeder.php
 ```
 
 **Vercel:** `vercel.json` sudah ada — `SESSION_DRIVER=cookie`, `LOG_CHANNEL=stderr`. Pastikan `APP_KEY` & `DB_*` di env Vercel.
+
+### Route Aplikasi Vue
+
+Frontend utama menggunakan Laravel + Inertia + Vue dan dapat diakses melalui `/app` setelah login. Modul utama tersedia di `/app/pos`, `/app/transactions`, `/app/reports/{report}`, `/app/master/{resource}`, `/app/stock`, dan `/app/operations/{mode}`. Filament sudah tidak menjadi dependency runtime.
 
 ---
 

@@ -87,8 +87,8 @@
     </div>
     <div class="center no-print" style="margin-top:12px; display:flex; flex-wrap:wrap; gap:8px; justify-content:center;">
         <button onclick="window.print()" style="padding:7px 14px; border:1px solid #111; background:#111; color:#fff; border-radius:12px; cursor:pointer; font-weight:700">Cetak</button>
-        <a href="{{ url('/pos') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:12px; text-decoration:none; font-weight:600">Kembali ke POS</a>
-        <a href="{{ url('/dashboard') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:12px; text-decoration:none; font-weight:600">Dashboard</a>
+        <a href="{{ url('/app/pos') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:12px; text-decoration:none; font-weight:600">Kembali ke POS</a>
+        <a href="{{ url('/app') }}" style="padding:7px 14px; border:1px solid #d1d5db; background:#fff; color:#111; border-radius:12px; text-decoration:none; font-weight:600">Dashboard</a>
     </div>
 </div>
 </body>

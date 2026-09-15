@@ -3,8 +3,6 @@
 namespace App\Models;
 
 use Database\Factories\UserFactory;
-use Filament\Models\Contracts\FilamentUser;
-use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -18,7 +16,7 @@ use Illuminate\Notifications\Notifiable;
  * @property string $role
  * @property int|null $outlet_id
  */
-class User extends Authenticatable implements FilamentUser
+class User extends Authenticatable
 {
     /** @use HasFactory<UserFactory> */
     use HasFactory, Notifiable;
@@ -48,18 +46,6 @@ class User extends Authenticatable implements FilamentUser
     public function isAdmin(): bool
     {
         return $this->role === 'admin';
-    }
-
-    /**
-     * Ini yang dicek Filament tiap kali user coba masuk panel (setelah
-     * login berhasil). Tanpa method ini, panel dianggap TERTUTUP buat
-     * semua orang di Filament versi kamu — persis gejala 403 kemarin.
-     * Admin dan staff (kasir) sama-sama boleh akses, karena staff juga
-     * butuh masuk buat modul Penjualan/POS.
-     */
-    public function canAccessPanel(Panel $panel): bool
-    {
-        return in_array($this->role, ['admin', 'staff'], true);
     }
 
     /**
