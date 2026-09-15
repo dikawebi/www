@@ -13,7 +13,7 @@ class Payroll extends Model
     protected $fillable = [
         'outlet_id', 'employee_id', 'pay_date', 'period_start', 'period_end',
         'base_salary', 'bonus_masuk', 'bonus_goreng', 'kasbon_deduction',
-        'total_salary', 'status', 'note',
+        'total_salary', 'status', 'note', 'processed_by', 'processed_at',
     ];
 
     protected $casts = [
@@ -25,6 +25,7 @@ class Payroll extends Model
         'bonus_goreng' => 'decimal:2',
         'kasbon_deduction' => 'decimal:2',
         'total_salary' => 'decimal:2',
+        'processed_at' => 'datetime',
     ];
 
     protected static function booted(): void
@@ -47,5 +48,10 @@ class Payroll extends Model
     public function employee(): BelongsTo
     {
         return $this->belongsTo(Employee::class);
+    }
+
+    public function processor(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'processed_by');
     }
 }

@@ -292,7 +292,7 @@ POS bisa jadi aplikasi:
 **Di Laptop Chrome/Edge:**
 - Icon instal di address bar → **Instal**.
 
-Syarat: akses via **HTTPS** (di Vercel sudah). Service worker cache build asset (`/build/*`), halaman Livewire tetap fresh.
+Syarat: akses via **HTTPS** (di Vercel sudah). Service worker hanya menyimpan build asset (`/build/*`), halaman aplikasi tetap fresh.
 
 ![Screenshot: PWA Install](public/manual-screenshots/17-pwa.svg)
 
@@ -345,4 +345,3 @@ A: Periksa filter tanggal & outlet. Jika outlet “Semua” tapi kamu Staff, tet
 ---
 
 *© 2026 Sedia — Manual ini bisa dicetak: buka `/manual` → Ctrl+P → Simpan sebagai PDF.*
-

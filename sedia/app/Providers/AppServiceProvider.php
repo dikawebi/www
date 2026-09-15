@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
     {
         // Vercel (dan platform serverless/proxy lain) meneruskan request ke PHP
         // TANPA memberi tahu Laravel bahwa request aslinya HTTPS — kalau tidak
-        // dipaksa, semua URL yang di-generate (asset(), font, CSS/JS Filament)
+        // dipaksa agar semua URL asset dan font menggunakan HTTPS
         // jadi http://, dan browser BLOKIR resource http:// di halaman https://
         // (mixed content). Ini yang bikin CSS/JS hilang total di production.
         if ($this->app->environment('production')) {

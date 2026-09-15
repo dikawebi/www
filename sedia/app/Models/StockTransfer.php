@@ -22,12 +22,13 @@ class StockTransfer extends Model
 
     protected $fillable = [
         'from_outlet_id', 'to_outlet_id', 'source', 'status',
-        'created_by', 'received_by', 'transferred_at', 'received_at', 'note',
+        'created_by', 'received_by', 'transferred_by', 'cancelled_by', 'transferred_at', 'received_at', 'cancelled_at', 'note',
     ];
 
     protected $casts = [
         'transferred_at' => 'datetime',
         'received_at' => 'datetime',
+        'cancelled_at' => 'datetime',
     ];
 
     public function fromOutlet(): BelongsTo
@@ -48,6 +49,16 @@ class StockTransfer extends Model
     public function receiver(): BelongsTo
     {
         return $this->belongsTo(User::class, 'received_by');
+    }
+
+    public function sender(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'transferred_by');
+    }
+
+    public function canceller(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'cancelled_by');
     }
 
     public function items(): HasMany

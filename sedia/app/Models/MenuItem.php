@@ -10,7 +10,7 @@ class MenuItem extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'category', 'price', 'is_active'];
+    protected $fillable = ['name', 'category', 'barcode', 'price', 'is_active'];
 
     protected $casts = [
         'price' => 'decimal:2',

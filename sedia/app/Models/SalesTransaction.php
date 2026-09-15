@@ -13,13 +13,15 @@ class SalesTransaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'invoice_number', 'outlet_id', 'cashier_id',
-        'transaction_date', 'total_amount', 'payment_method', 'payments', 'paid_amount', 'change_amount', 'status',
+        'invoice_number', 'checkout_token', 'created_by', 'outlet_id', 'cashier_id',
+        'transaction_date', 'subtotal_amount', 'discount_amount', 'total_amount', 'payment_method', 'payments', 'paid_amount', 'change_amount', 'notes', 'status',
     ];
 
     protected $casts = [
         'transaction_date' => 'datetime',
         'total_amount' => 'decimal:2',
+        'subtotal_amount' => 'decimal:2',
+        'discount_amount' => 'decimal:2',
         'payments' => 'array',
         'paid_amount' => 'decimal:2',
         'change_amount' => 'decimal:2',
@@ -64,12 +66,11 @@ class SalesTransaction extends Model
      * yang benar-benar tersimpan di DB, bukan dari state form di browser.
      * Dipanggil oleh SalesTransactionItemObserver setiap kali item
      * ditambah/diubah/dihapus, jadi nilainya selalu konsisten apapun yang
-     * terjadi di reaktivitas form/Livewire.
+     * terjadi di state form browser.
      */
     public function recalculateTotalAmount(): void
     {
-        $this->update([
-            'total_amount' => $this->items()->sum('subtotal'),
-        ]);
+        $subtotal = (float) $this->items()->sum('subtotal');
+        $this->update(['subtotal_amount' => $subtotal, 'total_amount' => max(0, $subtotal - (float) $this->discount_amount)]);
     }
 }

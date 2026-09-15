@@ -11,7 +11,7 @@ class RolePermission
 {
     /**
      * Daftar resource/page key yang dikontrol. Harus sinkron dengan
-     * Filament Resources dan Pages yang ada di navigation.
+     * resource dan halaman yang ada di navigasi aplikasi.
      *
      * @return array<string, string> key => label
      */
@@ -100,6 +100,15 @@ class RolePermission
      */
     public static function forRole(string $role): Collection
     {
+        if ($role === 'admin') {
+            return collect(static::resourceMap())->mapWithKeys(fn ($label, $key) => [$key => [
+                'can_view' => true,
+                'can_create' => true,
+                'can_edit' => true,
+                'can_delete' => true,
+            ]]);
+        }
+
         $array = Cache::remember('role_permissions:'.$role, 3600, function () use ($role) {
             return RolePermissionModel::where('role', $role)
                 ->get()

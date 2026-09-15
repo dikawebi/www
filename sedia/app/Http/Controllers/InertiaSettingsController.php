@@ -45,21 +45,21 @@ class InertiaSettingsController extends Controller
 
     public function permissionData(string $role): array
     {
-        $this->admin(); abort_unless(in_array($role, ['admin', 'staff'], true), 404);
+        $this->admin(); abort_unless($role === 'staff', 404);
         return ['permissions' => $this->loadPermissions($role)];
     }
 
     public function savePermissions(Request $request): RedirectResponse
     {
         $this->admin();
-        $data = $request->validate(['role' => ['required', 'in:admin,staff'], 'permissions' => ['required', 'array']]);
+        $data = $request->validate(['role' => ['required', 'in:staff'], 'permissions' => ['required', 'array']]);
         DB::transaction(function () use ($data) { foreach (RolePermission::resourceMap() as $key => $label) PermissionModel::updateOrCreate(['role' => $data['role'], 'resource_key' => $key], ['can_view' => (bool) data_get($data, "permissions.$key.view"), 'can_create' => (bool) data_get($data, "permissions.$key.create"), 'can_edit' => (bool) data_get($data, "permissions.$key.edit"), 'can_delete' => (bool) data_get($data, "permissions.$key.delete")]); });
         RolePermission::clearCache($data['role']); return back()->with('success', 'Hak akses disimpan.');
     }
 
     public function resetPermissions(Request $request): RedirectResponse
     {
-        $this->admin(); $role = $request->validate(['role' => ['required', 'in:admin,staff']])['role'];
+        $this->admin(); $role = $request->validate(['role' => ['required', 'in:staff']])['role'];
         PermissionModel::where('role', $role)->delete(); app(RolePermissionSeeder::class)->run(); RolePermission::clearCache($role);
         return back()->with('success', 'Hak akses direset.');
     }

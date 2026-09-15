@@ -21,6 +21,7 @@ class InertiaAuthController extends Controller
             'email' => ['required', 'email'],
             'password' => ['required', 'string'],
         ]);
+        $credentials['is_active'] = true;
 
         if (! Auth::attempt($credentials, $request->boolean('remember'))) {
             return back()->withErrors(['email' => 'Email atau password tidak sesuai.']);

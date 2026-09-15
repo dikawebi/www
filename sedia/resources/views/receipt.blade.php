@@ -62,14 +62,21 @@
                 <span>{{ $item->quantity }}x {{ number_format($item->price, 0, ',', '.') }}</span>
                 <span>{{ number_format($item->price * $item->quantity, 0, ',', '.') }}</span>
             </div>
+            @if($item->notes)<div class="tiny">Catatan: {{ $item->notes }}</div>@endif
         </div>
     @endforeach
     <hr class="divider">
-    <div class="row"><span>Subtotal :</span><span>{{ number_format($transaction->total_amount, 0, ',', '.') }}</span></div>
+    <div class="row"><span>Subtotal :</span><span>{{ number_format($transaction->subtotal_amount ?: $transaction->total_amount, 0, ',', '.') }}</span></div>
+    @if((float) $transaction->discount_amount > 0)
+        <div class="row"><span>Diskon :</span><span>-{{ number_format($transaction->discount_amount, 0, ',', '.') }}</span></div>
+    @endif
     <div class="row bold"><span>Total:</span><span>{{ number_format($transaction->total_amount, 0, ',', '.') }}</span></div>
     <div class="row"><span>Payment :</span><span>{{ ucfirst($transaction->payment_method) }} {{ number_format($transaction->paid_amount ?: $transaction->total_amount, 0, ',', '.') }}</span></div>
     @if($transaction->change_amount > 0)
         <div class="row"><span>Kembalian :</span><span>{{ number_format($transaction->change_amount, 0, ',', '.') }}</span></div>
+    @endif
+    @if($transaction->notes)
+        <div class="tiny" style="margin-top:5px">Catatan: {{ $transaction->notes }}</div>
     @endif
     @if(!empty($transaction->payments) && count($transaction->payments) > 1)
         @foreach($transaction->payments as $pay)

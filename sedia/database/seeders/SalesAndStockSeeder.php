@@ -93,8 +93,6 @@ class SalesAndStockSeeder extends Seeder
                 'subtotal' => 48000,
             ]);
 
-            $stockService->deductForSale($txS);
-
             $txB = SalesTransaction::create([
                 'invoice_number' => 'INV-BDG-'.$date->format('Ymd').'-001',
                 'outlet_id' => $outletBandung->id,
@@ -121,7 +119,6 @@ class SalesAndStockSeeder extends Seeder
                 'subtotal' => 15000,
             ]);
 
-            $stockService->deductForSale($txB);
         }
 
         $transfer1 = StockTransfer::create([

@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use App\Http\Middleware\HandleInertiaRequests;
+use App\Http\Middleware\EnsureUserIsActive;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,14 +14,14 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        $middleware->web(append: [HandleInertiaRequests::class]);
+        $middleware->web(append: [EnsureUserIsActive::class, HandleInertiaRequests::class]);
 
         // Vercel meneruskan tiap request lewat proxy edge-nya sendiri. Tanpa
         // trustProxies, Laravel tidak tahu request asli itu HTTPS, dari host
         // mana, dan IP asli client-nya — ini bisa bikin CSRF/session ganjil
         // (cookie secure-flag mismatch, X-Forwarded-Proto diabaikan) yang
         // gejalanya macam-macam: CSS ke-generate http://, atau request POST
-        // (login, Livewire) ditolak.
+        // dan request POST ditolak.
         $middleware->trustProxies(
             at: '*',
             headers: Request::HEADER_X_FORWARDED_FOR

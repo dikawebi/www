@@ -13,7 +13,7 @@ class SalesTransactionItemObserver
     public function creating(SalesTransactionItem $item): void
     {
         // Harga & subtotal selalu dari master MenuItem, bukan dari input browser
-        // (mencegah tamper via DevTools/Livewire).
+        // (mencegah manipulasi harga dari browser).
         if ($item->menu_item_id) {
             $menu = MenuItem::find($item->menu_item_id);
             if ($menu) {
@@ -34,7 +34,7 @@ class SalesTransactionItemObserver
     /**
      * Item baru ditambahkan (baik lewat Repeater di form utama, RelationManager,
      * atau lewat Tinker/API). Dua hal terjadi, keduanya dijamin oleh Eloquent
-     * event, bukan oleh reaktivitas Livewire di browser:
+     * event, bukan oleh state reaktif di browser:
      *   1. Stock ingredient dipotong sesuai resep menu (hanya jika transaksi completed).
      *   2. total_amount transaksi dihitung ulang dari total subtotal item.
      */

@@ -18,6 +18,12 @@ class InertiaTransactionController extends Controller
     public function index(Request $request): Response
     {
         abort_unless(RolePermission::can(OutletContext::user(), 'SalesTransactionResource', 'view'), 403);
+        $request->validate([
+            'q' => ['nullable', 'string', 'max:100'],
+            'status' => ['nullable', 'in:completed,void'],
+            'date_from' => ['nullable', 'date_format:Y-m-d'],
+            'date_to' => ['nullable', 'date_format:Y-m-d', 'after_or_equal:date_from'],
+        ]);
         $rows = OutletContext::visibleQuery(SalesTransaction::query())
             ->with(['outlet:id,name', 'cashier:id,name', 'items.menuItem:id,name'])
             ->when($request->filled('q'), function ($query) use ($request) {

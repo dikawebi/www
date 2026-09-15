@@ -32,6 +32,11 @@ class ReportService
         return self::DEFINITIONS[$slug];
     }
 
+    public function definitions(): array
+    {
+        return self::DEFINITIONS;
+    }
+
     public function generate(string $slug, string $startDate, string $endDate, ?int $outletId): array
     {
         if ($slug === 'sales-by-outlet') return $this->salesByOutlet($startDate, $endDate, $outletId);
@@ -54,7 +59,7 @@ class ReportService
             ->where('sales_transactions.status', 'completed')
             ->whereBetween('sales_transactions.transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
         $this->scopeOutlet($query, $outletId, 'sales_transactions.outlet_id');
-        $sales = $query->selectRaw('menu_items.id as menu_item_id, menu_items.name as menu_name, menu_items.category, SUM(sales_transaction_items.quantity) as qty_sold, SUM(sales_transaction_items.subtotal) as total_revenue')
+        $sales = $query->selectRaw('menu_items.id as menu_item_id, menu_items.name as menu_name, menu_items.category, SUM(sales_transaction_items.quantity) as qty_sold, SUM(CASE WHEN sales_transactions.subtotal_amount > 0 THEN sales_transaction_items.subtotal * sales_transactions.total_amount / sales_transactions.subtotal_amount ELSE 0 END) as total_revenue')
             ->groupBy('menu_items.id', 'menu_items.name', 'menu_items.category')->orderByDesc('qty_sold')->get();
 
         $returns = DB::table('sales_return_items')
@@ -71,12 +76,12 @@ class ReportService
     {
         $query = DB::table('stock_movements')->whereBetween('created_at', [$start.' 00:00:00', $end.' 23:59:59'])->whereIn('type', ['sale_deduction', 'sale_return', 'expired', 'reject', 'transfer_out']);
         $this->scopeOutlet($query, $outletId, 'outlet_id');
-        $movements = $query->selectRaw('ingredient_id, type, SUM(ABS(quantity)) as total_qty')->groupBy('ingredient_id', 'type')->get();
+        $movements = $query->selectRaw('ingredient_id, type, SUM(quantity) as total_qty')->groupBy('ingredient_id', 'type')->get();
         $ingredients = Ingredient::query()->get(['id', 'name', 'unit', 'cost_per_unit'])->keyBy('id');
         $rows = $movements->groupBy('ingredient_id')->map(function (Collection $items, $id) use ($ingredients) {
             $ingredient = $ingredients->get($id); $types = $items->pluck('total_qty', 'type');
-            $sale = max(0, (float) ($types['sale_deduction'] ?? 0) - (float) ($types['sale_return'] ?? 0));
-            $waste = (float) ($types['expired'] ?? 0) + (float) ($types['reject'] ?? 0); $transfer = (float) ($types['transfer_out'] ?? 0); $total = $sale + $waste + $transfer;
+            $sale = max(0, -((float) ($types['sale_deduction'] ?? 0)) - (float) ($types['sale_return'] ?? 0));
+            $waste = abs((float) ($types['expired'] ?? 0)) + abs((float) ($types['reject'] ?? 0)); $transfer = abs((float) ($types['transfer_out'] ?? 0)); $total = $sale + $waste + $transfer;
             return ['ingredient_name' => $ingredient?->name ?? '—', 'unit' => $ingredient?->unit ?? '', 'sale_qty' => $sale, 'waste_qty' => $waste, 'transfer_out_qty' => $transfer, 'total_out_qty' => $total, 'est_value' => $total * (float) ($ingredient?->cost_per_unit ?? 0)];
         })->sortByDesc('total_out_qty')->values();
         return ['summary' => [['label' => 'Jenis Bahan Terpakai', 'value' => number_format($rows->count())], ['label' => 'Estimasi Nilai Pemakaian', 'value' => $this->rupiah($rows->sum('est_value'))]], 'rows' => $rows->all()];
@@ -104,7 +109,18 @@ class ReportService
         })->values();
         $periodQuery = Payroll::query()->with(['outlet', 'employee'])->where('status', 'paid')->whereBetween('pay_date', [$start, $end]);
         $this->scopeOutlet($periodQuery, $outletId, 'outlet_id');
-        $periodRows = $periodQuery->orderBy('period_start')->orderBy('outlet_id')->orderBy('employee_id')->get()->values();
+        $periodRows = $periodQuery->orderBy('period_start')->orderBy('outlet_id')->orderBy('employee_id')->get()->map(fn (Payroll $payroll) => [
+            'period_start' => $payroll->period_start->toDateString(),
+            'period_end' => $payroll->period_end->toDateString(),
+            'pay_date' => $payroll->pay_date->toDateString(),
+            'outlet_name' => $payroll->outlet?->name ?? '—',
+            'employee_name' => $payroll->employee?->name ?? '—',
+            'base_salary' => (float) $payroll->base_salary,
+            'bonus_masuk' => (float) $payroll->bonus_masuk,
+            'bonus_goreng' => (float) $payroll->bonus_goreng,
+            'kasbon_deduction' => (float) $payroll->kasbon_deduction,
+            'total_salary' => (float) $payroll->total_salary,
+        ])->values();
         $employeeQuery = Employee::query()->with('outlet')->where('status', 'active');
         $this->scopeOutlet($employeeQuery, $outletId, 'outlet_id');
         $kasbonRows = $employeeQuery->get()->map(fn (Employee $employee) => ['name' => $employee->name, 'outlet_name' => $employee->outlet?->name ?? '—', 'outstanding' => $employee->outstandingKasbon()])->filter(fn (array $row) => $row['outstanding'] > 0)->sortByDesc('outstanding')->values();
@@ -117,7 +133,7 @@ class ReportService
         $hpp = $menuItems->mapWithKeys(fn (MenuItem $menu) => [$menu->id => $menu->recipes->sum(fn ($recipe) => (float) $recipe->qty_per_unit * (float) ($recipe->ingredient?->cost_per_unit ?? 0))]);
         $salesQuery = DB::table('sales_transaction_items')->join('sales_transactions', 'sales_transactions.id', '=', 'sales_transaction_items.sales_transaction_id')->where('sales_transactions.status', 'completed')->whereBetween('sales_transactions.transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
         $this->scopeOutlet($salesQuery, $outletId, 'sales_transactions.outlet_id');
-        $sales = $salesQuery->selectRaw('sales_transaction_items.menu_item_id, SUM(sales_transaction_items.quantity) as qty_sold, SUM(sales_transaction_items.subtotal) as revenue')->groupBy('sales_transaction_items.menu_item_id')->get()->keyBy('menu_item_id');
+        $sales = $salesQuery->selectRaw('sales_transaction_items.menu_item_id, SUM(sales_transaction_items.quantity) as qty_sold, SUM(CASE WHEN sales_transactions.subtotal_amount > 0 THEN sales_transaction_items.subtotal * sales_transactions.total_amount / sales_transactions.subtotal_amount ELSE 0 END) as revenue')->groupBy('sales_transaction_items.menu_item_id')->get()->keyBy('menu_item_id');
         $returnQuery = DB::table('sales_return_items')->join('sales_returns', 'sales_returns.id', '=', 'sales_return_items.sales_return_id')->whereBetween('sales_returns.created_at', [$start.' 00:00:00', $end.' 23:59:59']);
         $this->scopeOutlet($returnQuery, $outletId, 'sales_returns.outlet_id');
         $returns = $returnQuery->selectRaw('sales_return_items.menu_item_id, SUM(sales_return_items.quantity) as ret_qty, SUM(sales_return_items.subtotal) as ret_rev')->groupBy('sales_return_items.menu_item_id')->get()->keyBy('menu_item_id');
@@ -144,21 +160,27 @@ class ReportService
     {
         $query = SalesTransaction::query()->where('status', 'completed')->whereBetween('transaction_date', [$start.' 00:00:00', $end.' 23:59:59']);
         $returns = SalesReturn::query()->whereBetween('created_at', [$start.' 00:00:00', $end.' 23:59:59']);
-        if ($outletId) { $query->where('outlet_id', $outletId); $returns->where('outlet_id', $outletId); }
-        elseif (! OutletContext::user()?->isAdmin()) { $query->where('outlet_id', OutletContext::currentOutletId()); $returns->where('outlet_id', OutletContext::currentOutletId()); }
-        $rows = $query->selectRaw('outlet_id, COUNT(*) trx_count, SUM(total_amount) total_omzet')->groupBy('outlet_id')->orderByDesc('total_omzet')->get();
+        $this->scopeOutlet($query, $outletId, 'outlet_id');
+        $this->scopeOutlet($returns, $outletId, 'outlet_id');
+        $sales = $query->selectRaw('outlet_id, COUNT(*) trx_count, SUM(total_amount) total_omzet')->groupBy('outlet_id')->get()->keyBy('outlet_id');
         $refunds = $returns->selectRaw('outlet_id, SUM(total_refund) total_retur')->groupBy('outlet_id')->pluck('total_retur', 'outlet_id');
         $names = Outlet::pluck('name', 'id');
-        $rows = $rows->map(function ($row) use ($refunds, $names) { $gross = (float) $row->total_omzet; $refund = (float) ($refunds[$row->outlet_id] ?? 0); $net = $gross - $refund; $count = (int) $row->trx_count; return ['outlet_name' => $names[$row->outlet_id] ?? '—', 'trx_count' => $count, 'total_omzet' => $gross, 'total_retur' => $refund, 'net_omzet' => $net, 'aov' => $count ? $net / $count : 0]; });
+        $rows = $sales->keys()->merge($refunds->keys())->unique()->map(function ($id) use ($sales, $refunds, $names) {
+            $gross = (float) ($sales[$id]->total_omzet ?? 0);
+            $refund = (float) ($refunds[$id] ?? 0);
+            $net = $gross - $refund;
+            $count = (int) ($sales[$id]->trx_count ?? 0);
+            return ['outlet_name' => $names[$id] ?? '—', 'trx_count' => $count, 'total_omzet' => $gross, 'total_retur' => $refund, 'net_omzet' => $net, 'aov' => $count ? $net / $count : 0];
+        })->sortByDesc('net_omzet')->values();
         $total = ['trx_count' => $rows->sum('trx_count'), 'total_omzet' => $rows->sum('total_omzet'), 'total_retur' => $rows->sum('total_retur'), 'net_omzet' => $rows->sum('net_omzet')];
         $total['aov'] = $total['trx_count'] ? $total['net_omzet'] / $total['trx_count'] : 0;
-        return ['summary' => [['label' => 'Total Omzet (Gross)', 'value' => $this->rupiah($total['total_omzet'])], ['label' => 'Jumlah Transaksi', 'value' => number_format($total['trx_count'])], ['label' => 'Rata-rata / Transaksi', 'value' => $this->rupiah($total['aov'])]], 'rows' => $rows->values()->all()];
+        return ['summary' => [['label' => 'Total Omzet (Gross)', 'value' => $this->rupiah($total['total_omzet'])], ['label' => 'Total Retur', 'value' => $this->rupiah($total['total_retur'])], ['label' => 'Omzet Bersih', 'value' => $this->rupiah($total['net_omzet'])], ['label' => 'Jumlah Transaksi', 'value' => number_format($total['trx_count'])], ['label' => 'Rata-rata / Transaksi', 'value' => $this->rupiah($total['aov'])]], 'rows' => $rows->all()];
     }
 
     private function expenses(string $start, string $end, ?int $outletId): array
     {
         $query = Expense::query()->with('outlet')->whereBetween('expense_date', [$start, $end]);
-        if ($outletId) $query->where('outlet_id', $outletId); elseif (! OutletContext::user()?->isAdmin()) $query->where('outlet_id', OutletContext::currentOutletId());
+        $this->scopeOutlet($query, $outletId, 'outlet_id');
         $rows = $query->get()->groupBy(fn ($expense) => $expense->outlet_id.'|'.$expense->category)->map(function (Collection $group) { $first = $group->first(); return ['outlet_name' => $first->outlet?->name ?? '—', 'category' => $first->category, 'trx_count' => $group->count(), 'total_amount' => (float) $group->sum('amount')]; })->sortByDesc('total_amount')->values();
         return ['summary' => [['label' => 'Total Pengeluaran', 'value' => $this->rupiah($rows->sum('total_amount'))], ['label' => 'Jumlah Transaksi', 'value' => number_format($rows->sum('trx_count'))], ['label' => 'Kategori Terbesar', 'value' => ucfirst(str_replace('_', ' ', $rows->groupBy('category')->map(fn ($g) => $g->sum('total_amount'))->sortDesc()->keys()->first() ?? '-'))]], 'rows' => $rows->all(), 'perOutletRows' => $rows->groupBy('outlet_name')->map(fn ($group, $name) => ['outlet_name' => $name, 'trx_count' => $group->sum('trx_count'), 'total_amount' => $group->sum('total_amount')])->values()->all()];
     }

@@ -11,6 +11,7 @@ use App\Http\Controllers\InertiaStockController;
 use App\Http\Controllers\InertiaTransactionController;
 use App\Http\Controllers\InertiaSettingsController;
 use App\Http\Controllers\InertiaOperationsController;
+use App\Http\Controllers\InertiaNotificationController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -20,7 +21,7 @@ Route::get('/', function () {
 
 Route::prefix('app')->group(function () {
     Route::get('/login', [InertiaAuthController::class, 'create'])->middleware('guest')->name('login');
-    Route::post('/login', [InertiaAuthController::class, 'store'])->middleware('guest');
+    Route::post('/login', [InertiaAuthController::class, 'store'])->middleware(['guest', 'throttle:5,1']);
     Route::post('/logout', [InertiaAuthController::class, 'destroy'])->middleware('auth')->name('app.logout');
 
     Route::get('/', InertiaDashboardController::class)->middleware('auth')->name('app.dashboard');
@@ -29,6 +30,7 @@ Route::prefix('app')->group(function () {
     Route::post('/master/{resource}', [InertiaMasterController::class, 'store'])->middleware('auth')->name('app.master.store');
     Route::put('/master/{resource}/{id}', [InertiaMasterController::class, 'update'])->middleware('auth')->name('app.master.update');
     Route::delete('/master/{resource}/{id}', [InertiaMasterController::class, 'destroy'])->middleware('auth')->name('app.master.destroy');
+    Route::post('/master/users/{id}/reset-password', [InertiaMasterController::class, 'resetPassword'])->middleware('auth')->name('app.master.users.reset-password');
     Route::get('/master/menus/{menu}/recipes', [InertiaMasterController::class, 'recipes'])->middleware('auth')->name('app.master.recipes');
     Route::post('/master/menus/{menu}/recipes', [InertiaMasterController::class, 'storeRecipe'])->middleware('auth')->name('app.master.recipes.store');
     Route::delete('/master/menus/{menu}/recipes/{recipe}', [InertiaMasterController::class, 'destroyRecipe'])->middleware('auth')->name('app.master.recipes.destroy');
@@ -51,8 +53,11 @@ Route::prefix('app')->group(function () {
     Route::post('/settings/permissions/reset', [InertiaSettingsController::class, 'resetPermissions'])->middleware('auth')->name('app.settings.permissions.reset');
     Route::get('/operations/{mode}', [InertiaOperationsController::class, 'index'])->middleware('auth')->name('app.operations');
     Route::post('/operations/payrolls', [InertiaOperationsController::class, 'storePayroll'])->middleware('auth')->name('app.operations.payrolls.store');
+    Route::post('/operations/payrolls/{id}/{action}', [InertiaOperationsController::class, 'payrollAction'])->middleware('auth')->name('app.operations.payrolls.action');
     Route::post('/operations/kasbons', [InertiaOperationsController::class, 'storeKasbon'])->middleware('auth')->name('app.operations.kasbons.store');
     Route::post('/operations/kasbons/{id}/{action}', [InertiaOperationsController::class, 'kasbonAction'])->middleware('auth')->name('app.operations.kasbons.action');
+    Route::post('/notifications/{id}/read', [InertiaNotificationController::class, 'read'])->middleware('auth')->name('app.notifications.read');
+    Route::post('/notifications/read-all', [InertiaNotificationController::class, 'readAll'])->middleware('auth')->name('app.notifications.read-all');
 });
 
 Route::prefix('dashboard')
@@ -85,6 +90,7 @@ Route::prefix('pos')
 
 Route::middleware('auth')->get('/receipt/{record}', function (SalesTransaction $record) {
     $user = OutletContext::user();
+    abort_unless(\App\Support\RolePermission::can($user, 'SalesTransactionResource', 'view'), 403);
     if ($user && ! $user->isAdmin() && $record->outlet_id !== $user->outlet_id) {
         abort(403);
     }

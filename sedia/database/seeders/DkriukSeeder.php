@@ -34,7 +34,7 @@ class DkriukSeeder extends Seeder
      * karena akan ikut terhapus juga.
      *
      * CATATAN: harga menu masih diisi 0 (placeholder) karena belum ada daftar
-     * harga dari klien — tolong update lewat menu "Menu" di Filament sebelum
+     * harga dari klien — tolong update lewat menu "Menu" di aplikasi sebelum
      * dipakai transaksi sungguhan. Unit bahan baku juga masih default 'pcs',
      * silakan sesuaikan lewat menu "Bahan baku" kalau perlu satuan lain.
      * Password login karyawan di-set default 'password' — sarankan ganti

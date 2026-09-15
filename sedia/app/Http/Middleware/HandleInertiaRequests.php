@@ -49,9 +49,19 @@ class HandleInertiaRequests extends Middleware
                     : [],
             ],
             'design' => fn () => Setting::get('app_design', 'lime'),
+            'notifications' => fn () => $request->user() ? [
+                'unread_count' => $request->user()->unreadNotifications()->count(),
+                'items' => $request->user()->notifications()->latest()->limit(8)->get()->map(fn ($notification) => [
+                    'id' => $notification->id,
+                    'data' => $notification->data,
+                    'read_at' => $notification->read_at?->toIso8601String(),
+                    'created_at' => $notification->created_at?->diffForHumans(),
+                ]),
+            ] : ['unread_count' => 0, 'items' => []],
             'flash' => [
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
+                'receipt_url' => fn () => $request->session()->get('receipt_url'),
             ],
         ];
     }

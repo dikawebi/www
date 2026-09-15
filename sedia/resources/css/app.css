@@ -70,3 +70,176 @@
 .spectrum-workspace input, .spectrum-workspace select, .spectrum-workspace textarea { border-color: #dbe3ec; background-color: #fff; }
 .spectrum-workspace input:focus, .spectrum-workspace select:focus, .spectrum-workspace textarea:focus { border-color: #06b6d4; box-shadow: 0 0 0 3px rgb(34 211 238 / .14); outline: none; }
 .spectrum-sidebar nav { scrollbar-width: thin; scrollbar-color: rgb(71 85 105 / .55) transparent; }
+
+/* Consistent interaction language for mouse, keyboard, and touch users. */
+:where(button, a[href], select, summary, [role="button"], input[type="checkbox"], input[type="radio"]) {
+    -webkit-tap-highlight-color: transparent;
+}
+:where(button:not(:disabled), a[href], select:not(:disabled), summary, [role="button"], input[type="checkbox"]:not(:disabled), input[type="radio"]:not(:disabled)) {
+    cursor: pointer;
+}
+:where(button, a[href], select, input, textarea, summary, [role="button"]):focus-visible {
+    outline: 3px solid rgb(34 211 238 / .3);
+    outline-offset: 2px;
+}
+button {
+    transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(.2, .8, .2, 1);
+}
+button:not(:disabled):active, [role="button"]:not([aria-disabled="true"]):active {
+    transform: translateY(1px) scale(.985);
+}
+button:disabled, select:disabled, input:disabled {
+    cursor: not-allowed;
+}
+a[href] {
+    transition-property: color, background-color, border-color, opacity, box-shadow, transform;
+    transition-duration: 150ms;
+}
+.spectrum-sidebar a:hover { transform: translateX(2px); }
+.spectrum-sidebar a:active { transform: translateX(2px) scale(.985); }
+.spectrum-workspace td > button, .spectrum-workspace td > a[href] {
+    display: inline-flex;
+    min-height: 30px;
+    align-items: center;
+    gap: .3rem;
+    border: 1px solid #e2e8f0;
+    border-radius: .65rem;
+    background: #fff;
+    padding: .35rem .65rem;
+    font-weight: 600;
+    line-height: 1;
+    box-shadow: 0 1px 2px rgb(15 23 42 / .04);
+}
+.spectrum-workspace td > button:hover, .spectrum-workspace td > a[href]:hover {
+    border-color: #cbd5e1;
+    background: #f8fafc;
+    box-shadow: 0 3px 8px rgb(15 23 42 / .08);
+    transform: translateY(-1px);
+}
+.spectrum-workspace td > :is(button, a[href]).text-cyan-700 { border-color: #a5f3fc; background: #ecfeff; color: #0e7490; }
+.spectrum-workspace td > :is(button, a[href]).text-cyan-700:hover { border-color: #67e8f9; background: #cffafe; }
+.spectrum-workspace td > :is(button, a[href]).text-emerald-700 { border-color: #a7f3d0; background: #ecfdf5; color: #047857; }
+.spectrum-workspace td > :is(button, a[href]).text-emerald-700:hover { border-color: #6ee7b7; background: #d1fae5; }
+.spectrum-workspace td > :is(button, a[href]).text-amber-700 { border-color: #fde68a; background: #fffbeb; color: #b45309; }
+.spectrum-workspace td > :is(button, a[href]).text-amber-700:hover { border-color: #fcd34d; background: #fef3c7; }
+.spectrum-workspace td > :is(button, a[href]).text-red-600 { border-color: #fecdd3; background: #fff1f2; color: #e11d48; }
+.spectrum-workspace td > :is(button, a[href]).text-red-600:hover { border-color: #fda4af; background: #ffe4e6; }
+
+/* Solid actions share depth, rhythm, and feedback while retaining their semantic color. */
+:where(.spectrum-workspace, body) button:is([class*="bg-slate-9"], [class*="bg-stone-9"], [class*="bg-cyan-5"], [class*="bg-amber-4"], [class*="bg-lime-3"]) {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    min-height: 2.625rem;
+    border: 1px solid rgb(255 255 255 / .12);
+    letter-spacing: -.005em;
+    box-shadow: 0 1px 2px rgb(15 23 42 / .12), 0 7px 18px rgb(15 23 42 / .1);
+}
+:where(.spectrum-workspace, body) button:is([class*="bg-slate-9"], [class*="bg-stone-9"], [class*="bg-cyan-5"], [class*="bg-amber-4"], [class*="bg-lime-3"])::after {
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background: linear-gradient(115deg, rgb(255 255 255 / 0), rgb(255 255 255 / .16), rgb(255 255 255 / 0));
+    content: '';
+    opacity: 0;
+    transform: translateX(-45%);
+    transition: opacity 180ms ease, transform 300ms ease;
+}
+:where(.spectrum-workspace, body) button:is([class*="bg-slate-9"], [class*="bg-stone-9"], [class*="bg-cyan-5"], [class*="bg-amber-4"], [class*="bg-lime-3"]):not(:disabled):hover {
+    box-shadow: 0 2px 4px rgb(15 23 42 / .12), 0 10px 24px rgb(15 23 42 / .16);
+    transform: translateY(-1px);
+}
+:where(.spectrum-workspace, body) button:is([class*="bg-slate-9"], [class*="bg-stone-9"], [class*="bg-cyan-5"], [class*="bg-amber-4"], [class*="bg-lime-3"]):not(:disabled):hover::after {
+    opacity: 1;
+    transform: translateX(45%);
+}
+
+/* Secondary and inline form actions remain quiet, but no longer look like plain text. */
+.spectrum-workspace form button.border {
+    min-height: 2.625rem;
+    border-color: #cbd5e1;
+    background: #fff;
+    color: #475569;
+    font-weight: 650;
+    box-shadow: 0 1px 2px rgb(15 23 42 / .04);
+}
+.spectrum-workspace form button.border:not(:disabled):hover {
+    border-color: #94a3b8;
+    background: #f8fafc;
+    color: #0f172a;
+    box-shadow: 0 4px 12px rgb(15 23 42 / .08);
+    transform: translateY(-1px);
+}
+.spectrum-workspace form button.text-lime-700 {
+    min-height: 2.25rem;
+    border: 1px solid #d9f99d;
+    border-radius: .7rem;
+    background: #f7fee7;
+    padding: .4rem .7rem;
+}
+.spectrum-workspace form button.text-lime-700:hover { border-color: #bef264; background: #ecfccb; }
+.spectrum-workspace form button.text-red-600 {
+    min-width: 2.4rem;
+    border: 1px solid transparent;
+    border-radius: .7rem;
+}
+.spectrum-workspace form button.text-red-600:hover { border-color: #fecdd3; background: #fff1f2; }
+
+.spectrum-workspace button:is(.text-cyan-700, .text-emerald-700, .text-amber-700, .text-red-600) {
+    min-height: 2rem;
+    border: 1px solid currentColor;
+    border-radius: .65rem;
+    padding: .35rem .65rem;
+    font-size: .75rem;
+    font-weight: 700;
+    box-shadow: 0 1px 2px rgb(15 23 42 / .04);
+}
+.spectrum-workspace button.text-cyan-700 { border-color: #a5f3fc; background: #ecfeff; }
+.spectrum-workspace button.text-emerald-700 { border-color: #a7f3d0; background: #ecfdf5; }
+.spectrum-workspace button.text-amber-700 { border-color: #fde68a; background: #fffbeb; }
+.spectrum-workspace button.text-red-600 { border-color: #fecdd3; background: #fff1f2; }
+.spectrum-workspace button:is(.text-cyan-700, .text-emerald-700, .text-amber-700, .text-red-600):not(:disabled):hover {
+    filter: saturate(1.15);
+    box-shadow: 0 4px 10px rgb(15 23 42 / .08);
+    transform: translateY(-1px);
+}
+.spectrum-workspace aside button.text-amber-300,
+.spectrum-workspace aside button.text-slate-500 {
+    border: 1px solid rgb(255 255 255 / .1);
+    border-radius: .55rem;
+    background: rgb(255 255 255 / .05);
+    padding: .35rem .55rem;
+    font-weight: 650;
+}
+.spectrum-workspace aside button.text-amber-300:hover { border-color: rgb(251 191 36 / .35); background: rgb(251 191 36 / .12); }
+.spectrum-workspace aside button.text-slate-500:hover { border-color: rgb(251 113 133 / .3); background: rgb(251 113 133 / .1); }
+
+/* Pagination reads as a single compact control group. */
+.spectrum-workspace nav[aria-label="Halaman hasil"] button {
+    min-width: 2.25rem;
+    min-height: 2.25rem;
+    border: 1px solid transparent;
+    font-weight: 650;
+}
+.spectrum-workspace nav[aria-label="Halaman hasil"] button:not(:disabled):not([aria-current="page"]):hover {
+    border-color: #cbd5e1;
+    background: #fff;
+    box-shadow: 0 3px 9px rgb(15 23 42 / .08);
+}
+
+button:disabled {
+    box-shadow: none !important;
+    filter: saturate(.55);
+    transform: none !important;
+}
+.spectrum-workspace a[class*="rounded"]:hover { transform: translateY(-1px); }
+.spectrum-workspace input[type="checkbox"], .spectrum-workspace input[type="radio"] {
+    min-width: 1rem;
+    min-height: 1rem;
+}
+::selection { background: rgb(34 211 238 / .25); color: #0f172a; }
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; animation-duration: .01ms !important; animation-iteration-count: 1 !important; }
+}

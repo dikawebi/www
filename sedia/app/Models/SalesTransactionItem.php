@@ -11,7 +11,7 @@ class SalesTransactionItem extends Model
     use HasFactory;
 
     protected $fillable = [
-        'sales_transaction_id', 'menu_item_id', 'quantity', 'price', 'subtotal',
+        'sales_transaction_id', 'menu_item_id', 'quantity', 'price', 'subtotal', 'notes',
     ];
 
     protected $casts = [

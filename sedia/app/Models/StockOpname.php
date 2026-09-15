@@ -17,10 +17,11 @@ class StockOpname extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['outlet_id', 'opname_date', 'performed_by', 'status', 'note'];
+    protected $fillable = ['outlet_id', 'opname_date', 'performed_by', 'status', 'note', 'applied_by', 'applied_at'];
 
     protected $casts = [
         'opname_date' => 'date',
+        'applied_at' => 'datetime',
     ];
 
     public function outlet(): BelongsTo
@@ -31,6 +32,11 @@ class StockOpname extends Model
     public function performer(): BelongsTo
     {
         return $this->belongsTo(User::class, 'performed_by');
+    }
+
+    public function applier(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'applied_by');
     }
 
     public function items(): HasMany

@@ -10,9 +10,9 @@
   <a href="/USER_MANUAL_SEDIA.doc">⬇ Download Word (23 KB)</a>
 </p>
 
-**Sedia** adalah aplikasi Laravel + Filament untuk mengelola **banyak outlet** dalam satu tempat: POS kasir ringan yang potong stok otomatis, transfer stok antar outlet, stock opname, karyawan/kasbon/gaji, dan 6 laporan siap cetak.
+**Sedia** adalah aplikasi Laravel + Inertia untuk mengelola **banyak outlet** dalam satu tempat: POS kasir yang memotong stok otomatis, transfer stok antar outlet, stock opname, karyawan/kasbon/gaji, dan laporan siap cetak.
 
-- **Stack:** Laravel 13 · PHP 8.3 · Filament 5.7 · Tailwind 4 · Vite · SQLite/PostgreSQL
+- **Stack:** Laravel 13 · PHP 8.3 · Inertia.js · Vue 3 · TypeScript · Tailwind 4 · Vite · SQLite/PostgreSQL
 - **Deploy:** Vercel-ready (`vercel.json`, `api/index.php`)
 - **PWA:** POS dapat di-instal di HP (Chrome → Instal aplikasi)
 
@@ -69,7 +69,7 @@ php artisan serve  # http://127.0.0.1:8000
 
 ### Route Aplikasi Vue
 
-Frontend utama menggunakan Laravel + Inertia + Vue dan dapat diakses melalui `/app` setelah login. Modul utama tersedia di `/app/pos`, `/app/transactions`, `/app/reports/{report}`, `/app/master/{resource}`, `/app/stock`, dan `/app/operations/{mode}`. Filament sudah tidak menjadi dependency runtime.
+Frontend utama menggunakan Laravel + Inertia + Vue dan dapat diakses melalui `/app` setelah login. Modul utama tersedia di `/app/pos`, `/app/transactions`, `/app/reports/{report}`, `/app/master/{resource}`, `/app/stock`, dan `/app/operations/{mode}`.
 
 ---
 
@@ -102,4 +102,4 @@ Placeholder SVG di `public/manual-screenshots/` (17 file, 1200×750, browser chr
 
 MIT — lihat `LICENSE`.
 
-*Sedia v1.0 — 25 Aug 2026 — Dibuat dengan Filament & Laravel*
+*Sedia v1.0 - Laravel, Inertia.js, dan Vue 3*

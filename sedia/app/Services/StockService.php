@@ -196,7 +196,10 @@ class StockService
                     throw new RuntimeException("Qty retur {$item->menuItem->name} melebihi sisa ({$maxReturnable}).");
                 }
 
-                $refund = (float) $item->price * $qtyReturn;
+                $discountFactor = (float) $tx->subtotal_amount > 0
+                    ? (float) $tx->total_amount / (float) $tx->subtotal_amount
+                    : 0;
+                $refund = round((float) $item->price * $qtyReturn * $discountFactor, 2);
                 $totalRefund += $refund;
 
                 SalesReturnItem::create([
@@ -204,21 +207,38 @@ class StockService
                     'sales_transaction_item_id' => $item->id,
                     'menu_item_id' => $item->menu_item_id,
                     'quantity' => $qtyReturn,
-                    'price' => $item->price,
+                    'price' => round((float) $item->price * $discountFactor, 2),
                     'subtotal' => $refund,
                 ]);
 
-                foreach ($item->menuItem->recipes as $recipe) {
-                    $qtyToRestore = (float) $recipe->qty_per_unit * $qtyReturn;
-                    $this->recordMovement(
-                        outlet: $tx->outlet,
-                        ingredient: $recipe->ingredient,
-                        type: StockMovementType::SaleReturn,
-                        quantity: $qtyToRestore,
-                        reference: $return,
-                        createdBy: $actorId,
-                        note: "Retur: {$item->menuItem->name} x{$qtyReturn} dari {$tx->invoice_number}",
-                    );
+                $movements = StockMovement::query()->where('reference_type', $item->getMorphClass())
+                    ->where('reference_id', $item->id)->where('type', StockMovementType::SaleDeduction->value)->get();
+                if ($movements->isNotEmpty()) {
+                    foreach ($movements as $movement) {
+                        $ingredient = Ingredient::find($movement->ingredient_id);
+                        if (! $ingredient) continue;
+                        $this->recordMovement(
+                            outlet: $tx->outlet,
+                            ingredient: $ingredient,
+                            type: StockMovementType::SaleReturn,
+                            quantity: abs((float) $movement->quantity) * $qtyReturn / $item->quantity,
+                            reference: $return,
+                            createdBy: $actorId,
+                            note: "Retur: {$item->menuItem->name} x{$qtyReturn} dari {$tx->invoice_number}",
+                        );
+                    }
+                } else {
+                    foreach ($item->menuItem->recipes as $recipe) {
+                        $this->recordMovement(
+                            outlet: $tx->outlet,
+                            ingredient: $recipe->ingredient,
+                            type: StockMovementType::SaleReturn,
+                            quantity: (float) $recipe->qty_per_unit * $qtyReturn,
+                            reference: $return,
+                            createdBy: $actorId,
+                            note: "Retur: {$item->menuItem->name} x{$qtyReturn} dari {$tx->invoice_number}",
+                        );
+                    }
                 }
             }
 
@@ -269,7 +289,8 @@ class StockService
 
             $transfer->update([
                 'status' => 'sent',
-                'transferred_at' => $transfer->transferred_at ?? now(),
+                'transferred_by' => $createdBy ?? $transfer->created_by,
+                'transferred_at' => now(),
             ]);
         });
     }
@@ -341,7 +362,7 @@ class StockService
                 }
             }
 
-            $tx->update(['status' => 'cancelled']);
+            $tx->update(['status' => 'cancelled', 'cancelled_by' => $actorId, 'cancelled_at' => now()]);
         });
     }
 
@@ -399,7 +420,7 @@ class StockService
     // Method per-item di bawah ini dipanggil oleh Observer, dipicu tiap
     // 1 baris item (SalesTransactionItem/StockTransferItem/StockOpnameItem)
     // disimpan. Ini yang membuat auto-deduct/auto-transfer bisa jalan tanpa
-    // perlu tombol "proses" terpisah di Filament.
+    // perlu tombol proses terpisah di antarmuka.
     // ------------------------------------------------------------------
 
     /**

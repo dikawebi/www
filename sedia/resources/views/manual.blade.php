@@ -312,7 +312,7 @@
         <li>Di laptop: icon instal di address bar → <b>Instal</b>.</li>
       </ol>
       <figure class="shot"><img src="/manual-screenshots/17-pwa.svg" alt="PWA"><figcaption class="shot-cap"><span>Gambar 17 — Instal PWA</span><span>/manifest.json + /sw.js</span></figcaption></figure>
-      <div class="tip">Harus <b>HTTPS</b> (Vercel sudah). Service worker cache <code>/build/*</code> saja, halaman Livewire tetap fresh.</div>
+      <div class="tip">Harus <b>HTTPS</b> (Vercel sudah). Service worker hanya menyimpan asset <code>/build/*</code>; halaman aplikasi tetap fresh.</div>
     </div>
 
     <div class="section" id="sop">
